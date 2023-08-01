@@ -1,0 +1,25 @@
+server:
+  port: 9000
+  servlet:
+    session:
+      tracking-modes: cookie
+spring:
+  profiles:
+    active: mysql
+  application:
+    name: sas-server
+  freemarker:
+    request-context-attribute: request
+    suffix: .html
+    content-type: text/html
+    enabled: true
+    cache: false
+    template-loader-path: classpath:/templates/
+    charset: UTF-8
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    open-in-view: false
+    database: mysql
+    hibernate:
+      ddl-auto: update

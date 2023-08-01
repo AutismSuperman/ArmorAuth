@@ -1,0 +1,32 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            provider: github
+            client-id: 1221e876540cca8ae5f9
+            client-secret: 162a98e9e71b29606a3c5f8e5e66a78e7b6a50e5
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:9000/login/oauth2/code/github
+            scope: read:user
+            client-name: github
+        provider:
+          github:
+            user-name-attribute: id
+            authorization-uri: https://github.com/login/oauth/authorize
+            token-uri: https://github.com/login/oauth/access_token
+            user-info-uri: https://api.github.com/user
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://127.0.0.1:3306/identity_server
+    username: root
+    password: wangle
+    hikari:
+      connection-test-query: SELECT 1
+      connection-timeout: 60000
+      idle-timeout: 50000
+      max-lifetime: 55000
+      maximum-pool-size: 100
+      minimum-idle: 50
+

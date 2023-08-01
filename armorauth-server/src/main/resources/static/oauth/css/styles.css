@@ -1,0 +1,95 @@
+body {
+    background-color: #f8f8f8;
+}
+
+/* FORM */
+
+#form-container {
+    background-color: #fff;
+    border-radius: 20px;
+    box-shadow: .5px 10px 15px rgba(0, 0, 0, .2);
+    margin: 25px auto;
+    padding: 33px;
+}
+
+@media (min-width: 768px) {
+    #form-container {
+        margin: 0px auto;
+        padding: 50px;
+    }
+}
+
+#form-container h2 {
+    font-weight: 900;
+    margin-bottom: 30px;
+}
+
+#form-container a {
+    color: #005980;
+    transition: .5s;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+#form-container a:hover {
+    color: #6c63ff;
+    font-weight: 500;
+}
+
+
+.login {
+    width: auto;
+    margin-top: 25px;
+}
+
+@media (min-width: 768px) {
+    .btn.btn-primary {
+        width: auto;
+    }
+}
+
+.col-md-6.order-md-1 {
+    padding-top: 50px;
+}
+
+@media (min-width: 768px) {
+    .col-md-6.order-md-1 {
+        padding-top: 0;
+    }
+}
+
+.field input[type="checkbox"] {
+    margin-left: -0.9em;
+    margin-right: 0.8em;
+}
+
+.field {
+    clear: none;
+    float: left;
+    width: 50%;
+}
+
+.footer p {
+    color: #8c92a4;
+}
+
+/* IMAGE */
+
+.row.align-items-center {
+    align-content: center;
+    height: 100%;
+}
+
+#link-container {
+    text-align: center;
+    padding-top: 50px;
+}
+
+.icon {
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.15em;
+    fill: currentColor;
+    overflow: hidden;
+}
+
