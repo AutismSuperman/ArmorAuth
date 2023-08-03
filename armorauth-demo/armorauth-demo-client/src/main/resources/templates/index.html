@@ -2,29 +2,45 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
 <head>
-    <title>Spring Security - Login</title>
+    <title>Spring Security - Client Credentials</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta charset="utf-8"/>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <link href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css" rel="stylesheet" crossorigin="anonymous">
 </head>
 <body>
 <div style="float: right" th:fragment="logout" sec:authorize="isAuthenticated()">
     <div style="float:left">
-        <span style="font-weight:bold">User: </span><span sec:authentication="name"></span>
+        <span style="font-weight:bold">User:</span><span sec:authentication="name"></span>
     </div>
     <div style="float:none">&nbsp;</div>
     <div style="float:right">
         <form action="#" th:action="@{/logout}" method="post">
-            <input type="submit" value="Logout"/>
+            <button type="submit" class="btn btn-danger">Logout</button>
         </form>
     </div>
 </div>
 <div>
-    <span style="font-weight:bold">Client Information:</span>
-    <ul>
+    <span style="font-weight:bold">Client Credentials Client:</span>
+    <br>
+    <div>
+        <div class="d-flex justify-content-start">
+            <div class="btn-group" role="group" aria-label="Button group">
+                <button type="button" id="basic" class="btn btn-primary mr-2">autism:client_secret_basic</button>
+                <button type="button" id="secret_jwt" class="btn btn-secondary mr-2">silent:client_secret_jwt</button>
+                <button type="button" class="btn btn-success">silent:private_key_jwt</button>
+            </div>
+        </div>
+    </div>
+    <span style="font-weight:bold">AccessToken Information:</span>
+    <br>
+    <ul id="refresh" th:fragment="ul">
         <li>
-            <span style="font-weight:bold">scopes</span>: <span th:text="${scopes}"></span>
+            <span style="font-weight:bold">scopes</span>: <span th:text="${scope}"></span>
         </li>
         <li>
-            <span style="font-weight:bold">accessToken</span>: <span th:text="${accessToken}"></span>
+            <span style="font-weight:bold">accessToken</span>: <span th:text="${access_token}"></span>
         </li>
         <li>
             <span style="font-weight:bold">issuedAt</span>: <span th:text="${issuedAt}"></span>
@@ -34,5 +50,30 @@
         </li>
     </ul>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $("#basic").click(() => {
+        const url = `/basic`;
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function (data, status, xhr) {
+                // 其中data为后台返回的局部刷新之后的DOM字符串,我们将其添加到待重绘区域
+                $("#refresh").html(data);
+            }
+        });
+    });
+    $("#secret_jwt").click(() => {
+        const url = `/jwt`;
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function (data, status, xhr) {
+                // 其中data为后台返回的局部刷新之后的DOM字符串,我们将其添加到待重绘区域
+                $("#refresh").html(data);
+            }
+        });
+    });
+</script>
 </body>
 </html>

@@ -35,15 +35,14 @@ import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.JwtClaimNames;
-import org.springframework.security.oauth2.jwt.JwtClaimValidator;
-import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.util.*;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -75,10 +74,20 @@ public class SecurityConfiguration {
         DefaultOAuth2AuthorizedClientManager authorizedClientManager =
                 new DefaultOAuth2AuthorizedClientManager(
                         clientRegistrationRepository, authorizedClientRepository);
-
-
         authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
         return authorizedClientManager;
+    }
+
+
+    private OAuth2AccessTokenResponseClient<OAuth2ClientCredentialsGrantRequest> accessTokenResponseClient() {
+        OAuth2ClientCredentialsGrantRequestEntityConverter requestEntityConverter = new OAuth2ClientCredentialsGrantRequestEntityConverter();
+        NimbusJwtClientAuthenticationParametersConverter<OAuth2ClientCredentialsGrantRequest>
+                converter = new NimbusJwtClientAuthenticationParametersConverter<>(jwkResolver);
+        requestEntityConverter.addParametersConverter(converter);
+        requestEntityConverter.addParametersConverter(new ClientIdClientAuthenticationParametersConverter<>());
+        DefaultClientCredentialsTokenResponseClient tokenResponseClient = new DefaultClientCredentialsTokenResponseClient();
+        tokenResponseClient.setRequestEntityConverter(requestEntityConverter);
+        return tokenResponseClient;
     }
 
     Function<ClientRegistration, JWK> jwkResolver = (clientRegistration) -> {
@@ -93,18 +102,6 @@ public class SecurityConfiguration {
         return null;
     };
 
-    private OAuth2AccessTokenResponseClient<OAuth2ClientCredentialsGrantRequest> accessTokenResponseClient() {
-        OAuth2ClientCredentialsGrantRequestEntityConverter requestEntityConverter = new OAuth2ClientCredentialsGrantRequestEntityConverter();
-        NimbusJwtClientAuthenticationParametersConverter<OAuth2ClientCredentialsGrantRequest>
-                converter = new NimbusJwtClientAuthenticationParametersConverter<>(jwkResolver);
-        requestEntityConverter.addParametersConverter(converter);
-        requestEntityConverter.addParametersConverter(new ClientIdClientAuthenticationParametersConverter());
-        DefaultClientCredentialsTokenResponseClient tokenResponseClient = new DefaultClientCredentialsTokenResponseClient();
-        tokenResponseClient.setRequestEntityConverter(requestEntityConverter);
-        return tokenResponseClient;
-    }
-
-
     public static class ClientIdClientAuthenticationParametersConverter<T extends AbstractOAuth2AuthorizationGrantRequest>
             implements Converter<T, MultiValueMap<String, String>> {
         @Override
@@ -116,21 +113,5 @@ public class SecurityConfiguration {
             return parameters;
         }
     }
-
-    public static void main(String[] args) {
-        String clientId = "8a349006-b8e3-427b-8814-bc4b32e8930a";
-        SecretKeySpec secretKeySpec = new SecretKeySpec("0c1501f4a8a35db0a725d1f547f5466f".getBytes(StandardCharsets.UTF_8),
-                "HmacSHA256");
-        NimbusJwtDecoder build = NimbusJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(MacAlgorithm.HS256).build();
-
-        build.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
-                new JwtClaimValidator<>(JwtClaimNames.ISS, clientId::equals),
-                new JwtClaimValidator<>(JwtClaimNames.SUB, clientId::equals),
-                new JwtClaimValidator<>(JwtClaimNames.EXP, Objects::nonNull),
-                new JwtTimestampValidator()
-        ));
-        build.decode("eyJraWQiOiI3Y2EzMGQ3MC1iNWUxLTQ2OTktOGZkZi04MTIwNmY5OGQ4YjciLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI4YTM0OTAwNi1iOGUzLTQyN2ItODgxNC1iYzRiMzJlODkzMGEiLCJhdWQiOiJodHRwOlwvXC8xMjcuMC4wLjE6OTAwMFwvb2F1dGgyXC90b2tlbiIsImlzcyI6IjhhMzQ5MDA2LWI4ZTMtNDI3Yi04ODE0LWJjNGIzMmU4OTMwYSIsImV4cCI6MTY5MDk5NTQ3MywiaWF0IjoxNjkwOTk1NDEzLCJqdGkiOiJmMmQyNzk5Ni03OWVkLTQwN2ItYWFhNy0xOTU2ODY4ODlmNWYifQ.JBFbgUgpytHNrwAzSAUgbD6sJT6VkOew2jMV_qszIyc");
-    }
-
 
 }

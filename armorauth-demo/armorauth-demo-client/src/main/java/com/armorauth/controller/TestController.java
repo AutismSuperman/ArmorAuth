@@ -20,16 +20,29 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.Assert;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 @Controller
 public class TestController {
+
+    private final static String PATTERN_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private final static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(PATTERN_FORMAT).withZone(ZoneId.systemDefault());
 
     private final OAuth2AuthorizedClientManager authorizedClientManager;
 
@@ -45,10 +58,11 @@ public class TestController {
 
     @GetMapping("/basic")
     public String basic(Model model,
-                         Authentication authentication,
-                         HttpServletRequest servletRequest,
-                         HttpServletResponse servletResponse) {
-        OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest.withClientRegistrationId("autism-client-client-credentials")
+                                     Authentication authentication,
+                                     HttpServletRequest servletRequest,
+                                     HttpServletResponse servletResponse) {
+        OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
+                .withClientRegistrationId("autism-client-client-credentials")
                 .principal(authentication)
                 .attributes(attrs -> {
                     attrs.put(HttpServletRequest.class.getName(), servletRequest);
@@ -56,39 +70,41 @@ public class TestController {
                 })
                 .build();
         OAuth2AuthorizedClient authorizedClient = this.authorizedClientManager.authorize(authorizeRequest);
-        assert authorizedClient != null;
+        Assert.notNull(authorizedClient, "authorizedClient is null");
         OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
-        model.addAttribute("accessToken", accessToken.getTokenValue());
-        model.addAttribute("issuedAt", accessToken.getIssuedAt());
-        model.addAttribute("expiresAt", accessToken.getExpiresAt());
-        model.addAttribute("scopes",
-                StringUtils.collectionToCommaDelimitedString(authorizedClient.getClientRegistration().getScopes()));
-        return "index";
+        model.addAttribute(OAuth2ParameterNames.ACCESS_TOKEN, accessToken.getTokenValue());
+        model.addAttribute(OAuth2ParameterNames.SCOPE,StringUtils.collectionToCommaDelimitedString(authorizedClient.getClientRegistration().getScopes()));
+        Assert.notNull(accessToken.getIssuedAt(), "accessToken.getIssuedAt() is null");
+        model.addAttribute("issuedAt", formatter.format(accessToken.getIssuedAt()));
+        Assert.notNull(accessToken.getExpiresAt(), "accessToken.getExpiresAt() is null");
+        model.addAttribute("expiresAt", formatter.format(accessToken.getExpiresAt()));
+        return "index::ul";
     }
 
 
     @GetMapping("/jwt")
     public String jwt(Model model,
-                         Authentication authentication,
-                         HttpServletRequest servletRequest,
-                         HttpServletResponse servletResponse) {
-        OAuth2AuthorizeRequest authorizeRequest =
-                OAuth2AuthorizeRequest.withClientRegistrationId("silent-client-client-credentials-jwt")
-                        .principal(authentication)
-                        .attributes(attrs -> {
-                            attrs.put(HttpServletRequest.class.getName(), servletRequest);
-                            attrs.put(HttpServletResponse.class.getName(), servletResponse);
-                        })
-                        .build();
+                      Authentication authentication,
+                      HttpServletRequest servletRequest,
+                      HttpServletResponse servletResponse) {
+        OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
+                .withClientRegistrationId("silent-client-client-credentials-jwt")
+                .principal(authentication)
+                .attributes(attrs -> {
+                    attrs.put(HttpServletRequest.class.getName(), servletRequest);
+                    attrs.put(HttpServletResponse.class.getName(), servletResponse);
+                })
+                .build();
         OAuth2AuthorizedClient authorizedClient = this.authorizedClientManager.authorize(authorizeRequest);
-        assert authorizedClient != null;
+        Assert.notNull(authorizedClient, "authorizedClient is null");
         OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
-        model.addAttribute("accessToken", accessToken.getTokenValue());
-        model.addAttribute("issuedAt", accessToken.getIssuedAt());
-        model.addAttribute("expiresAt", accessToken.getExpiresAt());
-        model.addAttribute("scopes",
-                StringUtils.collectionToCommaDelimitedString(authorizedClient.getClientRegistration().getScopes()));
-        return "index";
+        model.addAttribute(OAuth2ParameterNames.ACCESS_TOKEN, accessToken.getTokenValue());
+        model.addAttribute(OAuth2ParameterNames.SCOPE,StringUtils.collectionToCommaDelimitedString(authorizedClient.getClientRegistration().getScopes()));
+        Assert.notNull(accessToken.getIssuedAt(), "accessToken.getIssuedAt() is null");
+        model.addAttribute("issuedAt", formatter.format(accessToken.getIssuedAt()));
+        Assert.notNull(accessToken.getExpiresAt(), "accessToken.getExpiresAt() is null");
+        model.addAttribute("expiresAt", formatter.format(accessToken.getExpiresAt()));
+        return "index::ul";
     }
 
 
