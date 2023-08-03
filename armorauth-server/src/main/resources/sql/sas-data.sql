@@ -1,15 +1,24 @@
-INSERT INTO `oauth2_client` VALUES ('2c9c20818099c695018099cbca030000', 'e2fa7e64-249b-46f0-ae1d-797610e88615', '{bcrypt}$2a$10$uHWdt9Ackncw6s5BJlYO9OOdpD3Q44aan0SjttGRCZU2qvvk3fAZO', 'autism', 'client_secret_basic,client_secret_post', 'authorization_code,client_credentials,refresh_token', NULL, '2022-05-06 22:35:11.000000', NULL);
-
-INSERT INTO `oauth2_client_settings` VALUES ('e2fa7e64-249b-46f0-ae1d-797610e88615', '', b'1', b'0', '');
-INSERT INTO `oauth2_client_settings` VALUES ('e4da4a32-592b-46f0-ae1d-784310e88423', '', b'1', b'0', '');
+INSERT INTO `oauth2_client` VALUES ('2c9c20818099c695018099cbca030000', 'f62ac251-36d7-42c8-9f75-c31c90111bd4', '{bcrypt}$2a$10$uHWdt9Ackncw6s5BJlYO9OOdpD3Q44aan0SjttGRCZU2qvvk3fAZO', 'autism', 'client_secret_basic,client_secret_post', 'authorization_code,client_credentials,refresh_token', 'http://127.0.0.1:8083/login/oauth2/code/autism', '2022-05-06 22:35:11.000000', NULL);
+INSERT INTO `oauth2_client` VALUES ('8a79987882ed8bc10182edb71d5b1007', '8a349006-b8e3-427b-8814-bc4b32e8930a', '0c1501f4a8a35db0a725d1f547f5466f', 'silent', 'client_secret_jwt,private_key_jwt', 'authorization_code,client_credentials,refresh_token', 'http://127.0.0.1:8083/login/oauth2/code/silent', '2022-05-06 22:35:11.000000', NULL);
 
 
 
-INSERT INTO `oauth2_scope` VALUES ('e2fa7e64-249b-46f0-ae1d-797610e88615', 'message.read', '读取信息');
-INSERT INTO `oauth2_scope` VALUES ('e2fa7e64-249b-46f0-ae1d-797610e88615', 'message.write', '写入信息');
-INSERT INTO `oauth2_scope` VALUES ('e2fa7e64-249b-46f0-ae1d-797610e88615', 'userinfo', '用户信息');
 
-INSERT INTO `oauth2_token_settings` VALUES ('e2fa7e64-249b-46f0-ae1d-797610e88615', 300000000000, 'RS256', 3600000000000, b'1', 'self-contained');
+
+INSERT INTO `oauth2_scope` VALUES ('f62ac251-36d7-42c8-9f75-c31c90111bd4', 'message.read', '读取信息');
+INSERT INTO `oauth2_scope` VALUES ('f62ac251-36d7-42c8-9f75-c31c90111bd4', 'message.write', '写入信息');
+INSERT INTO `oauth2_scope` VALUES ('f62ac251-36d7-42c8-9f75-c31c90111bd4', 'userinfo', '用户信息');
+
+INSERT INTO `oauth2_scope` VALUES ('8a349006-b8e3-427b-8814-bc4b32e8930a', 'message.read', '读取信息');
+INSERT INTO `oauth2_scope` VALUES ('8a349006-b8e3-427b-8814-bc4b32e8930a', 'message.write', '写入信息');
+INSERT INTO `oauth2_scope` VALUES ('8a349006-b8e3-427b-8814-bc4b32e8930a', 'userinfo', '用户信息');
+
+
+INSERT INTO `oauth2_client_settings` VALUES ('f62ac251-36d7-42c8-9f75-c31c90111bd4', '', b'1', b'0', 'HS256');
+INSERT INTO `oauth2_client_settings` VALUES ('8a349006-b8e3-427b-8814-bc4b32e8930a', '', b'1', b'0', 'HS256');
+
+INSERT INTO `oauth2_token_settings` VALUES ('f62ac251-36d7-42c8-9f75-c31c90111bd4', 300000000000, 'RS256', 3600000000000, b'1', 'self-contained');
+INSERT INTO `oauth2_token_settings` VALUES ('8a349006-b8e3-427b-8814-bc4b32e8930a', 300000000000, 'RS256', 3600000000000, b'1', 'self-contained');
 
 
 INSERT INTO `user_info` VALUES ('0d7c83d900a441c988926af0289de0b2', 'fulin', '{bcrypt}$2a$10$r0uAg8jMsz0V8Z1/FKf/.eWSXIcJwavLURkHrofVZJDARyWjAAhgG', '13103777777', '付林', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0);

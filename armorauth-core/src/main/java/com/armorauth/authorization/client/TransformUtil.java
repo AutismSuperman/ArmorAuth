@@ -139,5 +139,11 @@ public class TransformUtil {
         return oAuth2TokenSettings;
     }
 
+    public static void main(String[] args) {
+        SignatureAlgorithm hs256 = SignatureAlgorithm.from("HS256");
+        MacAlgorithm hs2561 = MacAlgorithm.from("HS256");
+        System.out.println(hs256);
+        System.out.println(hs2561);
+    }
 
 }

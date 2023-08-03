@@ -6,7 +6,7 @@ spring:
           autism-client-oidc:
             provider: autism
             client-name: autism-client-oidc
-            client-id: e2fa7e64-249b-46f0-ae1d-797610e88615
+            client-id: f62ac251-36d7-42c8-9f75-c31c90111bd4
             client-secret: secret
             redirect-uri: 'http://127.0.0.1:8083/login/oauth2/code/autism'
             authorization-grant-type: authorization_code
@@ -14,6 +14,6 @@ spring:
             scope: message.read,message.write,openid
         provider:
           autism:
-            authorization-uri: http://localhost:9000/oauth2/authorize
-            token-uri: http://localhost:9000/oauth2/token
-            jwk-set-uri: http://localhost:9000/oauth2/jwks
+            authorization-uri: http://127.0.0.1:9000/oauth2/authorize
+            token-uri: http://127.0.0.1:9000/oauth2/token
+            jwk-set-uri: http://127.0.0.1:9000/oauth2/jwks

@@ -37,12 +37,17 @@ public class TestController {
         this.authorizedClientManager = authorizedClientManager;
     }
 
-
     @GetMapping("/")
-    public String index(Model model,
-                        Authentication authentication,
-                        HttpServletRequest servletRequest,
-                        HttpServletResponse servletResponse) {
+    public String index() {
+        return "index";
+    }
+
+
+    @GetMapping("/basic")
+    public String basic(Model model,
+                         Authentication authentication,
+                         HttpServletRequest servletRequest,
+                         HttpServletResponse servletResponse) {
         OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest.withClientRegistrationId("autism-client-client-credentials")
                 .principal(authentication)
                 .attributes(attrs -> {
@@ -50,6 +55,31 @@ public class TestController {
                     attrs.put(HttpServletResponse.class.getName(), servletResponse);
                 })
                 .build();
+        OAuth2AuthorizedClient authorizedClient = this.authorizedClientManager.authorize(authorizeRequest);
+        assert authorizedClient != null;
+        OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
+        model.addAttribute("accessToken", accessToken.getTokenValue());
+        model.addAttribute("issuedAt", accessToken.getIssuedAt());
+        model.addAttribute("expiresAt", accessToken.getExpiresAt());
+        model.addAttribute("scopes",
+                StringUtils.collectionToCommaDelimitedString(authorizedClient.getClientRegistration().getScopes()));
+        return "index";
+    }
+
+
+    @GetMapping("/jwt")
+    public String jwt(Model model,
+                         Authentication authentication,
+                         HttpServletRequest servletRequest,
+                         HttpServletResponse servletResponse) {
+        OAuth2AuthorizeRequest authorizeRequest =
+                OAuth2AuthorizeRequest.withClientRegistrationId("silent-client-client-credentials-jwt")
+                        .principal(authentication)
+                        .attributes(attrs -> {
+                            attrs.put(HttpServletRequest.class.getName(), servletRequest);
+                            attrs.put(HttpServletResponse.class.getName(), servletResponse);
+                        })
+                        .build();
         OAuth2AuthorizedClient authorizedClient = this.authorizedClientManager.authorize(authorizeRequest);
         assert authorizedClient != null;
         OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
