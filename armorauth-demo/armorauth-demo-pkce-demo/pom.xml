@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.armorauth</groupId>
-        <artifactId>armorauth-spring-boot</artifactId>
+        <artifactId>armorauth-demo</artifactId>
         <version>${revision}</version>
     </parent>
 
-    <artifactId>armorauth-spring-boot-starter</artifactId>
+    <artifactId>armorauth-demo-pkce-demo</artifactId>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>

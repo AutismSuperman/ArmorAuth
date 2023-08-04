@@ -85,7 +85,11 @@ public class SecurityConfiguration {
         NimbusJwtClientAuthenticationParametersConverter<OAuth2ClientCredentialsGrantRequest>
                 converter = new NimbusJwtClientAuthenticationParametersConverter<>(jwkResolver);
         requestEntityConverter.addParametersConverter(converter);
-        requestEntityConverter.addParametersConverter(new ClientIdClientAuthenticationParametersConverter<>());
+        requestEntityConverter.addParametersConverter((authorizationGrantRequest -> {
+            MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+            parameters.add(OAuth2ParameterNames.CLIENT_ID, authorizationGrantRequest.getClientRegistration().getClientId());
+            return parameters;
+        }));
         DefaultClientCredentialsTokenResponseClient tokenResponseClient = new DefaultClientCredentialsTokenResponseClient();
         tokenResponseClient.setRequestEntityConverter(requestEntityConverter);
         return tokenResponseClient;
@@ -125,16 +129,5 @@ public class SecurityConfiguration {
         };
     }
 
-    public static class ClientIdClientAuthenticationParametersConverter<T extends AbstractOAuth2AuthorizationGrantRequest>
-            implements Converter<T, MultiValueMap<String, String>> {
-        @Override
-        public MultiValueMap<String, String> convert(T authorizationGrantRequest) {
-            Assert.notNull(authorizationGrantRequest, "authorizationGrantRequest cannot be null");
-            ClientRegistration clientRegistration = authorizationGrantRequest.getClientRegistration();
-            MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-            parameters.set(OAuth2ParameterNames.CLIENT_ID, clientRegistration.getClientId());
-            return parameters;
-        }
-    }
 
 }
