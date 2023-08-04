@@ -19,9 +19,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class OAuth2OidcLoginApplication {
+public class OAuth2OIDCLoginApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(OAuth2OidcLoginApplication.class, args);
+        SpringApplication.run(OAuth2OIDCLoginApplication.class, args);
     }
 }

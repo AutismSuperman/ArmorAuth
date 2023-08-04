@@ -8,12 +8,12 @@ spring:
             client-name: autism-client-oidc
             client-id: f62ac251-36d7-42c8-9f75-c31c90111bd4
             client-secret: secret
-            redirect-uri: 'http://127.0.0.1:8083/login/oauth2/code/autism'
+            redirect-uri: 'http://armorauth-demo:8083/login/oauth2/code/autism'
             authorization-grant-type: authorization_code
             client-authentication-method: client_secret_basic
             scope: message.read,message.write,openid
         provider:
           autism:
-            authorization-uri: http://127.0.0.1:9000/oauth2/authorize
-            token-uri: http://127.0.0.1:9000/oauth2/token
-            jwk-set-uri: http://127.0.0.1:9000/oauth2/jwks
+            authorization-uri: http://armorauth-server:9000/oauth2/authorize
+            token-uri: http://armorauth-server:9000/oauth2/token
+            jwk-set-uri: http://armorauth-server:9000/oauth2/jwks

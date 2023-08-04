@@ -29,14 +29,14 @@ spring:
             scope: message.read,message.write
         provider:
           autism:
-            authorization-uri: http://127.0.0.1:9000/oauth2/authorize
-            token-uri: http://127.0.0.1:9000/oauth2/token
+            authorization-uri: http://armorauth-server:9000/oauth2/authorize
+            token-uri: http://armorauth-server:9000/oauth2/token
           silent:
-            authorization-uri: http://127.0.0.1:9000/oauth2/authorize
-            token-uri: http://127.0.0.1:9000/oauth2/token
-            jwk-set-uri: http://127.0.0.1:9000/oauth2/jwks
+            authorization-uri: http://armorauth-server:9000/oauth2/authorize
+            token-uri: http://armorauth-server:9000/oauth2/token
+            jwk-set-uri: http://armorauth-server:9000/oauth2/jwks
           quietly:
-            authorization-uri: http://127.0.0.1:9000/oauth2/authorize
-            token-uri: http://127.0.0.1:9000/oauth2/token
-            jwk-set-uri: http://127.0.0.1:9000/oauth2/jwks
+            authorization-uri: http://armorauth-server:9000/oauth2/authorize
+            token-uri: http://armorauth-server:9000/oauth2/token
+            jwk-set-uri: http://armorauth-server:9000/oauth2/jwks
 
