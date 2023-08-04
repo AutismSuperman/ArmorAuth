@@ -16,8 +16,11 @@
 package com.armorauth.config;
 
 
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.OctetSequenceKey;
+import com.armorauth.jose.Jwks;
+import com.nimbusds.jose.KeySourceException;
+import com.nimbusds.jose.jwk.*;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -32,20 +35,14 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.util.*;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfiguration {
@@ -54,6 +51,7 @@ public class SecurityConfiguration {
     @Bean
     SecurityFilterChain customSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeRequests(authorizeRequests -> authorizeRequests
+                        .mvcMatchers("/jwks").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
         ;
@@ -63,11 +61,13 @@ public class SecurityConfiguration {
     @Bean
     public OAuth2AuthorizedClientManager authorizedClientManager(
             ClientRegistrationRepository clientRegistrationRepository,
-            OAuth2AuthorizedClientRepository authorizedClientRepository) {
+            OAuth2AuthorizedClientRepository authorizedClientRepository,
+            OAuth2AccessTokenResponseClient<OAuth2ClientCredentialsGrantRequest> accessTokenResponseClient
+    ) {
         OAuth2AuthorizedClientProvider authorizedClientProvider =
                 OAuth2AuthorizedClientProviderBuilder.builder()
                         .clientCredentials(clientCredentials -> {
-                            clientCredentials.accessTokenResponseClient(accessTokenResponseClient());
+                            clientCredentials.accessTokenResponseClient(accessTokenResponseClient);
                         })
                         .refreshToken()
                         .build();
@@ -79,7 +79,8 @@ public class SecurityConfiguration {
     }
 
 
-    private OAuth2AccessTokenResponseClient<OAuth2ClientCredentialsGrantRequest> accessTokenResponseClient() {
+    @Bean
+    OAuth2AccessTokenResponseClient<OAuth2ClientCredentialsGrantRequest> accessTokenResponseClient(Function<ClientRegistration, JWK> jwkResolver) {
         OAuth2ClientCredentialsGrantRequestEntityConverter requestEntityConverter = new OAuth2ClientCredentialsGrantRequestEntityConverter();
         NimbusJwtClientAuthenticationParametersConverter<OAuth2ClientCredentialsGrantRequest>
                 converter = new NimbusJwtClientAuthenticationParametersConverter<>(jwkResolver);
@@ -90,17 +91,39 @@ public class SecurityConfiguration {
         return tokenResponseClient;
     }
 
-    Function<ClientRegistration, JWK> jwkResolver = (clientRegistration) -> {
-        if (clientRegistration.getClientAuthenticationMethod().equals(ClientAuthenticationMethod.CLIENT_SECRET_JWT)) {
-            SecretKeySpec secretKey = new SecretKeySpec(
-                    clientRegistration.getClientSecret().getBytes(StandardCharsets.UTF_8),
-                    "HmacSHA256");
-            return new OctetSequenceKey.Builder(secretKey)
-                    .keyID(UUID.randomUUID().toString())
-                    .build();
-        }
-        return null;
-    };
+
+    @Bean
+    JWKSource<SecurityContext> jwkSource() {
+        //注册bean的时候生成公私匙
+        RSAKey rsaKey = Jwks.generateRsa();
+        JWKSet jwkSet = new JWKSet(rsaKey);
+        return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+    }
+
+    @Bean
+    Function<ClientRegistration, JWK> jwkResolver(JWKSource<SecurityContext> jwkSource) {
+        return (clientRegistration) -> {
+            if (clientRegistration.getClientAuthenticationMethod().equals(ClientAuthenticationMethod.CLIENT_SECRET_JWT)) {
+                SecretKeySpec secretKey = new SecretKeySpec(
+                        clientRegistration.getClientSecret().getBytes(StandardCharsets.UTF_8),
+                        "HmacSHA256");
+                return new OctetSequenceKey.Builder(secretKey)
+                        .keyID(UUID.randomUUID().toString())
+                        .build();
+            }
+            if (clientRegistration.getClientAuthenticationMethod().equals(ClientAuthenticationMethod.PRIVATE_KEY_JWT)) {
+                JWKSelector jwkSelector = new JWKSelector(new JWKMatcher.Builder().privateOnly(true).build());
+                JWKSet jwkSet;
+                try {
+                    jwkSet = new JWKSet(jwkSource.get(jwkSelector, null));
+                } catch (KeySourceException e) {
+                    throw new RuntimeException(e);
+                }
+                return jwkSet.getKeys().iterator().next();
+            }
+            return null;
+        };
+    }
 
     public static class ClientIdClientAuthenticationParametersConverter<T extends AbstractOAuth2AuthorizationGrantRequest>
             implements Converter<T, MultiValueMap<String, String>> {

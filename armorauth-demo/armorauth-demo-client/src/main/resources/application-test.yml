@@ -20,6 +20,13 @@ spring:
             authorization-grant-type: client_credentials
             client-authentication-method: client_secret_jwt
             scope: message.read,message.write
+          quietly-client-client-credentials-jwt-private-key:
+            provider: quietly
+            client-name: quietly-client-client-credentials-jwt-private-key
+            client-id: b3d64549-0c6b-4306-9170-886dd8652704
+            authorization-grant-type: client_credentials
+            client-authentication-method: private_key_jwt
+            scope: message.read,message.write
         provider:
           autism:
             authorization-uri: http://127.0.0.1:9000/oauth2/authorize
@@ -28,3 +35,8 @@ spring:
             authorization-uri: http://127.0.0.1:9000/oauth2/authorize
             token-uri: http://127.0.0.1:9000/oauth2/token
             jwk-set-uri: http://127.0.0.1:9000/oauth2/jwks
+          quietly:
+            authorization-uri: http://127.0.0.1:9000/oauth2/authorize
+            token-uri: http://127.0.0.1:9000/oauth2/token
+            jwk-set-uri: http://127.0.0.1:9000/oauth2/jwks
+

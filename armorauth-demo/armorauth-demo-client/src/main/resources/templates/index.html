@@ -27,9 +27,11 @@
     <div>
         <div class="d-flex justify-content-start">
             <div class="btn-group" role="group" aria-label="Button group">
-                <button type="button" id="basic" class="btn btn-primary mr-2">autism:client_secret_basic</button>
-                <button type="button" id="secret_jwt" class="btn btn-secondary mr-2">silent:client_secret_jwt</button>
-                <button type="button" class="btn btn-success">silent:private_key_jwt</button>
+                <button type="button" id="client_secret_basic" class="btn btn-primary mr-2">autism:client_secret_basic
+                </button>
+                <button type="button" id="client_secret_jwt" class="btn btn-secondary mr-2">silent:client_secret_jwt
+                </button>
+                <button type="button" id="private_key_jwt" class="btn btn-success">quietly:private_key_jwt</button>
             </div>
         </div>
     </div>
@@ -51,25 +53,33 @@
     </ul>
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $("#basic").click(() => {
-        const url = `/basic`;
+<script type="text/javascript">
+    $("#client_secret_basic").click(() => {
+        const url = `/client_secret_basic`;
         $.ajax({
             url: url,
             type: 'GET',
             success: function (data, status, xhr) {
-                // 其中data为后台返回的局部刷新之后的DOM字符串,我们将其添加到待重绘区域
                 $("#refresh").html(data);
             }
         });
     });
-    $("#secret_jwt").click(() => {
-        const url = `/jwt`;
+    $("#client_secret_jwt").click(() => {
+        const url = `/client_secret_jwt`;
         $.ajax({
             url: url,
             type: 'GET',
             success: function (data, status, xhr) {
-                // 其中data为后台返回的局部刷新之后的DOM字符串,我们将其添加到待重绘区域
+                $("#refresh").html(data);
+            }
+        });
+    });
+    $("#private_key_jwt").click(() => {
+        const url = `/private_key_jwt`;
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function (data, status, xhr) {
                 $("#refresh").html(data);
             }
         });

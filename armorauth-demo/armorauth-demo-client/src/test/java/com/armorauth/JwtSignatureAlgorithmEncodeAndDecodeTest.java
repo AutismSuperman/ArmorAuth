@@ -1,16 +1,17 @@
 package com.armorauth;
 
+import com.armorauth.jose.Jwks;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyType;
-import com.nimbusds.jose.jwk.OctetSequenceKey;
+import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.oauth2.client.endpoint.NimbusJwtClientAuthenticationParametersConverter;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.jose.jws.JwsAlgorithm;
@@ -18,37 +19,38 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
 
-import javax.crypto.spec.SecretKeySpec;
-import javax.sound.midi.Soundbank;
-import javax.swing.plaf.PanelUI;
-import java.nio.charset.StandardCharsets;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
-public class JwtEncodeAndDecodeTest {
+public class JwtSignatureAlgorithmEncodeAndDecodeTest {
+
 
     private final String clientId = "8a349006-b8e3-427b-8814-bc4b32e8930a";
 
-    private final String clientSecret = "0c1501f4a8a35db0a725d1f547f5466f";
-
     @Test
-    public void encode1() {
-        String PATTERN_FORMAT = "yyyy-MM-dd HH:mm:ss";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(PATTERN_FORMAT) .withZone(ZoneId.systemDefault());
-        Instant issuedAt = Instant.now();
-        System.out.println(formatter.format(issuedAt));
-    }
-
-    @Test
-    public void encode() {
+    public void encodeAndDecode() throws JOSEException {
+        //************************encode************************/
+        // Instant
         Instant issuedAt = Instant.now();
         Instant expiresAt = issuedAt.plus(Duration.ofSeconds(60));
+        // JWK
+        RSAKey rsaKey = Jwks.generateRsa();
+        KeyPair keyPair = rsaKey.toKeyPair();
+        PrivateKey privateKey = keyPair.getPrivate();
+        PublicKey publicKey = keyPair.getPublic();
+        log.info("keyPair.getPrivate: {}", privateKey);
+        log.info("keyPair.getPublic: {}", publicKey);
+        // resolveAlgorithm
+        JwsAlgorithm jwsAlgorithm = resolveAlgorithm(rsaKey);
+        // JwtClaimsSet
         JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder()
                 .issuer(clientId)
                 .subject(clientId)
@@ -56,20 +58,25 @@ public class JwtEncodeAndDecodeTest {
                 .id(UUID.randomUUID().toString())
                 .issuedAt(issuedAt)
                 .expiresAt(expiresAt);
-        SecretKeySpec secretKey = new SecretKeySpec(
-                clientSecret.getBytes(StandardCharsets.UTF_8),
-                "HmacSHA256");
-        OctetSequenceKey octetSequenceKey = new OctetSequenceKey.Builder(secretKey)
-                .keyID(UUID.randomUUID().toString())
-                .build();
-        JwsAlgorithm jwsAlgorithm = resolveAlgorithm(octetSequenceKey);
+        JwtClaimsSet jwtClaimsSet = claimsBuilder.build();
+        // JwsHeader
         JwsHeader.Builder headersBuilder = JwsHeader.with(jwsAlgorithm);
         JwsHeader jwsHeader = headersBuilder.build();
-        JwtClaimsSet jwtClaimsSet = claimsBuilder.build();
-        JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(new JWKSet(octetSequenceKey));
+        JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(new JWKSet(rsaKey));
         JwtEncoder jwsEncoder = new NimbusJwtEncoder(jwkSource);
         Jwt jws = jwsEncoder.encode(JwtEncoderParameters.from(jwsHeader, jwtClaimsSet));
-        log.info("parameter:{} jwt: {}", OAuth2ParameterNames.CLIENT_ASSERTION, jws.getTokenValue());
+        log.info("private key jwt parameter:{} jwt: {}", OAuth2ParameterNames.CLIENT_ASSERTION, jws.getTokenValue());
+        //************************decode************************/
+        NimbusJwtDecoder decoder = NimbusJwtDecoder
+                .withPublicKey((RSAPublicKey) publicKey)
+                .signatureAlgorithm(SignatureAlgorithm.RS256).build();
+        decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
+                new JwtClaimValidator<>(JwtClaimNames.ISS, clientId::equals),
+                new JwtClaimValidator<>(JwtClaimNames.SUB, clientId::equals),
+                new JwtClaimValidator<>(JwtClaimNames.EXP, Objects::nonNull),
+                new JwtTimestampValidator()
+        ));
+        decoder.decode(jws.getTokenValue());
     }
 
 
@@ -92,20 +99,5 @@ public class JwtEncodeAndDecodeTest {
         }
         return jwsAlgorithm;
     }
-
-    @Test
-    public void decode() {
-        SecretKeySpec secretKeySpec = new SecretKeySpec(clientSecret.getBytes(StandardCharsets.UTF_8),
-                "HmacSHA256");
-        NimbusJwtDecoder build = NimbusJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(MacAlgorithm.HS256).build();
-        build.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
-                new JwtClaimValidator<>(JwtClaimNames.ISS, clientId::equals),
-                new JwtClaimValidator<>(JwtClaimNames.SUB, clientId::equals),
-                new JwtClaimValidator<>(JwtClaimNames.EXP, Objects::nonNull),
-                new JwtTimestampValidator()
-        ));
-        build.decode("your client_assertion jwt value");
-    }
-
 
 }

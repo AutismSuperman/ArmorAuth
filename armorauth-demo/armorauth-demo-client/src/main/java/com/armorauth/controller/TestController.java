@@ -56,8 +56,8 @@ public class TestController {
     }
 
 
-    @GetMapping("/basic")
-    public String basic(Model model,
+    @GetMapping("/client_secret_basic")
+    public String clientSecretBasic(Model model,
                                      Authentication authentication,
                                      HttpServletRequest servletRequest,
                                      HttpServletResponse servletResponse) {
@@ -82,13 +82,39 @@ public class TestController {
     }
 
 
-    @GetMapping("/jwt")
-    public String jwt(Model model,
+    @GetMapping("/client_secret_jwt")
+    public String clientSecretJwt(Model model,
                       Authentication authentication,
                       HttpServletRequest servletRequest,
                       HttpServletResponse servletResponse) {
         OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
                 .withClientRegistrationId("silent-client-client-credentials-jwt")
+                .principal(authentication)
+                .attributes(attrs -> {
+                    attrs.put(HttpServletRequest.class.getName(), servletRequest);
+                    attrs.put(HttpServletResponse.class.getName(), servletResponse);
+                })
+                .build();
+        OAuth2AuthorizedClient authorizedClient = this.authorizedClientManager.authorize(authorizeRequest);
+        Assert.notNull(authorizedClient, "authorizedClient is null");
+        OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
+        model.addAttribute(OAuth2ParameterNames.ACCESS_TOKEN, accessToken.getTokenValue());
+        model.addAttribute(OAuth2ParameterNames.SCOPE,StringUtils.collectionToCommaDelimitedString(authorizedClient.getClientRegistration().getScopes()));
+        Assert.notNull(accessToken.getIssuedAt(), "accessToken.getIssuedAt() is null");
+        model.addAttribute("issuedAt", formatter.format(accessToken.getIssuedAt()));
+        Assert.notNull(accessToken.getExpiresAt(), "accessToken.getExpiresAt() is null");
+        model.addAttribute("expiresAt", formatter.format(accessToken.getExpiresAt()));
+        return "index::ul";
+    }
+
+
+    @GetMapping("/private_key_jwt")
+    public String privateKeyJwt(Model model,
+                      Authentication authentication,
+                      HttpServletRequest servletRequest,
+                      HttpServletResponse servletResponse) {
+        OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
+                .withClientRegistrationId("quietly-client-client-credentials-jwt-private-key")
                 .principal(authentication)
                 .attributes(attrs -> {
                     attrs.put(HttpServletRequest.class.getName(), servletRequest);
