@@ -1,4 +1,4 @@
-package com.armorauth.controller;
+package com.armorauth.demo.controller;
 
 import com.nimbusds.jose.jwk.JWKMatcher;
 import com.nimbusds.jose.jwk.JWKSelector;

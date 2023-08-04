@@ -1,4 +1,4 @@
-package com.armorauth.jose;
+package com.armorauth.demo.jose;
 
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;

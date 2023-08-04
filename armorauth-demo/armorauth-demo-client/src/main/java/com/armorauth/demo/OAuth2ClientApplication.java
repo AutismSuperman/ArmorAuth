@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.armorauth;
+package com.armorauth.demo;
 
 
 
@@ -22,8 +22,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
 @SpringBootApplication
-public class Oauth2ClientApplication {
+public class OAuth2ClientApplication {
     public static void main(String[] args) {
-        SpringApplication.run(Oauth2ClientApplication.class, args);
+        SpringApplication.run(OAuth2ClientApplication.class, args);
     }
 }

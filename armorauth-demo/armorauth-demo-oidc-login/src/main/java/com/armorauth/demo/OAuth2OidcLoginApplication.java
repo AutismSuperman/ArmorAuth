@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.armorauth;
+package com.armorauth.demo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Oauth2OidcLoginApplication {
+public class OAuth2OidcLoginApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(Oauth2OidcLoginApplication.class, args);
+        SpringApplication.run(OAuth2OidcLoginApplication.class, args);
     }
 }

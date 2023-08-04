@@ -1,4 +1,4 @@
-package com.armorauth;
+package com.armorauth.demo;
 
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;

@@ -1,4 +1,4 @@
-package com.armorauth.jose;
+package com.armorauth.demo.jose;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;

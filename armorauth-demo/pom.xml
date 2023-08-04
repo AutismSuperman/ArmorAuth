@@ -15,7 +15,7 @@
     <modules>
         <module>armorauth-demo-oidc-login</module>
         <module>armorauth-demo-client</module>
-        <module>armorauth-demo-pkce-demo</module>
+        <module>armorauth-demo-pkce</module>
     </modules>
 
 

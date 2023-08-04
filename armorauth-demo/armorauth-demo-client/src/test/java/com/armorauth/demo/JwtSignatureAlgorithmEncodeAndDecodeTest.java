@@ -1,8 +1,7 @@
-package com.armorauth;
+package com.armorauth.demo;
 
-import com.armorauth.jose.Jwks;
+import com.armorauth.demo.jose.Jwks;
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyType;
