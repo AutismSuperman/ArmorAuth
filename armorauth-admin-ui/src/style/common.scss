@@ -1,0 +1,34 @@
+body {
+  padding: 0;
+  margin: 0;
+  outline: none;
+}
+
+@media screen and (max-width: 1200px) {
+  .main-page {
+    width: 80%;
+  }
+}
+
+@media screen and (min-width: 1201px) and (max-width: 1920px) {
+  .main-page {
+    width: 75%;
+  }
+}
+
+@media screen and (min-width: 1921px) {
+  .main-page {
+    width: 60%;
+  }
+}
+
+.main-page {
+  display: flex;
+  height: 100%;
+  margin: 0 auto;
+}
+
+.banner {
+  width: 150px;
+  height: 150px;
+}

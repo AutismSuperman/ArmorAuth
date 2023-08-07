@@ -19,9 +19,9 @@ spring:
             user-info-uri: https://api.github.com/user
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://127.0.0.1:3306/identity_server
+    url: jdbc:mariadb://127.0.0.1:3307/identity_server
     username: root
-    password: wangle
+    password: 123456
     hikari:
       connection-test-query: SELECT 1
       connection-timeout: 60000

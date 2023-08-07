@@ -36,3 +36,9 @@ build/
 
 ### Mac OS ###
 .DS_Store!/.idea/
+
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
