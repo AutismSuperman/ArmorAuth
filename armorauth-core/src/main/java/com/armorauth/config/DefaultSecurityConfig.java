@@ -34,6 +34,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.JdbcOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -42,6 +43,8 @@ import org.springframework.security.oauth2.client.registration.InMemoryClientReg
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationEntryPointFailureHandler;
+import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
@@ -83,15 +86,21 @@ public class DefaultSecurityConfig {
                 .formLogin(formLogin -> formLogin
                         .loginPage(CUSTOM_LOGIN_PAGE).permitAll()
                         .successHandler(federatedAuthenticationSuccessHandler)
-                        .failureHandler(authenticationFailureHandler))
+                        .failureHandler(authenticationFailureHandler)
+                )
                 .userDetailsService(oAuth2UserDetailsService::loadOAuth2UserByUsername)
+                .rememberMe(rememberMe -> rememberMe
+                        .rememberMeCookieName("armorauth-remember-me")
+                        .userDetailsService(oAuth2UserDetailsService::loadOAuth2UserByUsername)
+                )
                 .apply(new Oauth2UserLoginFilterSecurityConfigurer<>())
                 .captchaLogin(captchaLogin -> captchaLogin
                         .captchaVerifyService(this::verifyCaptchaMock)
                         .captchaUserDetailsService(captchaUserDetailsService)
                         .successHandler(federatedAuthenticationSuccessHandler)
                         .failureHandler(authenticationFailureHandler)
-                );
+                )
+        ;
         // AuthorizationServerConfigurer Customizer
         http.apply(identityAuthorizationServerConfigurer);
         http.getConfigurer(IdentityAuthorizationServerConfigurer.class)
@@ -105,6 +114,7 @@ public class DefaultSecurityConfig {
     private boolean verifyCaptchaMock(String account, String captcha) {
         return captcha.equals("1234");
     }
+
 
 
     @Bean

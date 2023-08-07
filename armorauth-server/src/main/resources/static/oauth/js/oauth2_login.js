@@ -59,7 +59,8 @@ $('#up_login').click(function () {
         url: '/login',
         data: {
             username: $('#username').val(),
-            password: $('#password').val()
+            password: $('#password').val(),
+            "remember-me": $('#up-remember-me').val()
         },
         type: "post",
         dataType: 'json',
@@ -83,7 +84,8 @@ $('#pc_login').click(function () {
         url: '/login/captcha',
         data: {
             account: $('#account').val(),
-            captcha: $('#captcha').val()
+            captcha: $('#captcha').val(),
+            "remember-me": $('#ac-remember-me').val()
         },
         type: "post",
         dataType: 'json',
