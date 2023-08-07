@@ -3,7 +3,7 @@
 
 <head>
     <#include "common/include.ftl">
-    <@common_header "oauth2登录"/>
+    <@common_header "ArmorAuth OAuth2登录"/>
     <link rel="stylesheet" href="/static/oauth/css/styles.css">
     <style>
         .col-1 {
@@ -17,16 +17,16 @@
     <div class="container col-11 col-md-6" id="form-container">
         <div class="row align-items-center gx-5">
             <div class="col-md-6 order-md-2">
-                <h2>Identity统一授权登录</h2>
+                <h2>ArmorAuth 统一授权登录</h2>
                 <div id="liveAlertPlaceholder"></div>
                 <form class="row g-3" id="up">
                     <div class=" mb-3">
-                        <input type="text" class="form-control" value="root" id="username" name="username"
+                        <input type="text" class="form-control" value="admin" id="username" name="username"
                                autocomplete="off"
                                placeholder="请输入用户名">
                     </div>
                     <div class=" mb-3">
-                        <input type="password" class="form-control" value="root"  id="password" name="password"
+                        <input type="password" class="form-control" value="123456"  id="password" name="password"
                                placeholder="请输入密码">
                     </div>
                     <div class="mb-2 form-check">
@@ -45,11 +45,13 @@
                 <form class="row g-3" id="pc" style="display: none;">
                     <div class="mb-3">
                         <input type="text" class="form-control" id="account" name="account"
+                               value="13103777777"
                                autocomplete="off"
                                placeholder="请输入手机号">
                     </div>
                     <div class="col-6">
                         <input type="password" name="captcha" class="form-control" id="captcha"
+                               value="1234"
                                placeholder="手机验证码">
                     </div>
                     <div class="col-6">

@@ -33,4 +33,4 @@ INSERT INTO `oauth2_token_settings` VALUES ('b3d64549-0c6b-4306-9170-886dd865270
 INSERT INTO `oauth2_token_settings` VALUES ('4569bca1-bca7-49eb-a03c-7898e9197d5f', 300000000000, 'RS256', 3600000000000, b'1', 'self-contained');
 
 
-INSERT INTO `user_info` VALUES ('0d7c83d900a441c988926af0289de0b2', 'fulin', '{bcrypt}$2a$10$r0uAg8jMsz0V8Z1/FKf/.eWSXIcJwavLURkHrofVZJDARyWjAAhgG', '13103777777', '付林', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0);
+INSERT INTO `user_info` VALUES ('0d7c83d900a441c988926af0289de0b2', 'admin', '{bcrypt}$2a$10$9XQTKexOScPtqKGHlKYCrO9IVTXrwE2uxl.aRoVhHrNDoyVVjXHDm', '13103777777', '付林', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0);

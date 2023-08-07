@@ -15,14 +15,31 @@
  */
 package com.armorauth.detail;
 
+import com.armorauth.data.entity.UserInfo;
+import com.armorauth.data.repository.UserInfoRepository;
 import com.armorauth.detail.repository.InMemoryUserRepository;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.stereotype.Component;
 
-public class InMemoryOAuth2UserDetailsManager implements OAuth2UserDetailsService {
+@Component
+public class JdbcOAuth2UserDetailsManager implements OAuth2UserDetailsService {
+
+    private final UserInfoRepository userInfoRepository;
+
+    public JdbcOAuth2UserDetailsManager(UserInfoRepository userInfoRepository) {
+        this.userInfoRepository = userInfoRepository;
+    }
+
     @Override
     public UserDetails loadOAuth2UserByUsername(String username) throws UsernameNotFoundException {
-        return InMemoryUserRepository.findUser(username);
+        UserInfo userByUsername = userInfoRepository.findOAuth2UserByUsername(username);
+        return User.builder()
+                .username(userByUsername.getUsername())
+                .password(userByUsername.getPassword())
+                .roles("USER")
+                .build();
     }
 }

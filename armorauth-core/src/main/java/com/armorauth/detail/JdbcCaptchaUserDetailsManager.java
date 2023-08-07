@@ -15,15 +15,32 @@
  */
 package com.armorauth.detail;
 
-import com.armorauth.detail.repository.InMemoryUserRepository;
+import com.armorauth.data.entity.UserInfo;
+import com.armorauth.data.repository.UserInfoRepository;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.stereotype.Component;
 
 
-public class InMemoryCaptchaUserDetailsManager implements CaptchaUserDetailsService {
+@Component
+public class JdbcCaptchaUserDetailsManager implements CaptchaUserDetailsService {
+
+    private final UserInfoRepository userInfoRepository;
+
+    public JdbcCaptchaUserDetailsManager(UserInfoRepository userInfoRepository) {
+        this.userInfoRepository = userInfoRepository;
+    }
+
+
     @Override
     public UserDetails loadUserByPhone(String phone) throws UsernameNotFoundException {
-        return InMemoryUserRepository.findUser("root");
+        UserInfo userByPhone = userInfoRepository.findOAuth2UserByPhone(phone);
+        return User.builder()
+                .username(userByPhone.getUsername())
+                .password(userByPhone.getPassword())
+                .roles("USER")
+                .build();
     }
 }

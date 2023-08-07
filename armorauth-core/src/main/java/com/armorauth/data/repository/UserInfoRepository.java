@@ -24,13 +24,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserInfoRepository extends JpaRepository<UserInfo, String> {
 
-    UserInfo findOAuth2SubjectUserByUsername(String username);
+    UserInfo findOAuth2UserByUsername(String username);
 
-    UserInfo findOAuth2SubjectUserByPhone(String phone);
+    UserInfo findOAuth2UserByPhone(String phone);
 
-    UserInfo findOAuth2SubjectUserById(String id);
 
-    @Query("update UserInfo set status = ?2 where id = ?1")
-    @Modifying
-    Integer changeStatus(String userId, Integer status);
 }
