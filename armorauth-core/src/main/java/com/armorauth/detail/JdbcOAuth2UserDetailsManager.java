@@ -23,8 +23,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
-@Component
+
 public class JdbcOAuth2UserDetailsManager implements OAuth2UserDetailsService {
 
     private final UserInfoRepository userInfoRepository;
@@ -36,6 +37,9 @@ public class JdbcOAuth2UserDetailsManager implements OAuth2UserDetailsService {
     @Override
     public UserDetails loadOAuth2UserByUsername(String username) throws UsernameNotFoundException {
         UserInfo userByUsername = userInfoRepository.findOAuth2UserByUsername(username);
+        if (ObjectUtils.isEmpty(userByUsername)) {
+            return null;
+        }
         return User.builder()
                 .username(userByUsername.getUsername())
                 .password(userByUsername.getPassword())

@@ -23,6 +23,7 @@ import com.armorauth.detail.CaptchaUserDetailsService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
@@ -35,7 +36,7 @@ public class CaptchaLoginFilterConfigurer<H extends HttpSecurityBuilder<H>>
             Oauth2UserLoginFilterSecurityConfigurer<H>
             > {
 
-    private CaptchaUserDetailsService captchaUserDetailsService;
+    private UserDetailsService userDetailsService;
 
     private CaptchaVerifyService captchaVerifyService;
 
@@ -43,8 +44,8 @@ public class CaptchaLoginFilterConfigurer<H extends HttpSecurityBuilder<H>>
         super(securityConfigurer, new CaptchaAuthenticationFilter(), "/login/captcha");
     }
 
-    public CaptchaLoginFilterConfigurer<H> captchaUserDetailsService(CaptchaUserDetailsService captchaUserDetailsService) {
-        this.captchaUserDetailsService = captchaUserDetailsService;
+    public CaptchaLoginFilterConfigurer<H> userDetailsService(UserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
         return this;
     }
 
@@ -63,11 +64,11 @@ public class CaptchaLoginFilterConfigurer<H extends HttpSecurityBuilder<H>>
     @Override
     protected AuthenticationProvider authenticationProvider(H http) {
         ApplicationContext applicationContext = http.getSharedObject(ApplicationContext.class);
-        CaptchaUserDetailsService captchaUserDetailsService = this.captchaUserDetailsService != null ? this.captchaUserDetailsService : getBeanOrNull(applicationContext, CaptchaUserDetailsService.class);
-        Assert.notNull(captchaUserDetailsService, "captchaUserDetailsService is required");
+        UserDetailsService userDetailsService = this.userDetailsService != null ? this.userDetailsService : getBeanOrNull(applicationContext, UserDetailsService.class);
+        Assert.notNull(userDetailsService, "userDetailsService is required");
         CaptchaVerifyService captchaService = this.captchaVerifyService != null ? this.captchaVerifyService : getBeanOrNull(applicationContext, CaptchaVerifyService.class);
         Assert.notNull(captchaService, "captchaService is required");
-        return new CaptchaAuthenticationProvider(captchaUserDetailsService, captchaService);
+        return new CaptchaAuthenticationProvider(userDetailsService, captchaService);
     }
 
 }

@@ -22,9 +22,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 
-@Component
 public class JdbcCaptchaUserDetailsManager implements CaptchaUserDetailsService {
 
     private final UserInfoRepository userInfoRepository;
@@ -37,6 +37,9 @@ public class JdbcCaptchaUserDetailsManager implements CaptchaUserDetailsService 
     @Override
     public UserDetails loadUserByPhone(String phone) throws UsernameNotFoundException {
         UserInfo userByPhone = userInfoRepository.findOAuth2UserByPhone(phone);
+        if (ObjectUtils.isEmpty(userByPhone)) {
+            return null;
+        }
         return User.builder()
                 .username(userByPhone.getUsername())
                 .password(userByPhone.getPassword())

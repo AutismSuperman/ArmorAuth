@@ -18,7 +18,9 @@ package com.armorauth.config;
 
 import com.armorauth.configurers.IdentityAuthorizationServerConfigurer;
 import com.armorauth.configurers.web.Oauth2UserLoginFilterSecurityConfigurer;
+import com.armorauth.data.repository.UserInfoRepository;
 import com.armorauth.detail.CaptchaUserDetailsService;
+import com.armorauth.detail.DelegateUserDetailsService;
 import com.armorauth.detail.OAuth2UserDetailsService;
 import com.armorauth.security.FailureAuthenticationEntryPoint;
 import com.armorauth.security.FederatedAuthenticationSuccessHandler;
@@ -63,8 +65,7 @@ public class DefaultSecurityConfig {
     @Order(Ordered.HIGHEST_PRECEDENCE + 1)
     SecurityFilterChain defaultSecurityFilterChain(
             HttpSecurity http,
-            OAuth2UserDetailsService oAuth2UserDetailsService,
-            CaptchaUserDetailsService captchaUserDetailsService,
+            DelegateUserDetailsService delegateUserDetailsService,
             @Qualifier("authorizationServerSecurityFilterChain") SecurityFilterChain securityFilterChain
     )
             throws Exception {
@@ -88,15 +89,15 @@ public class DefaultSecurityConfig {
                         .successHandler(federatedAuthenticationSuccessHandler)
                         .failureHandler(authenticationFailureHandler)
                 )
-                .userDetailsService(oAuth2UserDetailsService::loadOAuth2UserByUsername)
+                .userDetailsService(delegateUserDetailsService)
                 .rememberMe(rememberMe -> rememberMe
                         .rememberMeCookieName("armorauth-remember-me")
-                        .userDetailsService(oAuth2UserDetailsService::loadOAuth2UserByUsername)
+                        .userDetailsService(delegateUserDetailsService)
                 )
                 .apply(new Oauth2UserLoginFilterSecurityConfigurer<>())
                 .captchaLogin(captchaLogin -> captchaLogin
                         .captchaVerifyService(this::verifyCaptchaMock)
-                        .captchaUserDetailsService(captchaUserDetailsService)
+                        .userDetailsService(delegateUserDetailsService)
                         .successHandler(federatedAuthenticationSuccessHandler)
                         .failureHandler(authenticationFailureHandler)
                 )
@@ -115,6 +116,11 @@ public class DefaultSecurityConfig {
         return captcha.equals("1234");
     }
 
+
+    @Bean
+    public DelegateUserDetailsService delegateUserDetailsService(UserInfoRepository userInfoRepository) {
+        return new DelegateUserDetailsService(userInfoRepository);
+    }
 
 
     @Bean

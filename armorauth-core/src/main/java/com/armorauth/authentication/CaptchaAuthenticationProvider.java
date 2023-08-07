@@ -29,6 +29,7 @@ import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.util.Assert;
 
 import java.util.Collection;
@@ -41,12 +42,12 @@ import java.util.Collection;
 public class CaptchaAuthenticationProvider implements AuthenticationProvider, InitializingBean, MessageSourceAware {
 
     private final GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
-    private final CaptchaUserDetailsService captchaUserDetailsService;
+    private final UserDetailsService userDetailsService;
     private final CaptchaVerifyService captchaService;
     private MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
-    public CaptchaAuthenticationProvider(CaptchaUserDetailsService captchaUserDetailsService, CaptchaVerifyService captchaService) {
-        this.captchaUserDetailsService = captchaUserDetailsService;
+    public CaptchaAuthenticationProvider(UserDetailsService userDetailsService, CaptchaVerifyService captchaService) {
+        this.userDetailsService = userDetailsService;
         this.captchaService = captchaService;
     }
 
@@ -62,7 +63,7 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider, In
         String rawCode = (String) unAuthenticationToken.getCredentials();
         // verifyCaptcha
         if (captchaService.verifyCaptcha(phone, rawCode)) {
-            UserDetails userDetails = captchaUserDetailsService.loadUserByPhone(phone);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(phone);
             return createSuccessAuthentication(authentication, userDetails);
         } else {
             throw new BadCredentialsException("Captcha is not matched");
@@ -76,7 +77,7 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider, In
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        Assert.notNull(captchaUserDetailsService, "captchaUserDetailsService must not be null");
+        Assert.notNull(userDetailsService, "userDetailsService must not be null");
         Assert.notNull(captchaService, "captchaService must not be null");
     }
 
