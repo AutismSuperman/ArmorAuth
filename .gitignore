@@ -5,7 +5,6 @@ target/
 !**/src/test/**/target/
 .flattened-pom.xml
 
-
 ### IntelliJ IDEA ###
 .idea/
 *.iws
@@ -37,8 +36,11 @@ build/
 ### Mac OS ###
 .DS_Store!/.idea/
 
-node_modules
+
+### UI ###
 .DS_Store
-dist
-dist-ssr
-*.local
+node_modules/
+/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
