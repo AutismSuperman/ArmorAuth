@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.armorauth.detail;
+package com.armorauth.details;
 
+import com.armorauth.details.repository.InMemoryUserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-public interface CaptchaUserDetailsService {
-
-    UserDetails loadUserByPhone(String phone) throws UsernameNotFoundException;
-
-
+public class InMemoryOAuth2UserDetailsManager implements OAuth2UserDetailsService {
+    @Override
+    public UserDetails loadOAuth2UserByUsername(String username) throws UsernameNotFoundException {
+        return InMemoryUserRepository.findUser(username);
+    }
 }

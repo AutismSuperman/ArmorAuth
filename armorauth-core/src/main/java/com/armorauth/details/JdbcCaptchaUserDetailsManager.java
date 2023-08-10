@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.armorauth.detail;
+package com.armorauth.details;
 
 import com.armorauth.data.entity.UserInfo;
 import com.armorauth.data.repository.UserInfoRepository;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 
@@ -35,7 +33,7 @@ public class JdbcCaptchaUserDetailsManager implements CaptchaUserDetailsService 
 
 
     @Override
-    public UserDetails loadUserByPhone(String phone) throws UsernameNotFoundException {
+    public UserDetails loadUserByAccount(String phone) throws UsernameNotFoundException {
         UserInfo userByPhone = userInfoRepository.findOAuth2UserByPhone(phone);
         if (ObjectUtils.isEmpty(userByPhone)) {
             return null;

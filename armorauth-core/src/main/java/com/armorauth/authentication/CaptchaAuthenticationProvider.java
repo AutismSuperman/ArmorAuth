@@ -15,7 +15,6 @@
  */
 package com.armorauth.authentication;
 
-import com.armorauth.detail.CaptchaUserDetailsService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;

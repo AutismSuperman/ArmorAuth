@@ -71,11 +71,11 @@ public class CaptchaAuthenticationFilter extends AbstractAuthenticationProcessin
 
     private Converter<HttpServletRequest, CaptchaAuthenticationToken> defaultConverter() {
         return request -> {
-            String username = request.getParameter(this.accountParameter);
-            username = (username != null) ? username.trim() : "";
+            String account = request.getParameter(this.accountParameter);
+            account = (account != null) ? account.trim() : "";
             String captcha = request.getParameter(this.captchaParameter);
             captcha = (captcha != null) ? captcha.trim() : "";
-            return new CaptchaAuthenticationToken(username, captcha);
+            return new CaptchaAuthenticationToken(account, captcha);
         };
     }
 
@@ -84,7 +84,7 @@ public class CaptchaAuthenticationFilter extends AbstractAuthenticationProcessin
         authRequest.setDetails(this.authenticationDetailsSource.buildDetails(request));
     }
 
-    public void setUsernameParameter(String accountParameter) {
+    public void setAccountParameter(String accountParameter) {
         Assert.hasText(accountParameter, "account parameter must not be empty or null");
         this.accountParameter = accountParameter;
     }

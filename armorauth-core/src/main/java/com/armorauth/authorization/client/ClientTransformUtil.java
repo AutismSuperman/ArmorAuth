@@ -36,7 +36,7 @@ import java.util.Optional;
  * @author fulin
  */
 @Data
-public class TransformUtil {
+public class ClientTransformUtil {
 
 
     public static AuthorizationGrantType resolveAuthorizationGrantType(String authorizationGrantType) {

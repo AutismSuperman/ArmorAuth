@@ -18,7 +18,7 @@ package com.armorauth.authorization;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.armorauth.authorization.client.TransformUtil;
+import com.armorauth.authorization.client.ClientTransformUtil;
 import com.armorauth.data.entity.Authorization;
 import com.armorauth.data.repository.AuthorizationRepository;
 import com.armorauth.jackson.IdServerJackson2Module;
@@ -129,7 +129,7 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
         OAuth2Authorization.Builder builder = OAuth2Authorization.withRegisteredClient(registeredClient)
                 .id(authorization.getId())
                 .principalName(authorization.getPrincipalName())
-                .authorizationGrantType(TransformUtil.resolveAuthorizationGrantType(authorization.getAuthorizationGrantType()))
+                .authorizationGrantType(ClientTransformUtil.resolveAuthorizationGrantType(authorization.getAuthorizationGrantType()))
                 .attributes(attributes -> attributes.putAll(parseMap(authorization.getAttributes())));
 
         if (authorization.getAuthorizedScopes() != null) {

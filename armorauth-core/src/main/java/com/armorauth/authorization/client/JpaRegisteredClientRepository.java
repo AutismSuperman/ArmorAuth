@@ -101,10 +101,10 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
                     oAuth2Scope.setScope(scope);
                     return oAuth2Scope;
                 }).collect(Collectors.toSet()));
-        OAuth2ClientSettings settings = TransformUtil.fromClientSettings(registeredClient.getClientSettings());
+        OAuth2ClientSettings settings = ClientTransformUtil.fromClientSettings(registeredClient.getClientSettings());
         settings.setClientId(clientId);
         client.setClientSettings(settings);
-        OAuth2TokenSettings oAuth2TokenSettings = TransformUtil.fromTokenSettings(registeredClient.getTokenSettings());
+        OAuth2TokenSettings oAuth2TokenSettings = ClientTransformUtil.fromTokenSettings(registeredClient.getTokenSettings());
         oAuth2TokenSettings.setClientId(clientId);
         client.setTokenSettings(oAuth2TokenSettings);
         return client;
@@ -133,17 +133,17 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
                 .clientName(oAuth2Client.getClientName())
                 .clientAuthenticationMethods(authenticationMethods ->
                         clientAuthenticationMethods.forEach(authenticationMethod ->
-                                authenticationMethods.add(TransformUtil.resolveClientAuthenticationMethod(authenticationMethod))))
+                                authenticationMethods.add(ClientTransformUtil.resolveClientAuthenticationMethod(authenticationMethod))))
                 .authorizationGrantTypes((grantTypes) ->
                         authorizationGrantTypes.forEach(grantType ->
-                                grantTypes.add(TransformUtil.resolveAuthorizationGrantType(grantType))))
+                                grantTypes.add(ClientTransformUtil.resolveAuthorizationGrantType(grantType))))
                 .redirectUris((uris) -> uris.addAll(redirectUris))
                 .scopes(scopeSet -> scopeSet.addAll(oAuth2Scopes.stream()
                         .map(OAuth2Scope::getScope)
                         .collect(Collectors.toSet())))
                 .scope(OidcScopes.OPENID)
-                .clientSettings(TransformUtil.toClientSettings(oAuth2Client.getClientSettings()))
-                .tokenSettings(TransformUtil.toTokenSettings(oAuth2Client.getTokenSettings()));
+                .clientSettings(ClientTransformUtil.toClientSettings(oAuth2Client.getClientSettings()))
+                .tokenSettings(ClientTransformUtil.toTokenSettings(oAuth2Client.getTokenSettings()));
         return builder.build();
     }
 

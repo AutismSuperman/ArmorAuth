@@ -53,8 +53,7 @@ import java.util.Collections;
  * @param <C>
  * @param <F>
  */
-public abstract class CaptchaAbstractLoginFilterConfigurer
-        <
+public abstract class CaptchaAbstractLoginFilterConfigurer<
         H extends HttpSecurityBuilder<H>,
         C extends CaptchaAbstractLoginFilterConfigurer<H, C, F, A>,
         F extends AbstractAuthenticationProcessingFilter,

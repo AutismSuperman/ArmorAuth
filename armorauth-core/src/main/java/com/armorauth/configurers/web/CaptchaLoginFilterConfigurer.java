@@ -19,7 +19,6 @@ package com.armorauth.configurers.web;
 import com.armorauth.authentication.CaptchaAuthenticationFilter;
 import com.armorauth.authentication.CaptchaAuthenticationProvider;
 import com.armorauth.authentication.CaptchaVerifyService;
-import com.armorauth.detail.CaptchaUserDetailsService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
@@ -29,8 +28,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 
 public class CaptchaLoginFilterConfigurer<H extends HttpSecurityBuilder<H>>
-        extends CaptchaAbstractLoginFilterConfigurer
-            <
+        extends CaptchaAbstractLoginFilterConfigurer<
             H,
             CaptchaLoginFilterConfigurer<H>, CaptchaAuthenticationFilter,
             Oauth2UserLoginFilterSecurityConfigurer<H>
