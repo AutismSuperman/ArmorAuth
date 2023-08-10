@@ -49,6 +49,8 @@ public class AuthorizationServerConfig {
 
     private static final String CUSTOM_CONSENT_PAGE_URI = "/oauth2/consent";
 
+    private static final String CUSTOM_LOGIN_PAGE = "/login";
+
     @Bean("authorizationServerSecurityFilterChain")
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -69,7 +71,7 @@ public class AuthorizationServerConfig {
                 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
                 .apply(authorizationServerConfigurer);
         http.exceptionHandling(exceptions ->
-                exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
+                exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(CUSTOM_LOGIN_PAGE))
         );
         // Enable OpenID Connect 1.0
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)

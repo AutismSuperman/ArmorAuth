@@ -18,6 +18,7 @@ package com.armorauth.configurers;
 import com.armorauth.security.FederatedAuthenticationEntryPoint;
 import com.armorauth.security.FederatedAuthenticationSuccessHandler;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
@@ -46,8 +47,7 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
     private Consumer<OidcUser> oidcUserHandler;
 
 
-    private Consumer<OAuth2LoginConfigurer<HttpSecurity>> oAuth2LoginConfigurerConsumer = oAuth2ProviderConfigurer -> {
-    };
+    private Customizer<OAuth2LoginConfigurer<HttpSecurity>> oauth2LoginCustomizer;
 
 
     FederatedAuthorizationConfigurer(ObjectPostProcessor<Object> objectPostProcessor) {
@@ -74,8 +74,8 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
     }
 
 
-    public FederatedAuthorizationConfigurer oauth2Login(Consumer<OAuth2LoginConfigurer<HttpSecurity>> oAuth2LoginConfigurerConsumer) {
-        this.oAuth2LoginConfigurerConsumer = oAuth2LoginConfigurerConsumer;
+    public FederatedAuthorizationConfigurer oauth2Login(Customizer<OAuth2LoginConfigurer<HttpSecurity>> oauth2LoginCustomizer) {
+        this.oauth2LoginCustomizer = oauth2LoginCustomizer;
         return this;
     }
 
@@ -97,6 +97,7 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
     void init(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.setSharedObject(ClientRegistrationRepository.class, clientRegistrationRepository);
         ApplicationContext applicationContext = httpSecurity.getSharedObject(ApplicationContext.class);
+        // FederatedAuthenticationEntryPoint
         ClientRegistrationRepository clientRegistrationRepository =
                 applicationContext.getBean(ClientRegistrationRepository.class);
         FederatedAuthenticationEntryPoint authenticationEntryPoint =
@@ -104,6 +105,7 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
         if (this.authorizationRequestUri != null) {
             authenticationEntryPoint.setAuthorizationRequestUri(this.authorizationRequestUri);
         }
+        // FederatedAuthenticationSuccessHandler
         FederatedAuthenticationSuccessHandler authenticationSuccessHandler =
                 new FederatedAuthenticationSuccessHandler();
         if (this.oauth2UserHandler != null) {
@@ -112,6 +114,7 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
         if (this.oidcUserHandler != null) {
             authenticationSuccessHandler.setOidcUserHandler(this.oidcUserHandler);
         }
+
         httpSecurity.exceptionHandling(exceptionHandling ->
                         exceptionHandling.authenticationEntryPoint(authenticationEntryPoint)
                 )
@@ -123,7 +126,7 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
 
     @Override
     void configure(HttpSecurity httpSecurity) throws Exception {
-
+        httpSecurity.oauth2Login(oauth2LoginCustomizer);
     }
 
 

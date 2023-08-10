@@ -79,17 +79,18 @@ public class DefaultSecurityConfig {
                         authorizeRequests.anyRequest().authenticated()
                 )
                 .csrf().disable()
+                .userDetailsService(delegateUserDetailsService)
                 .formLogin(formLogin -> formLogin
                         .loginPage(CUSTOM_LOGIN_PAGE).permitAll()
                         .successHandler(federatedAuthenticationSuccessHandler)
                         .failureHandler(authenticationFailureHandler)
                 )
-                .userDetailsService(delegateUserDetailsService)
                 .rememberMe(rememberMe -> rememberMe
                         .rememberMeCookieName("armorauth-remember-me")
                         .userDetailsService(delegateUserDetailsService)
-                )
-                .apply(new Oauth2UserLoginFilterSecurityConfigurer<>())
+                );
+        // OAuth2UserLoginFilterSecurityConfigurer Customizer
+        http.apply(new Oauth2UserLoginFilterSecurityConfigurer<>())
                 .captchaLogin(captchaLogin -> captchaLogin
                         .captchaVerifyService(this::verifyCaptchaMock)
                         .userDetailsService(delegateUserDetailsService)
