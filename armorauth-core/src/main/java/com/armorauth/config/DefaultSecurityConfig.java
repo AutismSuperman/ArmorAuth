@@ -16,8 +16,8 @@
 package com.armorauth.config;
 
 
-import com.armorauth.configurers.IdentityAuthorizationServerConfigurer;
-import com.armorauth.configurers.web.Oauth2UserLoginFilterSecurityConfigurer;
+import com.armorauth.configurers.OAuth2FederatedLoginServerConfigurer;
+import com.armorauth.configurers.web.OAuth2UserLoginFilterSecurityConfigurer;
 import com.armorauth.data.repository.UserInfoRepository;
 import com.armorauth.details.DelegateUserDetailsService;
 import com.armorauth.security.FailureAuthenticationEntryPoint;
@@ -56,17 +56,17 @@ public class DefaultSecurityConfig {
     private static final String CUSTOM_LOGIN_PAGE = "/login";
 
 
+    private static final String REMEMBER_ME_COOKIE_NAME = "armorauth-remember-me";
+
+
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE + 1)
     SecurityFilterChain defaultSecurityFilterChain(
             HttpSecurity http,
             DelegateUserDetailsService delegateUserDetailsService,
             @Qualifier("authorizationServerSecurityFilterChain") SecurityFilterChain securityFilterChain
-    )
-            throws Exception {
+    ) throws Exception {
         DefaultSecurityFilterChain authorizationServerFilterChain = (DefaultSecurityFilterChain) securityFilterChain;
-        IdentityAuthorizationServerConfigurer identityAuthorizationServerConfigurer =
-                new IdentityAuthorizationServerConfigurer();
         AuthenticationEntryPointFailureHandler authenticationFailureHandler =
                 new AuthenticationEntryPointFailureHandler(new FailureAuthenticationEntryPoint());
         FederatedAuthenticationSuccessHandler federatedAuthenticationSuccessHandler =
@@ -80,27 +80,28 @@ public class DefaultSecurityConfig {
                 )
                 .csrf().disable()
                 .userDetailsService(delegateUserDetailsService)
+        ;
+        // OAuth2UserLoginFilterSecurityConfigurer Customizer
+        http.apply(new OAuth2UserLoginFilterSecurityConfigurer())
                 .formLogin(formLogin -> formLogin
                         .loginPage(CUSTOM_LOGIN_PAGE).permitAll()
                         .successHandler(federatedAuthenticationSuccessHandler)
                         .failureHandler(authenticationFailureHandler)
                 )
-                .rememberMe(rememberMe -> rememberMe
-                        .rememberMeCookieName("armorauth-remember-me")
-                        .userDetailsService(delegateUserDetailsService)
-                );
-        // OAuth2UserLoginFilterSecurityConfigurer Customizer
-        http.apply(new Oauth2UserLoginFilterSecurityConfigurer<>())
                 .captchaLogin(captchaLogin -> captchaLogin
                         .captchaVerifyService(this::verifyCaptchaMock)
                         .userDetailsService(delegateUserDetailsService)
                         .successHandler(federatedAuthenticationSuccessHandler)
                         .failureHandler(authenticationFailureHandler)
                 )
-        ;
-        // AuthorizationServerConfigurer Customizer
-        http.apply(identityAuthorizationServerConfigurer);
-        http.getConfigurer(IdentityAuthorizationServerConfigurer.class)
+                .rememberMe(rememberMe -> rememberMe
+                        .rememberMeCookieName(REMEMBER_ME_COOKIE_NAME)
+                        .userDetailsService(delegateUserDetailsService)
+                );
+
+        // OAuth2FederatedLoginServerConfigurer Customizer
+        http.apply(new OAuth2FederatedLoginServerConfigurer());
+        http.getConfigurer(OAuth2FederatedLoginServerConfigurer.class)
                 .federatedAuthorization(federatedAuthorization -> federatedAuthorization
                         .loginPageUrl(CUSTOM_LOGIN_PAGE)
                 )

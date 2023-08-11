@@ -19,6 +19,10 @@ import com.armorauth.data.entity.UserFederatedBinding;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+/**
+ * @author fulin
+ * @since 2022-08-31
+ */
 @Repository
 public interface UserFederatedBindingRepository extends JpaRepository<UserFederatedBinding, String> {
 

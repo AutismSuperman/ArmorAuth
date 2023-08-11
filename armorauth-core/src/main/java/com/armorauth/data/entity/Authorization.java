@@ -27,9 +27,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * <p>
- *
- * </p>
+ * 授权信息
  *
  * @author fulin
  * @since 2022-08-31
@@ -70,7 +68,6 @@ public class Authorization implements Serializable {
     private String accessTokenMetadata;
 
 
-
     @Column(columnDefinition = "TEXT")
     private String oidcIdTokenValue;
     @Column(columnDefinition = "TEXT")
@@ -87,7 +84,6 @@ public class Authorization implements Serializable {
     private Instant refreshTokenExpiresAt;
     @Column(columnDefinition = "TEXT")
     private String refreshTokenMetadata;
-
 
 
     @Override

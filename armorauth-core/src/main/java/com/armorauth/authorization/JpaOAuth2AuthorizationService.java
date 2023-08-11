@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.armorauth.authorization.client.ClientTransformUtil;
 import com.armorauth.data.entity.Authorization;
 import com.armorauth.data.repository.AuthorizationRepository;
-import com.armorauth.jackson.IdServerJackson2Module;
+import com.armorauth.jackson.ArmorAuthJackson2Module;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.security.jackson2.SecurityJackson2Modules;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
@@ -65,7 +65,7 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
         List<Module> securityModules = SecurityJackson2Modules.getModules(classLoader);
         this.objectMapper.registerModules(securityModules);
         //处理 metadata
-        this.objectMapper.registerModules(new OAuth2AuthorizationServerJackson2Module(), new IdServerJackson2Module());
+        this.objectMapper.registerModules(new OAuth2AuthorizationServerJackson2Module(), new ArmorAuthJackson2Module());
     }
 
 

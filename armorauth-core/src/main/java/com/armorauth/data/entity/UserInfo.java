@@ -21,6 +21,11 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 
+/**
+ * 用户信息表
+ * @author fulin
+ * @since 2022-08-31
+ */
 @Data
 @Entity
 @Table(name = "user_info")

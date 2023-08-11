@@ -24,10 +24,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * <p>
- *
- * </p>
- *
+ * 作用域信息
  * @author fulin
  * @since 2022-08-31
  */

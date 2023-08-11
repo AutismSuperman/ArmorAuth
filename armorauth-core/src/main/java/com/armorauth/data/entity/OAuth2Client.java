@@ -29,10 +29,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * <p>
- *
- * </p>
- *
+ * 客户端信息
  * @author fulin
  * @since 2022-08-31
  */

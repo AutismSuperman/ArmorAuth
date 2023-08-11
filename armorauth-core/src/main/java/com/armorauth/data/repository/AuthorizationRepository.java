@@ -24,10 +24,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 /**
- * <p>
- *  Mapper 接口
- * </p>
- *
  * @author fulin
  * @since 2022-08-31
  */

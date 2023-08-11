@@ -23,10 +23,6 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * <p>
- * Mapper 接口
- * </p>
- *
  * @author fulin
  * @since 2022-08-31
  */

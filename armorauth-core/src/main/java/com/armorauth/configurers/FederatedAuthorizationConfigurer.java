@@ -114,7 +114,6 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
         if (this.oidcUserHandler != null) {
             authenticationSuccessHandler.setOidcUserHandler(this.oidcUserHandler);
         }
-
         httpSecurity.exceptionHandling(exceptionHandling ->
                         exceptionHandling.authenticationEntryPoint(authenticationEntryPoint)
                 )
@@ -126,7 +125,9 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
 
     @Override
     void configure(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.oauth2Login(oauth2LoginCustomizer);
+        if (oauth2LoginCustomizer != null) {
+            httpSecurity.oauth2Login(oauth2LoginCustomizer);
+        }
     }
 
 

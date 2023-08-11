@@ -21,6 +21,10 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+/**
+ * @author fulin
+ * @since 2022-08-31
+ */
 @Repository
 public interface UserInfoRepository extends JpaRepository<UserInfo, String> {
 

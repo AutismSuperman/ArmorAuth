@@ -21,10 +21,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 /**
- * <p>
- * Mapper 接口
- * </p>
- *
  * @author fulin
  * @since 2022-08-31
  */

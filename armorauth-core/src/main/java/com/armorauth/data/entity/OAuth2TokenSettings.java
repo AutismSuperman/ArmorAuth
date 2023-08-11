@@ -27,10 +27,7 @@ import java.time.Duration;
 import java.util.Objects;
 
 /**
- * <p>
- *
- * </p>
- *
+ * 客户端Token设置信息
  * @author fulin
  * @since 2022-08-31
  */

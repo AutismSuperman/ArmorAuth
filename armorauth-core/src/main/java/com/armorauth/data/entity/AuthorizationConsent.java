@@ -26,10 +26,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * <p>
- *
- * </p>
- *
+ * 授权确认信息
  * @author fulin
  * @since 2022-08-31
  */

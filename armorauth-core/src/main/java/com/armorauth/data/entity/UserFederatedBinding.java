@@ -24,6 +24,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+/**
+ * 用户联合登录绑定表
+ * @author fulin
+ * @since 2022-08-31
+ */
 @Data
 @Entity
 @Table(name = "user_federated_binding")

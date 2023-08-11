@@ -23,32 +23,47 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 
-public class CaptchaLoginFilterConfigurer<H extends HttpSecurityBuilder<H>>
-        extends CaptchaAbstractLoginFilterConfigurer<
-            H,
-            CaptchaLoginFilterConfigurer<H>, CaptchaAuthenticationFilter,
-            Oauth2UserLoginFilterSecurityConfigurer<H>
-            > {
+public class CaptchaLoginConfigurer<H extends HttpSecurityBuilder<H>>
+        extends CustomizeAbstractAuthenticationFilterConfigurer<H, CaptchaLoginConfigurer<H>, CaptchaAuthenticationFilter> {
 
     private UserDetailsService userDetailsService;
 
     private CaptchaVerifyService captchaVerifyService;
 
-    public CaptchaLoginFilterConfigurer(Oauth2UserLoginFilterSecurityConfigurer<H> securityConfigurer) {
-        super(securityConfigurer, new CaptchaAuthenticationFilter(), "/login/captcha");
+    public CaptchaLoginConfigurer() {
+        super(new CaptchaAuthenticationFilter(), "/login/captcha");
+        accountParameter("account");
+        captchaParameter("captcha");
     }
 
-    public CaptchaLoginFilterConfigurer<H> userDetailsService(UserDetailsService userDetailsService) {
+
+    @Override
+    public CaptchaLoginConfigurer<H> loginPage(String loginPage) {
+        return super.loginPage(loginPage);
+    }
+
+    public CaptchaLoginConfigurer<H> userDetailsService(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
         return this;
     }
 
-    public CaptchaLoginFilterConfigurer<H> captchaVerifyService(CaptchaVerifyService captchaVerifyService) {
+    public CaptchaLoginConfigurer<H> captchaVerifyService(CaptchaVerifyService captchaVerifyService) {
         this.captchaVerifyService = captchaVerifyService;
+        return this;
+    }
+
+    public CaptchaLoginConfigurer<H> accountParameter(String usernameParameter) {
+        getAuthenticationFilter().setAccountParameter(usernameParameter);
+        return this;
+    }
+
+    public CaptchaLoginConfigurer<H> captchaParameter(String passwordParameter) {
+        getAuthenticationFilter().setCaptchaParameter(passwordParameter);
         return this;
     }
 
@@ -60,6 +75,22 @@ public class CaptchaLoginFilterConfigurer<H extends HttpSecurityBuilder<H>>
 
 
     @Override
+    public void init(H http) throws Exception {
+        super.init(http);
+        AuthenticationProvider authenticationProvider = authenticationProvider(http);
+        http.authenticationProvider(postProcess(authenticationProvider));
+    }
+
+    @Override
+    public void configure(H http) throws Exception {
+        super.configure(http);
+    }
+
+    @Override
+    protected void orderFilter(H http, CaptchaAuthenticationFilter filter) {
+        http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
+    }
+
     protected AuthenticationProvider authenticationProvider(H http) {
         ApplicationContext applicationContext = http.getSharedObject(ApplicationContext.class);
         UserDetailsService userDetailsService = this.userDetailsService != null ? this.userDetailsService : getBeanOrNull(applicationContext, UserDetailsService.class);
@@ -67,6 +98,14 @@ public class CaptchaLoginFilterConfigurer<H extends HttpSecurityBuilder<H>>
         CaptchaVerifyService captchaService = this.captchaVerifyService != null ? this.captchaVerifyService : getBeanOrNull(applicationContext, CaptchaVerifyService.class);
         Assert.notNull(captchaService, "captchaService is required");
         return new CaptchaAuthenticationProvider(userDetailsService, captchaService);
+    }
+
+    public final <T> T getBeanOrNull(ApplicationContext applicationContext, Class<T> beanType) {
+        String[] beanNames = applicationContext.getBeanNamesForType(beanType);
+        if (beanNames.length == 1) {
+            return applicationContext.getBean(beanNames[0], beanType);
+        }
+        return null;
     }
 
 }

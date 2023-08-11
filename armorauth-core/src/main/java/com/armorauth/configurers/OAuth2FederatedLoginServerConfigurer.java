@@ -22,15 +22,15 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class IdentityAuthorizationServerConfigurer extends
-        AbstractHttpConfigurer<IdentityAuthorizationServerConfigurer, HttpSecurity> {
+public class OAuth2FederatedLoginServerConfigurer extends
+        AbstractHttpConfigurer<OAuth2FederatedLoginServerConfigurer, HttpSecurity> {
 
 
     private final Map<Class<? extends AbstractIdentityConfigurer>, AbstractIdentityConfigurer>
             configurers = createConfigurers();
 
 
-    public IdentityAuthorizationServerConfigurer federatedAuthorization(
+    public OAuth2FederatedLoginServerConfigurer federatedAuthorization(
             Customizer<FederatedAuthorizationConfigurer> federatedAuthorizationCustomizer) {
         federatedAuthorizationCustomizer.customize(getConfigurer(FederatedAuthorizationConfigurer.class));
         return this;
