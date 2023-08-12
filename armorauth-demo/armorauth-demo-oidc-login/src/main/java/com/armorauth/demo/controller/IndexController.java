@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Slf4j
 @Controller
-public class TestController {
+public class IndexController {
 
 
 

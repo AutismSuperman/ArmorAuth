@@ -25,6 +25,7 @@ import com.armorauth.security.FederatedAuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientPropertiesMapper;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientPropertiesRegistrationAdapter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -50,15 +51,15 @@ import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @EnableWebSecurity(debug = true)
 @Configuration(proxyBeanMethods = false)
 public class DefaultSecurityConfig {
 
-
     private static final String CUSTOM_LOGIN_PAGE = "/login";
-
 
     private static final String REMEMBER_ME_COOKIE_NAME = "armorauth-remember-me";
 
@@ -113,6 +114,8 @@ public class DefaultSecurityConfig {
         return captcha.equals("1234");
     }
 
+    //*********************************************UserDetailsService*********************************************//
+
 
     @Bean
     public DelegateUserDetailsService delegateUserDetailsService(UserInfoRepository userInfoRepository) {
@@ -120,13 +123,15 @@ public class DefaultSecurityConfig {
     }
 
 
+    //*********************************************ClientRegistration*********************************************//
+
     @Bean
     public InMemoryClientRegistrationRepository clientRegistrationRepository(@Autowired(required = false) OAuth2ClientProperties properties) {
         // TODO 数据库扩展
         InMemoryClientRegistrationRepository clientRegistrations;
-        List<ClientRegistration> registrations = new ArrayList<>(
-                OAuth2ClientPropertiesRegistrationAdapter.getClientRegistrations(properties).values());
-        clientRegistrations = new InMemoryClientRegistrationRepository(registrations);
+        OAuth2ClientPropertiesMapper oAuth2ClientPropertiesMapper = new OAuth2ClientPropertiesMapper(properties);
+        Map<String, ClientRegistration> clientRegistrationMap = oAuth2ClientPropertiesMapper.asClientRegistrations();
+        clientRegistrations = new InMemoryClientRegistrationRepository(clientRegistrationMap);
         return clientRegistrations;
     }
 
@@ -134,9 +139,12 @@ public class DefaultSecurityConfig {
     public OAuth2AuthorizedClientService authorizedClientService(
             JdbcTemplate jdbcTemplate,
             ClientRegistrationRepository clientRegistrationRepository) {
-        // 保存认证信息
+        // TODO 保存认证信息 可以扩展
         return new JdbcOAuth2AuthorizedClientService(jdbcTemplate, clientRegistrationRepository);
     }
+
+
+    //*********************************************SessionRegistry*********************************************//
 
     @Bean
     public SessionRegistry sessionRegistry() {
@@ -147,6 +155,8 @@ public class DefaultSecurityConfig {
     public HttpSessionEventPublisher httpSessionEventPublisher() {
         return new HttpSessionEventPublisher();
     }
+
+    //*********************************************WebSecurity*********************************************//
 
     @Bean
     WebSecurityCustomizer webSecurityCustomizer() {

@@ -56,7 +56,7 @@ public class AuthorizationServerConfig {
 
     private static final String CUSTOM_LOGIN_PAGE = "/login";
 
-    @Bean("authorizationServerSecurityFilterChain")
+    @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain authorizationServerSecurityFilterChain(
             HttpSecurity http,
@@ -64,15 +64,21 @@ public class AuthorizationServerConfig {
             AuthorizationServerSettings authorizationServerSettings
 
     ) throws Exception {
+        // ExceptionHandlingConfigurer
+        http.exceptionHandling(exceptions -> exceptions.defaultAuthenticationEntryPointFor(
+                        new LoginUrlAuthenticationEntryPoint(CUSTOM_LOGIN_PAGE),
+                        new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
+                ))
+                .csrf(AbstractHttpConfigurer::disable);
+        // Apply default OAuth2AuthorizationServerConfiguration
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
-        // Device Client
+        // Custom  Device Client
         DeviceClientAuthenticationConverter deviceClientAuthenticationConverter =
                 new DeviceClientAuthenticationConverter(
                         authorizationServerSettings.getDeviceAuthorizationEndpoint());
         DeviceClientAuthenticationProvider deviceClientAuthenticationProvider =
                 new DeviceClientAuthenticationProvider(registeredClientRepository);
-
-
+        // Custom OAuth2AuthorizationServerConfigurer
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .deviceAuthorizationEndpoint(deviceAuthorizationEndpoint ->
                         deviceAuthorizationEndpoint.verificationUri("/activate")
@@ -89,13 +95,7 @@ public class AuthorizationServerConfig {
                         authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI))
                 // Enable OpenID Connect 1.0 Provider support
                 .oidc(Customizer.withDefaults());
-
-        http.exceptionHandling(exceptions -> exceptions.defaultAuthenticationEntryPointFor(
-                        new LoginUrlAuthenticationEntryPoint(CUSTOM_LOGIN_PAGE),
-                        new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
-                ))
-                .csrf(AbstractHttpConfigurer::disable);
-
+        // OAuth2ResourceServerConfigurer
         http.oauth2ResourceServer(oauth2ResourceServer ->
                 oauth2ResourceServer.jwt(Customizer.withDefaults()));
         return http.build();
@@ -105,6 +105,9 @@ public class AuthorizationServerConfig {
     public AuthorizationServerSettings authorizationServerSettings() {
         return AuthorizationServerSettings.builder().build();
     }
+
+
+    //*********************************************Implement core services with JPA*********************************************//
 
     @Bean
     public RegisteredClientRepository registeredClientRepository(OAuth2ClientRepository oAuth2ClientRepository) {
@@ -126,13 +129,14 @@ public class AuthorizationServerConfig {
     }
 
 
+    //*********************************************jose*********************************************//
+
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
         RSAKey rsaKey = Jwks.generateRsa();
         JWKSet jwkSet = new JWKSet(rsaKey);
         return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
     }
-
 
     @Bean
     public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
