@@ -25,6 +25,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
@@ -35,6 +38,7 @@ import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedCli
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
+import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.util.*;
 
@@ -48,13 +52,29 @@ public class SecurityConfiguration {
 
 
     @Bean
-    SecurityFilterChain customSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeRequests(authorizeRequests -> authorizeRequests
-                        .mvcMatchers("/jwks").permitAll()
+    SecurityFilterChain customSecurityFilterChain(HttpSecurity http, UserDetailsService userDetailsService) throws Exception {
+        http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                        .requestMatchers("/jwks").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
-        ;
+                .userDetailsService(userDetailsService);
         return http.build();
+    }
+
+
+    /**
+     * 这里虚拟一个用户 root
+     *
+     * @return UserDetailsService
+     */
+    @Bean
+    UserDetailsService userDetailsService() {
+        return username -> User.builder()
+                .username("root")
+                .password("root")
+                .passwordEncoder(PasswordEncoderFactories.createDelegatingPasswordEncoder()::encode)
+                .roles("user")
+                .build();
     }
 
     @Bean
@@ -65,9 +85,9 @@ public class SecurityConfiguration {
     ) {
         OAuth2AuthorizedClientProvider authorizedClientProvider =
                 OAuth2AuthorizedClientProviderBuilder.builder()
-                        .clientCredentials(clientCredentials -> {
-                            clientCredentials.accessTokenResponseClient(accessTokenResponseClient);
-                        })
+                        .clientCredentials(clientCredentials -> clientCredentials
+                                .accessTokenResponseClient(accessTokenResponseClient)
+                        )
                         .refreshToken()
                         .build();
         DefaultOAuth2AuthorizedClientManager authorizedClientManager =

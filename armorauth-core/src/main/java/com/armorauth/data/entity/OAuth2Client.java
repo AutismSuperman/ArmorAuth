@@ -22,7 +22,9 @@ import lombok.ToString;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
@@ -30,6 +32,7 @@ import java.util.Set;
 
 /**
  * 客户端信息
+ *
  * @author fulin
  * @since 2022-08-31
  */
@@ -38,6 +41,7 @@ import java.util.Set;
 @Table(name = "oauth2_client")
 public class OAuth2Client implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
     /**
      * id
@@ -71,6 +75,10 @@ public class OAuth2Client implements Serializable {
      * 回调地址
      */
     private String redirectUris;
+    /**
+     * 退出后重定向地址
+     */
+    private String postLogoutRedirectUris;
     /**
      * 作用域
      */

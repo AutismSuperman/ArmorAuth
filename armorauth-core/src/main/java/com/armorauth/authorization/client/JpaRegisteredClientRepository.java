@@ -92,6 +92,7 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
         client.setClientAuthenticationMethods(StringUtils.collectionToCommaDelimitedString(clientAuthenticationMethods));
         client.setAuthorizationGrantTypes(StringUtils.collectionToCommaDelimitedString(authorizationGrantTypes));
         client.setRedirectUris(StringUtils.collectionToCommaDelimitedString(registeredClient.getRedirectUris()));
+        client.setPostLogoutRedirectUris(StringUtils.collectionToCommaDelimitedString(registeredClient.getPostLogoutRedirectUris()));
         client.setScopes(registeredClient.getScopes()
                 .stream()
                 .filter(scope -> !OidcScopes.OPENID.equals(scope))
@@ -124,6 +125,8 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
                 oAuth2Client.getAuthorizationGrantTypes());
         Set<String> redirectUris = StringUtils.commaDelimitedListToSet(
                 oAuth2Client.getRedirectUris());
+        Set<String> postLogoutRedirectUris = StringUtils.commaDelimitedListToSet(
+                oAuth2Client.getPostLogoutRedirectUris());
         Set<OAuth2Scope> oAuth2Scopes = oAuth2Client.getScopes() == null ? Collections.emptySet() : oAuth2Client.getScopes();
         RegisteredClient.Builder builder = RegisteredClient.withId(Optional.ofNullable(oAuth2Client.getId()).orElse(UUID.randomUUID().toString()))
                 .clientId(Optional.ofNullable(oAuth2Client.getClientId()).orElse(UUID.randomUUID().toString()))
@@ -138,6 +141,7 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
                         authorizationGrantTypes.forEach(grantType ->
                                 grantTypes.add(ClientTransformUtil.resolveAuthorizationGrantType(grantType))))
                 .redirectUris((uris) -> uris.addAll(redirectUris))
+                .postLogoutRedirectUris((uris) -> uris.addAll(postLogoutRedirectUris))
                 .scopes(scopeSet -> scopeSet.addAll(oAuth2Scopes.stream()
                         .map(OAuth2Scope::getScope)
                         .collect(Collectors.toSet())))

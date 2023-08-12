@@ -15,6 +15,7 @@
  */
 package com.armorauth.config;
 
+import com.armorauth.authentication.DeviceClientAuthenticationProvider;
 import com.armorauth.authorization.JpaOAuth2AuthorizationConsentService;
 import com.armorauth.authorization.JpaOAuth2AuthorizationService;
 import com.armorauth.authorization.client.JpaRegisteredClientRepository;
@@ -22,6 +23,7 @@ import com.armorauth.data.repository.AuthorizationConsentRepository;
 import com.armorauth.data.repository.AuthorizationRepository;
 import com.armorauth.data.repository.OAuth2ClientRepository;
 import com.armorauth.jose.Jwks;
+import com.armorauth.web.authentication.DeviceClientAuthenticationConverter;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
@@ -30,8 +32,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
@@ -42,6 +46,7 @@ import org.springframework.security.oauth2.server.authorization.config.annotatio
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 @Configuration(proxyBeanMethods = false)
@@ -53,29 +58,46 @@ public class AuthorizationServerConfig {
 
     @Bean("authorizationServerSecurityFilterChain")
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
-        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
-                new OAuth2AuthorizationServerConfigurer();
-        RequestMatcher endpointsMatcher = authorizationServerConfigurer
-                .getEndpointsMatcher();
-        //consent page
-        authorizationServerConfigurer
-                .authorizationEndpoint(authorizationEndpointConfigurer ->
-                        authorizationEndpointConfigurer.consentPage(CUSTOM_CONSENT_PAGE_URI)
-                );
-        http.requestMatcher(endpointsMatcher)
-                .authorizeRequests(authorizeRequests ->
-                        authorizeRequests.anyRequest().authenticated()
-                )
-                .csrf().disable()
-                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
-                .apply(authorizationServerConfigurer);
-        http.exceptionHandling(exceptions ->
-                exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(CUSTOM_LOGIN_PAGE))
-        );
-        // Enable OpenID Connect 1.0
+    public SecurityFilterChain authorizationServerSecurityFilterChain(
+            HttpSecurity http,
+            RegisteredClientRepository registeredClientRepository,
+            AuthorizationServerSettings authorizationServerSettings
+
+    ) throws Exception {
+        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+        // Device Client
+        DeviceClientAuthenticationConverter deviceClientAuthenticationConverter =
+                new DeviceClientAuthenticationConverter(
+                        authorizationServerSettings.getDeviceAuthorizationEndpoint());
+        DeviceClientAuthenticationProvider deviceClientAuthenticationProvider =
+                new DeviceClientAuthenticationProvider(registeredClientRepository);
+
+
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+                .deviceAuthorizationEndpoint(deviceAuthorizationEndpoint ->
+                        deviceAuthorizationEndpoint.verificationUri("/activate")
+                )
+                .deviceVerificationEndpoint(deviceVerificationEndpoint ->
+                        deviceVerificationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)
+                )
+                .clientAuthentication(clientAuthentication ->
+                        clientAuthentication
+                                .authenticationConverter(deviceClientAuthenticationConverter)
+                                .authenticationProvider(deviceClientAuthenticationProvider)
+                )
+                .authorizationEndpoint(authorizationEndpoint ->
+                        authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI))
+                // Enable OpenID Connect 1.0 Provider support
                 .oidc(Customizer.withDefaults());
+
+        http.exceptionHandling(exceptions -> exceptions.defaultAuthenticationEntryPointFor(
+                        new LoginUrlAuthenticationEntryPoint(CUSTOM_LOGIN_PAGE),
+                        new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
+                ))
+                .csrf(AbstractHttpConfigurer::disable);
+
+        http.oauth2ResourceServer(oauth2ResourceServer ->
+                oauth2ResourceServer.jwt(Customizer.withDefaults()));
         return http.build();
     }
 

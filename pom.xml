@@ -24,12 +24,12 @@
         <revision>0.0.1</revision>
         <!-- Tool -->
         <mapstruct.version>1.4.2.Final</mapstruct.version>
-        <spring-boot.version>2.7.13</spring-boot.version>
-        <oauth2-authorization-server.version>0.4.3</oauth2-authorization-server.version>
+        <spring-boot.version>3.1.0</spring-boot.version>
+        <oauth2-authorization-server.version>1.1.1</oauth2-authorization-server.version>
         <!-- Build -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.source.version>11</java.source.version>
-        <java.target.version>11</java.target.version>
+        <java.source.version>17</java.source.version>
+        <java.target.version>17</java.target.version>
         <java.encoding>UTF-8</java.encoding>
         <maven.compiler.version>3.8.0</maven.compiler.version>
         <maven.surefire.version>2.22.1</maven.surefire.version>

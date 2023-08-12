@@ -15,6 +15,7 @@
  */
 package com.armorauth.demo.jose;
 
+
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.math.BigInteger;

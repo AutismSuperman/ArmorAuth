@@ -19,18 +19,23 @@ package com.armorauth.data.entity;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
+import java.io.Serial;
+import java.io.Serializable;
 
 /**
  * 用户信息表
+ *
  * @author fulin
  * @since 2022-08-31
  */
 @Data
 @Entity
 @Table(name = "user_info")
-public class UserInfo {
+public class UserInfo implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
     /**
      * id

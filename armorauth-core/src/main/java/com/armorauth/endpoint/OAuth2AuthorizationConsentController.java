@@ -33,7 +33,7 @@ import java.security.Principal;
 import java.util.*;
 
 @Controller
-public class Oauth2AuthorizationConsentController {
+public class OAuth2AuthorizationConsentController {
 
     private final RegisteredClientRepository registeredClientRepository;
 
@@ -43,7 +43,7 @@ public class Oauth2AuthorizationConsentController {
 
     private final AuthorizationServerSettings authorizationServerSettings;
 
-    public Oauth2AuthorizationConsentController(RegisteredClientRepository registeredClientRepository,
+    public OAuth2AuthorizationConsentController(RegisteredClientRepository registeredClientRepository,
                                                 OAuth2AuthorizationConsentService authorizationConsentService,
                                                 OAuth2ScopeRepository oAuth2ScopeRepository,
                                                 AuthorizationServerSettings authorizationServerSettings) {

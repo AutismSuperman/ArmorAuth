@@ -19,7 +19,9 @@ package com.armorauth.data.entity;
 import lombok.Data;
 import org.hibernate.Hibernate;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -33,6 +35,9 @@ import java.util.Objects;
 @Table(name = "oauth2_scope")
 @IdClass(OAuth2Scope.OAuth2ScopeId.class)
 public class OAuth2Scope implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     @Id
     @Column(name = "client_id", insertable = false, updatable = false)

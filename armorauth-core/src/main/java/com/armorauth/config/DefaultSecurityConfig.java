@@ -34,6 +34,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.oauth2.client.JdbcOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -42,6 +45,7 @@ import org.springframework.security.oauth2.client.registration.InMemoryClientReg
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationEntryPointFailureHandler;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
@@ -66,21 +70,15 @@ public class DefaultSecurityConfig {
             DelegateUserDetailsService delegateUserDetailsService,
             @Qualifier("authorizationServerSecurityFilterChain") SecurityFilterChain securityFilterChain
     ) throws Exception {
-        DefaultSecurityFilterChain authorizationServerFilterChain = (DefaultSecurityFilterChain) securityFilterChain;
         AuthenticationEntryPointFailureHandler authenticationFailureHandler =
                 new AuthenticationEntryPointFailureHandler(new FailureAuthenticationEntryPoint());
         FederatedAuthenticationSuccessHandler federatedAuthenticationSuccessHandler =
                 new FederatedAuthenticationSuccessHandler();
-        http.requestMatcher(
-                        new AndRequestMatcher(
-                                new NegatedRequestMatcher(authorizationServerFilterChain.getRequestMatcher())
-                        ))
-                .authorizeRequests(authorizeRequests ->
-                        authorizeRequests.anyRequest().authenticated()
+        http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                        .anyRequest().authenticated()
                 )
-                .csrf().disable()
-                .userDetailsService(delegateUserDetailsService)
-        ;
+                .csrf(AbstractHttpConfigurer::disable)
+                .userDetailsService(delegateUserDetailsService);
         // OAuth2UserLoginFilterSecurityConfigurer Customizer
         http.apply(new OAuth2UserLoginFilterSecurityConfigurer())
                 .formLogin(formLogin -> formLogin
@@ -106,7 +104,9 @@ public class DefaultSecurityConfig {
                         .loginPageUrl(CUSTOM_LOGIN_PAGE)
                 )
         ;
-        return http.build();
+        DefaultSecurityFilterChain build = http.build();
+        System.out.println(http);
+        return build;
     }
 
     private boolean verifyCaptchaMock(String account, String captcha) {
@@ -138,18 +138,27 @@ public class DefaultSecurityConfig {
         return new JdbcOAuth2AuthorizedClientService(jdbcTemplate, clientRegistrationRepository);
     }
 
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
 
     @Bean
     WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring()
-                .antMatchers("/error")
-                .antMatchers("/favicon.ico")
-                .antMatchers("/static/**")
-                .antMatchers("/resources/**")
-                .antMatchers("/webjars/**")
-                .antMatchers("/h2-console/**")
-                .antMatchers("/actuator/health")
-                .antMatchers("/system/monitor")
+                .requestMatchers("/error")
+                .requestMatchers("/favicon.ico")
+                .requestMatchers("/static/**")
+                .requestMatchers("/resources/**")
+                .requestMatchers("/webjars/**")
+                .requestMatchers("/h2-console/**")
+                .requestMatchers("/actuator/health")
+                .requestMatchers("/system/monitor")
                 ;
     }
 

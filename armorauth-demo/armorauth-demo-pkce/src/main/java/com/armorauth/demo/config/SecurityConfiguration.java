@@ -43,7 +43,7 @@ public class SecurityConfiguration {
             HttpSecurity http,
             OAuth2AuthorizationRequestResolver pkceResolver
     ) throws Exception {
-        http.authorizeRequests(authorizeRequests -> authorizeRequests
+        http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2Login -> oauth2Login
@@ -70,14 +70,14 @@ public class SecurityConfiguration {
     @Bean
     WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring()
-                .antMatchers("/error")
-                .antMatchers("/favicon.ico")
-                .antMatchers("/static/**")
-                .antMatchers("/resources/**")
-                .antMatchers("/webjars/**")
-                .antMatchers("/h2-console/**")
-                .antMatchers("/actuator/health")
-                .antMatchers("/system/monitor")
+                .requestMatchers("/error")
+                .requestMatchers("/favicon.ico")
+                .requestMatchers("/static/**")
+                .requestMatchers("/resources/**")
+                .requestMatchers("/webjars/**")
+                .requestMatchers("/h2-console/**")
+                .requestMatchers("/actuator/health")
+                .requestMatchers("/system/monitor")
                 ;
     }
 

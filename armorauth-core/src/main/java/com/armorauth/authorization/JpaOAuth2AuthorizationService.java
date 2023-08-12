@@ -24,11 +24,10 @@ import com.armorauth.data.repository.AuthorizationRepository;
 import com.armorauth.jackson.ArmorAuthJackson2Module;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.security.jackson2.SecurityJackson2Modules;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.OAuth2RefreshToken;
-import org.springframework.security.oauth2.core.OAuth2Token;
+import org.springframework.security.oauth2.core.*;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationCode;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
@@ -93,7 +92,7 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
         Assert.hasText(token, "token cannot be empty");
         Optional<Authorization> result;
         if (tokenType == null) {
-            result = authorizationRepository.findByStateOrAuthorizationCodeValueOrAccessTokenValueOrRefreshTokenValue(token);
+            result = authorizationRepository.findByStateOrAuthorizationCodeValueOrAccessTokenValueOrRefreshTokenValueOrOidcIdTokenValueOrUserCodeValueOrDeviceCodeValue(token);
         } else if (OAuth2ParameterNames.STATE.equals(tokenType.getValue())) {
             result = authorizationRepository.findByState(token);
         } else if (OAuth2ParameterNames.CODE.equals(tokenType.getValue())) {
@@ -102,7 +101,13 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
             result = authorizationRepository.findByAccessTokenValue(token);
         } else if (OAuth2ParameterNames.REFRESH_TOKEN.equals(tokenType.getValue())) {
             result = authorizationRepository.findByRefreshTokenValue(token);
-        } else {
+        }else if (OidcParameterNames.ID_TOKEN.equals(tokenType.getValue())) {
+            result = this.authorizationRepository.findByOidcIdTokenValue(token);
+        } else if (OAuth2ParameterNames.USER_CODE.equals(tokenType.getValue())) {
+            result = this.authorizationRepository.findByUserCodeValue(token);
+        } else if (OAuth2ParameterNames.DEVICE_CODE.equals(tokenType.getValue())) {
+            result = this.authorizationRepository.findByDeviceCodeValue(token);
+        }  else {
             result = Optional.empty();
         }
         return result.map(this::toObject).orElse(null);
@@ -172,6 +177,22 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
                     authorization.getOidcIdTokenExpiresAt(),
                     parseMap(authorization.getOidcIdTokenClaims()));
             builder.token(idToken, metadata -> metadata.putAll(parseMap(authorization.getOidcIdTokenMetadata())));
+        }
+        // UserCode
+        if (authorization.getUserCodeValue() != null) {
+            OAuth2UserCode userCode = new OAuth2UserCode(
+                    authorization.getUserCodeValue(),
+                    authorization.getUserCodeIssuedAt(),
+                    authorization.getUserCodeExpiresAt());
+            builder.token(userCode, metadata -> metadata.putAll(parseMap(authorization.getUserCodeMetadata())));
+        }
+        // DeviceCode
+        if (authorization.getDeviceCodeValue() != null) {
+            OAuth2DeviceCode deviceCode = new OAuth2DeviceCode(
+                    authorization.getUserCodeValue(),
+                    authorization.getUserCodeIssuedAt(),
+                    authorization.getUserCodeExpiresAt());
+            builder.token(deviceCode, metadata -> metadata.putAll(parseMap(authorization.getDeviceCodeMetadata())));
         }
         return builder.build();
     }
@@ -245,6 +266,26 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
         if (oidcIdToken != null) {
             authorization.setOidcIdTokenClaims(writeMap(oidcIdToken.getClaims()));
         }
+        // UserCode
+        OAuth2Authorization.Token<OAuth2UserCode> userCode =
+                oAuth2Authorization.getToken(OAuth2UserCode.class);
+        setTokenValues(
+                userCode,
+                authorization::setUserCodeValue,
+                authorization::setUserCodeIssuedAt,
+                authorization::setUserCodeExpiresAt,
+                authorization::setUserCodeMetadata
+        );
+        // DeviceCode
+        OAuth2Authorization.Token<OAuth2DeviceCode> deviceCode =
+                oAuth2Authorization.getToken(OAuth2DeviceCode.class);
+        setTokenValues(
+                deviceCode,
+                authorization::setDeviceCodeValue,
+                authorization::setDeviceCodeIssuedAt,
+                authorization::setDeviceCodeExpiresAt,
+                authorization::setDeviceCodeMetadata
+        );
         return authorization;
     }
 

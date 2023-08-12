@@ -19,20 +19,26 @@ package com.armorauth.data.entity;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+import java.io.Serial;
+import java.io.Serializable;
 
 /**
  * 用户联合登录绑定表
+ *
  * @author fulin
  * @since 2022-08-31
  */
 @Data
 @Entity
 @Table(name = "user_federated_binding")
-public class UserFederatedBinding {
+public class UserFederatedBinding implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * id

@@ -19,9 +19,11 @@ package com.armorauth.data.entity;
 import lombok.Data;
 import org.hibernate.Hibernate;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
@@ -36,6 +38,7 @@ import java.util.Objects;
 @Entity
 public class Authorization implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -84,6 +87,21 @@ public class Authorization implements Serializable {
     private Instant refreshTokenExpiresAt;
     @Column(columnDefinition = "TEXT")
     private String refreshTokenMetadata;
+
+
+    @Column(columnDefinition = "TEXT")
+    private String userCodeValue;
+    private Instant userCodeIssuedAt;
+    private Instant userCodeExpiresAt;
+    @Column(columnDefinition = "TEXT")
+    private String userCodeMetadata;
+
+    @Column(columnDefinition = "TEXT")
+    private String deviceCodeValue;
+    private Instant deviceCodeIssuedAt;
+    private Instant deviceCodeExpiresAt;
+    @Column(columnDefinition = "TEXT")
+    private String deviceCodeMetadata;
 
 
     @Override

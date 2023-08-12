@@ -18,7 +18,7 @@ package com.armorauth.configurers.web;
 import java.util.Arrays;
 import java.util.Collections;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
@@ -37,7 +37,9 @@ import org.springframework.security.web.authentication.SavedRequestAwareAuthenti
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.security.web.context.DelegatingSecurityContextRepository;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
@@ -302,8 +304,10 @@ public abstract class CustomizeAbstractAuthenticationFilterConfigurer<B extends 
         if (rememberMeServices != null) {
             this.authFilter.setRememberMeServices(rememberMeServices);
         }
-        //TODO DelegatingSecurityContextRepository
-        this.authFilter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
+        this.authFilter.setSecurityContextRepository(new DelegatingSecurityContextRepository(
+                new HttpSessionSecurityContextRepository(),
+                new RequestAttributeSecurityContextRepository()
+        ));
         F filter = postProcess(this.authFilter);
         orderFilter(http, filter);
     }
