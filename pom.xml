@@ -53,7 +53,7 @@
         <module>armorauth-core</module>
         <module>armorauth-admin</module>
         <module>armorauth-spring-boot</module>
-        <module>armorauth-demo</module>
+        <module>armorauth-samples</module>
         <module>armorauth-server</module>
     </modules>
 
