@@ -68,9 +68,7 @@ public class DefaultSecurityConfig {
     @Order(Ordered.HIGHEST_PRECEDENCE + 1)
     SecurityFilterChain defaultSecurityFilterChain(
             HttpSecurity http,
-            DelegateUserDetailsService delegateUserDetailsService,
-            @Qualifier("authorizationServerSecurityFilterChain") SecurityFilterChain securityFilterChain
-    ) throws Exception {
+            DelegateUserDetailsService delegateUserDetailsService) throws Exception {
         AuthenticationEntryPointFailureHandler authenticationFailureHandler =
                 new AuthenticationEntryPointFailureHandler(new FailureAuthenticationEntryPoint());
         FederatedAuthenticationSuccessHandler federatedAuthenticationSuccessHandler =
