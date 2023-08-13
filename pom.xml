@@ -10,7 +10,7 @@
 
     <name>${project.artifactId}</name>
     <description>The parent project of armorauth</description>
-    <url>https://fulinlin.com</url>
+    <url>https://www.armorauth.com</url>
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -50,6 +50,7 @@
     </properties>
 
     <modules>
+        <module>armorauth</module>
         <module>armorauth-core</module>
         <module>armorauth-admin</module>
         <module>armorauth-spring-boot</module>
