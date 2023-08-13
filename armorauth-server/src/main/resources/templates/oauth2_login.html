@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <#include "common/include.ftl">
-    <@common_header "ArmorAuth OAuth2登录"/>
+
+<head th:replace="common/include :: common_header(~{::title},~{::link},~{::style})">
+    <title>ArmorAuth OAuth2登录</title>
     <link rel="stylesheet" href="/static/oauth/css/styles.css">
     <style>
         .col-1 {
@@ -26,12 +26,12 @@
                                placeholder="请输入用户名">
                     </div>
                     <div class=" mb-3">
-                        <input type="password" class="form-control" value="123456"  id="password" name="password"
+                        <input type="password" class="form-control" value="123456" id="password" name="password"
                                placeholder="请输入密码">
                     </div>
                     <div class="mb-2 form-check">
                         <div class="field">
-                            <input class="form-check-input" type="checkbox"  value="true" id="up-remember-me">
+                            <input class="form-check-input" type="checkbox" value="true" id="up-remember-me">
                             <label class="form-check-label" for="flexCheckDefault">记住我</label>
                         </div>
                         <div class="field" style="text-align: right">
@@ -56,7 +56,8 @@
                     </div>
                     <div class="col-6">
                         <div class="d-grid">
-                            <button type="button" id="send_code" class="btn btn-outline-primary mb-3 ">发送验证码</button>
+                            <button type="button" id="send_code" class="btn btn-outline-primary mb-3 ">发送验证码
+                            </button>
                         </div>
                     </div>
                     <div class="mb-2 form-check">
@@ -125,8 +126,9 @@
 </div>
 
 <!-- text/javascript -->
-<@common_javascript/>
-<script src="/static/oauth/js/iconfont.js"></script>
-<script src="/static/oauth/js/oauth2_login.js"></script>
+<div th:replace="common/include::common_js(~{::script})">
+    <script src="/static/oauth/js/iconfont.js"></script>
+    <script src="/static/oauth/js/oauth2_login.js"></script>
+</div>
 </body>
 </html>

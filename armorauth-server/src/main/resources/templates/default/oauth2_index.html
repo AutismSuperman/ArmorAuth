@@ -1,20 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title></title>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5" lang="en">
+
+
+<head th:replace="common/include :: common_header(~{::title},~{::link},~{::style})">
+    <title>ArmorAuth Activation Code</title>
     <style>
         h1 {
             margin-top: 200px;
-            color: #5FB878;
         }
     </style>
 </head>
 <body>
 
 <div>
-    <h1><b>你好！${principal} ，此页面为中间页</b></h1>
-    <h1><b>点击<a href="/logout">退出</a></b></h1>
+    <div th:fragment="logout" sec:authorize="isAuthenticated()">
+        <div>
+            <h1 style="font-weight:bold">你好！ <span sec:authentication="name"></span> </h1>
+            <span style="font-weight:bold;font-size: large">此页面为中间页</span>
+        </div>
+        <div>
+            <form action="#" th:action="@{/logout}" method="post">
+                <button type="submit" class="btn btn-danger">点击退出</button>
+            </form>
+        </div>
+    </div>
 </div>
 
 </body>

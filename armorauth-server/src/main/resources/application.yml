@@ -8,18 +8,15 @@ spring:
     active: mysql
   application:
     name: sas-server
-  freemarker:
-    request-context-attribute: request
-    suffix: .html
-    content-type: text/html
-    enabled: true
-    cache: false
-    template-loader-path: classpath:/templates/
-    charset: UTF-8
   jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect
     show-sql: true
     generate-ddl: true
     open-in-view: false
     database: mysql
     hibernate:
       ddl-auto: update
+  thymeleaf:
+    suffix: .html

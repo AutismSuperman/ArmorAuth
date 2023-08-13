@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
 
-<head>
-    <#include "common/include.ftl">
-    <@common_header "ArmorAuth OAuth2授权"/>
+
+<head th:replace="common/include :: common_header(~{::title},~{::link},~{::style})">
+    <title>ArmorAuth OAuth2授权</title>
     <link rel="stylesheet" href="/static/oauth/css/styles.css">
     <style>
         .btn-border {
@@ -12,33 +12,31 @@
     </style>
 </head>
 
+
 <body>
 <div style="display: table-cell; vertical-align: middle;width: 100vw;height: 100vh;">
     <div class="container col-11 col-md-6" id="form-container">
         <div class="row align-items-center gx-5">
             <div class="col-md-6 order-md-2">
-                <h2>${clientName}此第三方应用想要访问您的账号${principalName}请求获得以下权限:</h2>
-                <form class="row g-3" id="consent_form" name="consent_form" action="${authorizationEndpoint}" method="post" >
-                    <input type="hidden" name="client_id" value="${clientId}">
-                    <input type="hidden" name="state" value="${state}">
+                <h2 th:text="${clientName}+'此第三方应用想要访问您的账号'+${principalName}+'请求获得以下权限:'"></h2>
+                <form class="row g-3" id="consent_form" name="consent_form" th:action="${authorizationEndpoint}"
+                      method="post">
+                    <input type="hidden" name="client_id" th:value="${clientId}">
+                    <input type="hidden" name="state" th:value="${state}">
                     <div class="mb-3">
-                        <#list scopes as scope >
-                            <div class="form-check mb-2">
-                                <input type="checkbox" class="form-check-input" name="scope"
-                                       checked value="${scope.scope}" id="${scope.scope}">
+                        <div th:each="scope,scopeStat:${scopes}" class="form-check mb-2">
+                            <input type="checkbox" class="form-check-input" name="scope"
+                                   checked th:value="${scope.scope}" th:id="${scope.scope}">
+                            <label for="newsletter" class="form-check-label" th:text="${scope.description}"></label>
+                        </div>
+                        <th:block th:if="${previouslyApprovedScopes != null}">
+                            <p>您已对上述应用授予以下权限：</p>
+                            <div th:each="scope,scopeStat:${previouslyApprovedScopes}" class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input"
+                                       checked disabled th:id="${scope.scope}">
                                 <label for="newsletter" class="form-check-label">${scope.description}</label>
                             </div>
-                        </#list>
-                        <#if previouslyApprovedScopes??>
-                            <p>您已对上述应用授予以下权限：</p>
-                            <#list scopes as scope >
-                                <div class="form-check mb-2">
-                                    <input type="checkbox" class="form-check-input"
-                                           checked disabled id="${scope.scope}">
-                                    <label for="newsletter" class="form-check-label">${scope.description}</label>
-                                </div>
-                            </#list>
-                        </#if>
+                        </th:block>
                     </div>
                     <div class="d-grid gap-2">
                         <input type="submit" class="btn btn-primary" value="同意授权">
