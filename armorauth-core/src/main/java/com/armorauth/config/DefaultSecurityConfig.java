@@ -97,8 +97,7 @@ public class DefaultSecurityConfig {
                 );
 
         // OAuth2FederatedLoginServerConfigurer Customizer
-        http.apply(new OAuth2FederatedLoginServerConfigurer());
-        http.getConfigurer(OAuth2FederatedLoginServerConfigurer.class)
+        http.apply(new OAuth2FederatedLoginServerConfigurer())
                 .federatedAuthorization(federatedAuthorization -> federatedAuthorization
                         .loginPageUrl(CUSTOM_LOGIN_PAGE)
                 )

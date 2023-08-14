@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.armorauth</groupId>
         <artifactId>armorauth-parent</artifactId>
-        <version>0.0.1</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>armorauth</artifactId>
