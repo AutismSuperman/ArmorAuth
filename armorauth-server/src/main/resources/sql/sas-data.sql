@@ -27,10 +27,11 @@ INSERT INTO `oauth2_client_settings` VALUES ('8a349006-b8e3-427b-8814-bc4b32e893
 INSERT INTO `oauth2_client_settings` VALUES ('b3d64549-0c6b-4306-9170-886dd8652704', 'http://armorauth-demo:8084/jwks', b'1', b'0', 'RS256');
 INSERT INTO `oauth2_client_settings` VALUES ('4569bca1-bca7-49eb-a03c-7898e9197d5f', '', b'1', b'1', '');
 
-INSERT INTO `oauth2_token_settings` VALUES ('f62ac251-36d7-42c8-9f75-c31c90111bd4', 300000000000, 'RS256', 3600000000000, b'1', 'self-contained');
-INSERT INTO `oauth2_token_settings` VALUES ('8a349006-b8e3-427b-8814-bc4b32e8930a', 300000000000, 'RS256', 3600000000000, b'1', 'self-contained');
-INSERT INTO `oauth2_token_settings` VALUES ('b3d64549-0c6b-4306-9170-886dd8652704', 300000000000, 'RS256', 3600000000000, b'1', 'self-contained');
-INSERT INTO `oauth2_token_settings` VALUES ('4569bca1-bca7-49eb-a03c-7898e9197d5f', 300000000000, 'RS256', 3600000000000, b'1', 'self-contained');
+
+INSERT INTO `oauth2_token_settings` VALUES ('f62ac251-36d7-42c8-9f75-c31c90111bd4', 300000000000,3600000000000,300000000000,300000000000,'RS256',  b'1', 'self-contained');
+INSERT INTO `oauth2_token_settings` VALUES ('8a349006-b8e3-427b-8814-bc4b32e8930a', 300000000000,3600000000000,300000000000,300000000000, 'RS256',  b'1', 'self-contained');
+INSERT INTO `oauth2_token_settings` VALUES ('b3d64549-0c6b-4306-9170-886dd8652704', 300000000000,3600000000000,300000000000,300000000000, 'RS256',  b'1', 'self-contained');
+INSERT INTO `oauth2_token_settings` VALUES ('4569bca1-bca7-49eb-a03c-7898e9197d5f', 300000000000,3600000000000,300000000000,300000000000, 'RS256',  b'1', 'self-contained');
 
 
 INSERT INTO `user_info` VALUES ('0d7c83d900a441c988926af0289de0b2', 'admin', '{bcrypt}$2a$10$9XQTKexOScPtqKGHlKYCrO9IVTXrwE2uxl.aRoVhHrNDoyVVjXHDm', '13103777777', '付林', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0);
