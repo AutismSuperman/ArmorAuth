@@ -24,6 +24,7 @@
         <revision>0.0.1</revision>
         <!-- Tool -->
         <nimbus-jose-jwt.version>9.31</nimbus-jose-jwt.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
         <spring-boot.version>3.1.0</spring-boot.version>
         <oauth2-authorization-server.version>1.1.1</oauth2-authorization-server.version>
@@ -66,6 +67,11 @@
                 <version>${nimbus-jose-jwt.version}</version>
             </dependency>
             <!-- tools -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${commons-collections4.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct</artifactId>

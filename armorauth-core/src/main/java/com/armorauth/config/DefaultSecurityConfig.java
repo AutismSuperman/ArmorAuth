@@ -20,10 +20,13 @@ import com.armorauth.configurers.OAuth2FederatedLoginServerConfigurer;
 import com.armorauth.configurers.web.OAuth2UserLoginFilterSecurityConfigurer;
 import com.armorauth.data.repository.UserInfoRepository;
 import com.armorauth.details.DelegateUserDetailsService;
+import com.armorauth.federat.ExtendedOAuth2ClientPropertiesMapper;
 import com.armorauth.security.FailureAuthenticationEntryPoint;
 import com.armorauth.security.FederatedAuthenticationSuccessHandler;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientPropertiesMapper;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientPropertiesRegistrationAdapter;
@@ -50,10 +53,7 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @EnableWebSecurity(debug = true)
 @Configuration(proxyBeanMethods = false)
@@ -123,12 +123,11 @@ public class DefaultSecurityConfig {
     //*********************************************ClientRegistration*********************************************//
 
     @Bean
-    public InMemoryClientRegistrationRepository clientRegistrationRepository(@Autowired(required = false) OAuth2ClientProperties properties) {
-        // TODO 数据库扩展
+    public ClientRegistrationRepository clientRegistrationRepository(@Autowired(required = false) OAuth2ClientProperties properties) {
         InMemoryClientRegistrationRepository clientRegistrations;
-        OAuth2ClientPropertiesMapper oAuth2ClientPropertiesMapper = new OAuth2ClientPropertiesMapper(properties);
-        Map<String, ClientRegistration> clientRegistrationMap = oAuth2ClientPropertiesMapper.asClientRegistrations();
-        clientRegistrations = new InMemoryClientRegistrationRepository(clientRegistrationMap);
+        ExtendedOAuth2ClientPropertiesMapper extendedOAuth2ClientPropertiesMapper = new ExtendedOAuth2ClientPropertiesMapper(properties);
+        Map<String, ClientRegistration> extendedClientRegistrations = extendedOAuth2ClientPropertiesMapper.asClientRegistrations();
+        clientRegistrations = new InMemoryClientRegistrationRepository(extendedClientRegistrations);
         return clientRegistrations;
     }
 

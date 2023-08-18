@@ -7,7 +7,7 @@ spring:
   profiles:
     active: mysql
   application:
-    name: sas-server
+    name: armorauth-server
   jpa:
     properties:
       hibernate:

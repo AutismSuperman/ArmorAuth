@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.armorauth.federat.converter;
+package com.armorauth.federat.qq;
 
-import org.springframework.http.RequestEntity;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.security.oauth2.client.endpoint.OAuth2RefreshTokenGrantRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
-public class DelegateOAuth2RefreshTokenRequestEntityConverter implements Converter<OAuth2RefreshTokenGrantRequest, RequestEntity<?>> {
+public class QQOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     @Override
-    public RequestEntity<?> convert(OAuth2RefreshTokenGrantRequest source) {
+    public QQOAuthUser loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         return null;
     }
 }
