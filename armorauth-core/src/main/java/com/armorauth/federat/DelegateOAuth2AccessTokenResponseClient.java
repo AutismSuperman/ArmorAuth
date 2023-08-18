@@ -27,7 +27,6 @@ public class DelegateOAuth2AccessTokenResponseClient implements OAuth2AccessToke
         this.delegate = delegate;
     }
 
-
     @Override
     public OAuth2AccessTokenResponse getTokenResponse(OAuth2AuthorizationCodeGrantRequest authorizationGrantRequest) {
         return delegate.getTokenResponse(authorizationGrantRequest);

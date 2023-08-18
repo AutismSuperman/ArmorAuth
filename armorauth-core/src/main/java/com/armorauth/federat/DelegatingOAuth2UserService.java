@@ -28,11 +28,10 @@ public class DelegatingOAuth2UserService<R extends OAuth2UserRequest, U extends 
 
     private final OAuth2UserService<OAuth2UserRequest, OAuth2User> defaultOAuth2UserService = new DefaultOAuth2UserService();
 
+    private final Map<String, OAuth2UserService<R, U>> userServices;
 
-    private final Map<String, OAuth2UserService<R, U>> userServiceMap;
-
-    public DelegatingOAuth2UserService(Map<String, OAuth2UserService<R, U>> userServiceMap) {
-        this.userServiceMap = Collections.unmodifiableMap(userServiceMap);
+    public DelegatingOAuth2UserService(Map<String, OAuth2UserService<R, U>> userServices) {
+        this.userServices = Collections.unmodifiableMap(userServices);
     }
 
 
@@ -40,7 +39,7 @@ public class DelegatingOAuth2UserService<R extends OAuth2UserRequest, U extends 
     @Override
     public U loadUser(R userRequest) throws OAuth2AuthenticationException {
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        OAuth2UserService<R, U> oAuth2UserService = userServiceMap.get(registrationId);
+        OAuth2UserService<R, U> oAuth2UserService = userServices.get(registrationId);
         if (oAuth2UserService == null) {
             oAuth2UserService = (OAuth2UserService<R, U>) defaultOAuth2UserService;
         }
