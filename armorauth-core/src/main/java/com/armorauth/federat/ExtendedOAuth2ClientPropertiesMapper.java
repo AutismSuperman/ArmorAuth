@@ -26,6 +26,7 @@ import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration.Builder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.security.oauth2.core.AuthenticationMethod;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
@@ -39,6 +40,7 @@ import java.util.Map;
  * Extended {@link OAuth2ClientPropertiesMapper}
  *
  * @author AutismSuperman
+ * @see InMemoryClientRegistrationRepository
  */
 
 public final class ExtendedOAuth2ClientPropertiesMapper {

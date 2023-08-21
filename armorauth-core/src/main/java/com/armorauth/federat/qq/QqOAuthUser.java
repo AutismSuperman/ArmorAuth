@@ -21,7 +21,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import java.util.Collection;
 import java.util.Map;
 
-public class QQOAuthUser implements OAuth2User {
+public class QqOAuthUser implements OAuth2User {
     @Override
     public Map<String, Object> getAttributes() {
         return null;

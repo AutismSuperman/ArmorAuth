@@ -47,7 +47,23 @@ public enum ExtendedOAuth2ClientProvider {
             return builder;
         }
 
+    },
+    QQ {
+        @Override
+        public Builder getBuilder(String registrationId) {
+            ClientRegistration.Builder builder = getBuilder(registrationId,
+                    ClientAuthenticationMethod.CLIENT_SECRET_POST, DEFAULT_REDIRECT_URL);
+            builder.scope("get_user_info");
+            builder.authorizationUri("https://graph.qq.com/oauth2.0/authorize");
+            builder.tokenUri("https://graph.qq.com/oauth2.0/token");
+            builder.userInfoUri("https://graph.qq.com/oauth2.0/me");
+            builder.userNameAttributeName("openid");
+            builder.clientName("gitee");
+            return builder;
+        }
+
     };
+
 
     private static final String DEFAULT_REDIRECT_URL = "{baseUrl}/{action}/oauth2/code/{registrationId}";
 
