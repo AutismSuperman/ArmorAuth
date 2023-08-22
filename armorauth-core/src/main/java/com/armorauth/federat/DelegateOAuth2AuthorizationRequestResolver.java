@@ -21,11 +21,16 @@ import org.springframework.security.oauth2.client.web.DefaultOAuth2Authorization
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.util.Assert;
+
+import java.util.List;
 
 public class DelegateOAuth2AuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
 
     private final DefaultOAuth2AuthorizationRequestResolver delegate;
+
+    private List<AuthorizationRequestService> authorizationRequestServices;
 
 
     public DelegateOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
@@ -34,6 +39,28 @@ public class DelegateOAuth2AuthorizationRequestResolver implements OAuth2Authori
         if (authorizationRequestBaseUri == null)
             authorizationRequestBaseUri = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
         delegate = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestBaseUri);
+        delegate.setAuthorizationRequestCustomizer(this::authorizationRequestCustomizer);
+    }
+
+    public DelegateOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
+                                                      String authorizationRequestBaseUri,
+                                                      List<AuthorizationRequestService> authorizationRequestServices
+    ) {
+        Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
+        if (authorizationRequestBaseUri == null)
+            authorizationRequestBaseUri = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
+        this.authorizationRequestServices = authorizationRequestServices;
+        delegate = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestBaseUri);
+        delegate.setAuthorizationRequestCustomizer(this::authorizationRequestCustomizer);
+    }
+
+    public DelegateOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
+                                                      String authorizationRequestBaseUri,
+                                                      DefaultOAuth2AuthorizationRequestResolver delegate
+    ) {
+        Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
+        Assert.notNull(clientRegistrationRepository, "OAuth2AuthorizationRequestResolver cannot be null");
+        this.delegate = delegate;
     }
 
 
@@ -46,5 +73,16 @@ public class DelegateOAuth2AuthorizationRequestResolver implements OAuth2Authori
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
         return delegate.resolve(request, clientRegistrationId);
     }
+
+    public void authorizationRequestCustomizer(OAuth2AuthorizationRequest.Builder builder) {
+        builder.attributes(attribute -> {
+            String registrationId = (String) attribute.get(OAuth2ParameterNames.REGISTRATION_ID);
+            authorizationRequestServices.stream()
+                    .filter(authorizationRequestService -> authorizationRequestService.supports(registrationId))
+                    .findAny()
+                    .ifPresent(authorizationRequestService -> authorizationRequestService.convert(builder));
+        });
+    }
+
 
 }

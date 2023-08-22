@@ -16,6 +16,7 @@
 package com.armorauth.federat;
 
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration.Builder;
@@ -63,7 +64,7 @@ public enum ExtendedOAuth2ClientProvider {
         }
 
     },
-    WECHAT{
+    WECHAT {
         @Override
         public Builder getBuilder(String registrationId) {
             ClientRegistration.Builder builder = getBuilder(registrationId,
@@ -76,10 +77,7 @@ public enum ExtendedOAuth2ClientProvider {
             builder.clientName("gitee");
             return builder;
         }
-    }
-
-    ;
-
+    };
 
 
     private static final String DEFAULT_REDIRECT_URL = "{baseUrl}/{action}/oauth2/code/{registrationId}";
@@ -92,6 +90,17 @@ public enum ExtendedOAuth2ClientProvider {
         builder.redirectUri(redirectUri);
         return builder;
     }
+
+    public static boolean matchNameLowerCase(String registrationId) {
+        return StringUtils.equals(ExtendedOAuth2ClientProvider.WECHAT.name().toLowerCase(),
+                registrationId.toLowerCase());
+    }
+
+
+    public static String getNameLowerCase(ExtendedOAuth2ClientProvider provider) {
+        return provider.name().toLowerCase();
+    }
+
 
     /**
      * Create a new

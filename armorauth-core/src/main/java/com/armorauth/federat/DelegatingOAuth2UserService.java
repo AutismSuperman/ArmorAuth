@@ -36,9 +36,9 @@ public class DelegatingOAuth2UserService implements OAuth2UserService<OAuth2User
     private final Map<String, OAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices = new HashMap<>(16);
 
     public DelegatingOAuth2UserService() {
-        this.userServices.put(ExtendedOAuth2ClientProvider.GITEE.name(), new GiteeOAuth2UserService());
-        this.userServices.put(ExtendedOAuth2ClientProvider.QQ.name(), new QqOAuth2UserService());
-        this.userServices.put(ExtendedOAuth2ClientProvider.WECHAT.name(), new WechatOAuth2UserService());
+        this.userServices.put(ExtendedOAuth2ClientProvider.getNameLowerCase(ExtendedOAuth2ClientProvider.GITEE), new GiteeOAuth2UserService());
+        this.userServices.put(ExtendedOAuth2ClientProvider.getNameLowerCase(ExtendedOAuth2ClientProvider.QQ), new QqOAuth2UserService());
+        this.userServices.put(ExtendedOAuth2ClientProvider.getNameLowerCase(ExtendedOAuth2ClientProvider.WECHAT), new WechatOAuth2UserService());
     }
 
 
