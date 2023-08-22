@@ -15,6 +15,8 @@
  */
 package com.armorauth.federat;
 
+import com.armorauth.federat.converter.OAuth2AuthorizationRequestConverter;
+import com.armorauth.federat.wechat.Wechat2AuthorizationRequestConverter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
@@ -24,39 +26,42 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class DelegateOAuth2AuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
+public class DelegatingOAuth2AuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
 
     private final DefaultOAuth2AuthorizationRequestResolver delegate;
 
-    private List<AuthorizationRequestService> authorizationRequestServices;
+    private List<OAuth2AuthorizationRequestConverter> authorizationRequestConverters;
 
-
-    public DelegateOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
-                                                      String authorizationRequestBaseUri) {
+    public DelegatingOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
+                                                        String authorizationRequestBaseUri) {
         Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
         if (authorizationRequestBaseUri == null)
             authorizationRequestBaseUri = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
+        this.authorizationRequestConverters = new ArrayList<>();
+        authorizationRequestConverters.add(new Wechat2AuthorizationRequestConverter());
         delegate = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestBaseUri);
         delegate.setAuthorizationRequestCustomizer(this::authorizationRequestCustomizer);
     }
 
-    public DelegateOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
-                                                      String authorizationRequestBaseUri,
-                                                      List<AuthorizationRequestService> authorizationRequestServices
+
+    public DelegatingOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
+                                                        String authorizationRequestBaseUri,
+                                                        List<OAuth2AuthorizationRequestConverter> OAuth2AuthorizationRequestConverters
     ) {
         Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
         if (authorizationRequestBaseUri == null)
             authorizationRequestBaseUri = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
-        this.authorizationRequestServices = authorizationRequestServices;
+        this.authorizationRequestConverters = OAuth2AuthorizationRequestConverters;
         delegate = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestBaseUri);
         delegate.setAuthorizationRequestCustomizer(this::authorizationRequestCustomizer);
     }
 
-    public DelegateOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
-                                                      String authorizationRequestBaseUri,
-                                                      DefaultOAuth2AuthorizationRequestResolver delegate
+    public DelegatingOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
+                                                        String authorizationRequestBaseUri,
+                                                        DefaultOAuth2AuthorizationRequestResolver delegate
     ) {
         Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
         Assert.notNull(clientRegistrationRepository, "OAuth2AuthorizationRequestResolver cannot be null");
@@ -77,11 +82,15 @@ public class DelegateOAuth2AuthorizationRequestResolver implements OAuth2Authori
     public void authorizationRequestCustomizer(OAuth2AuthorizationRequest.Builder builder) {
         builder.attributes(attribute -> {
             String registrationId = (String) attribute.get(OAuth2ParameterNames.REGISTRATION_ID);
-            authorizationRequestServices.stream()
-                    .filter(authorizationRequestService -> authorizationRequestService.supports(registrationId))
+            authorizationRequestConverters.stream()
+                    .filter(authorizationRequestConverter -> authorizationRequestConverter.supports(registrationId))
                     .findAny()
-                    .ifPresent(authorizationRequestService -> authorizationRequestService.convert(builder));
+                    .ifPresent(authorizationRequestConverter -> authorizationRequestConverter.convert(builder));
         });
+    }
+
+    public void addOAuth2AuthorizationRequestConverter(OAuth2AuthorizationRequestConverter authorizationRequestConverter) {
+        this.authorizationRequestConverters.add(authorizationRequestConverter);
     }
 
 

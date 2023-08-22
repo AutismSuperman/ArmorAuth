@@ -91,9 +91,8 @@ public enum ExtendedOAuth2ClientProvider {
         return builder;
     }
 
-    public static boolean matchNameLowerCase(String registrationId) {
-        return StringUtils.equals(ExtendedOAuth2ClientProvider.WECHAT.name().toLowerCase(),
-                registrationId.toLowerCase());
+    public static boolean matchNameLowerCase(ExtendedOAuth2ClientProvider provider, String registrationId) {
+        return StringUtils.equals(provider.name().toLowerCase(), registrationId.toLowerCase());
     }
 
 

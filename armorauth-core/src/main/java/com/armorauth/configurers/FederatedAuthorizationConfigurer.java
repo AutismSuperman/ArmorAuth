@@ -16,7 +16,7 @@
 package com.armorauth.configurers;
 
 import com.armorauth.federat.DelegateOAuth2AccessTokenResponseClient;
-import com.armorauth.federat.DelegateOAuth2AuthorizationRequestResolver;
+import com.armorauth.federat.DelegatingOAuth2AuthorizationRequestResolver;
 import com.armorauth.federat.DelegatingOAuth2UserService;
 import com.armorauth.security.FederatedAuthenticationEntryPoint;
 import com.armorauth.security.FederatedAuthenticationSuccessHandler;
@@ -177,8 +177,8 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
         DelegateOAuth2AccessTokenResponseClient oAuth2AccessTokenResponseClient =
                 new DelegateOAuth2AccessTokenResponseClient();
 
-        DelegateOAuth2AuthorizationRequestResolver requestResolver =
-                new DelegateOAuth2AuthorizationRequestResolver(
+        DelegatingOAuth2AuthorizationRequestResolver requestResolver =
+                new DelegatingOAuth2AuthorizationRequestResolver(
                         clientRegistrationRepository,
                         this.authorizationRequestUri
                 );

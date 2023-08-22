@@ -22,12 +22,13 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenRespon
 
 public class DelegateOAuth2AccessTokenResponseClient implements OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> {
 
-    private final OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> delegate;
+    private final DefaultAuthorizationCodeTokenResponseClient delegate;
 
 
     public DelegateOAuth2AccessTokenResponseClient() {
         delegate = new DefaultAuthorizationCodeTokenResponseClient();
 
+        delegate.setRequestEntityConverter(new DelegatingOAuth2AuthorizationCodeGrantRequestEntityConverter());
     }
 
     @Override

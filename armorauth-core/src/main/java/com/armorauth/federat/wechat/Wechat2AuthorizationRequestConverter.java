@@ -1,13 +1,13 @@
 package com.armorauth.federat.wechat;
 
-import com.armorauth.federat.AuthorizationRequestService;
+import com.armorauth.federat.converter.OAuth2AuthorizationRequestConverter;
 import com.armorauth.federat.ExtendedOAuth2ClientProvider;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 
 import java.util.LinkedHashMap;
 
-public class WechatAuthorizationRequestService implements AuthorizationRequestService {
+public class Wechat2AuthorizationRequestConverter implements OAuth2AuthorizationRequestConverter {
 
 
     /**
@@ -57,7 +57,7 @@ public class WechatAuthorizationRequestService implements AuthorizationRequestSe
 
     @Override
     public boolean supports(String registrationId) {
-        return ExtendedOAuth2ClientProvider.matchNameLowerCase(registrationId);
+        return ExtendedOAuth2ClientProvider.matchNameLowerCase(ExtendedOAuth2ClientProvider.WECHAT, registrationId);
     }
 
 }
