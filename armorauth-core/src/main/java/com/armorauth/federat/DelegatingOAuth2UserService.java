@@ -17,6 +17,7 @@ package com.armorauth.federat;
 
 import com.armorauth.federat.gitee.GiteeOAuth2UserService;
 import com.armorauth.federat.qq.QqOAuth2UserService;
+import com.armorauth.federat.wechat.WechatOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -37,6 +38,7 @@ public class DelegatingOAuth2UserService implements OAuth2UserService<OAuth2User
     public DelegatingOAuth2UserService() {
         this.userServices.put(ExtendedOAuth2ClientProvider.GITEE.name(), new GiteeOAuth2UserService());
         this.userServices.put(ExtendedOAuth2ClientProvider.QQ.name(), new QqOAuth2UserService());
+        this.userServices.put(ExtendedOAuth2ClientProvider.WECHAT.name(), new WechatOAuth2UserService());
     }
 
 

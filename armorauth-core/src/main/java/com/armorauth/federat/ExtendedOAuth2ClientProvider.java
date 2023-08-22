@@ -62,7 +62,24 @@ public enum ExtendedOAuth2ClientProvider {
             return builder;
         }
 
-    };
+    },
+    WECHAT{
+        @Override
+        public Builder getBuilder(String registrationId) {
+            ClientRegistration.Builder builder = getBuilder(registrationId,
+                    ClientAuthenticationMethod.NONE, DEFAULT_REDIRECT_URL);
+            builder.scope("snsapi_login");
+            builder.authorizationUri("https://open.weixin.qq.com/connect/qrconnect");
+            builder.tokenUri("https://api.weixin.qq.com/sns/oauth2/access_token");
+            builder.userInfoUri("https://api.weixin.qq.com/sns/userinfo");
+            builder.userNameAttributeName("openid");
+            builder.clientName("gitee");
+            return builder;
+        }
+    }
+
+    ;
+
 
 
     private static final String DEFAULT_REDIRECT_URL = "{baseUrl}/{action}/oauth2/code/{registrationId}";
