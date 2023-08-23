@@ -15,6 +15,7 @@
  */
 package com.armorauth.federat;
 
+import com.armorauth.federat.converter.DelegatingOAuth2AuthorizationCodeGrantRequestEntityConverter;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
@@ -27,7 +28,6 @@ public class DelegateOAuth2AccessTokenResponseClient implements OAuth2AccessToke
 
     public DelegateOAuth2AccessTokenResponseClient() {
         delegate = new DefaultAuthorizationCodeTokenResponseClient();
-
         delegate.setRequestEntityConverter(new DelegatingOAuth2AuthorizationCodeGrantRequestEntityConverter());
     }
 
@@ -35,5 +35,6 @@ public class DelegateOAuth2AccessTokenResponseClient implements OAuth2AccessToke
     public OAuth2AccessTokenResponse getTokenResponse(OAuth2AuthorizationCodeGrantRequest authorizationGrantRequest) {
         return delegate.getTokenResponse(authorizationGrantRequest);
     }
+
 
 }

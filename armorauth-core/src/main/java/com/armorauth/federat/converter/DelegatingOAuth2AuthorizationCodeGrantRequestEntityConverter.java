@@ -1,4 +1,4 @@
-package com.armorauth.federat;
+package com.armorauth.federat.converter;
 
 import com.armorauth.federat.converter.OAuth2AuthorizationCodeGrantRequestConverter;
 import com.armorauth.federat.wechat.WechatAuthorizationCodeGrantRequestConverter;

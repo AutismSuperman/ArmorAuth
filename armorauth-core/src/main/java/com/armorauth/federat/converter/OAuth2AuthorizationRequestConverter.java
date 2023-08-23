@@ -6,7 +6,10 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 
 public interface OAuth2AuthorizationRequestConverter {
 
-
+    /**
+     * OAuth2AuthorizationRequest.Builder convert
+     * @param builder
+     */
     void convert(OAuth2AuthorizationRequest.Builder builder);
 
 

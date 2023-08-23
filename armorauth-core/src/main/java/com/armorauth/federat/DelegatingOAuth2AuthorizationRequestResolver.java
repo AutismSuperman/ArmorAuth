@@ -16,7 +16,7 @@
 package com.armorauth.federat;
 
 import com.armorauth.federat.converter.OAuth2AuthorizationRequestConverter;
-import com.armorauth.federat.wechat.Wechat2AuthorizationRequestConverter;
+import com.armorauth.federat.wechat.WechatAuthorizationRequestConverter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
@@ -33,7 +33,7 @@ public class DelegatingOAuth2AuthorizationRequestResolver implements OAuth2Autho
 
     private final DefaultOAuth2AuthorizationRequestResolver delegate;
 
-    private List<OAuth2AuthorizationRequestConverter> authorizationRequestConverters;
+    private final List<OAuth2AuthorizationRequestConverter> authorizationRequestConverters;
 
     public DelegatingOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
                                                         String authorizationRequestBaseUri) {
@@ -41,33 +41,10 @@ public class DelegatingOAuth2AuthorizationRequestResolver implements OAuth2Autho
         if (authorizationRequestBaseUri == null)
             authorizationRequestBaseUri = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
         this.authorizationRequestConverters = new ArrayList<>();
-        authorizationRequestConverters.add(new Wechat2AuthorizationRequestConverter());
+        authorizationRequestConverters.add(new WechatAuthorizationRequestConverter());
         delegate = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestBaseUri);
         delegate.setAuthorizationRequestCustomizer(this::authorizationRequestCustomizer);
     }
-
-
-    public DelegatingOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
-                                                        String authorizationRequestBaseUri,
-                                                        List<OAuth2AuthorizationRequestConverter> OAuth2AuthorizationRequestConverters
-    ) {
-        Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
-        if (authorizationRequestBaseUri == null)
-            authorizationRequestBaseUri = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
-        this.authorizationRequestConverters = OAuth2AuthorizationRequestConverters;
-        delegate = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestBaseUri);
-        delegate.setAuthorizationRequestCustomizer(this::authorizationRequestCustomizer);
-    }
-
-    public DelegatingOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
-                                                        String authorizationRequestBaseUri,
-                                                        DefaultOAuth2AuthorizationRequestResolver delegate
-    ) {
-        Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
-        Assert.notNull(clientRegistrationRepository, "OAuth2AuthorizationRequestResolver cannot be null");
-        this.delegate = delegate;
-    }
-
 
     @Override
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {

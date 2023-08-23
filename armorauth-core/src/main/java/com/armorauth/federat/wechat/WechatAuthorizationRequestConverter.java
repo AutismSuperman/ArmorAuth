@@ -7,7 +7,7 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 
 import java.util.LinkedHashMap;
 
-public class Wechat2AuthorizationRequestConverter implements OAuth2AuthorizationRequestConverter {
+public class WechatAuthorizationRequestConverter implements OAuth2AuthorizationRequestConverter {
 
 
     /**
