@@ -94,8 +94,13 @@ public class WechatOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     }
 
     /**
-     * 获取微信用户信息借鉴{@link OAuth2AccessTokenResponseClient}
-     * https://api.weixin.qq.com/sns/userinfo?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN
+     * 获取微信用户信息{@link OAuth2AccessTokenResponseClient}
+     * {@code
+     * https://api.weixin.qq.com/sns/userinfo?
+     * access_token=ACCESS_TOKEN&
+     * openid=OPENID&
+     * lang=zh_CN
+     * }
      *
      * @param userRequest the user request
      * @return response

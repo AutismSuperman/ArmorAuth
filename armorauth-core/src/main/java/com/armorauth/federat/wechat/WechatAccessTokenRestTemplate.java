@@ -22,14 +22,14 @@ public class WechatAccessTokenRestTemplate implements OAuth2AccessTokenRestTempl
     public RestTemplate getRestTemplate(OAuth2AuthorizationCodeGrantRequest authorizationGrantRequest) {
         OAuth2AccessTokenResponseHttpMessageConverter tokenResponseHttpMessageConverter =
                 new OAuth2AccessTokenResponseHttpMessageConverter();
-        // 微信返回的content-type 是 text-plain
+        // 微信返回的 Content-type 是 text-plain
         tokenResponseHttpMessageConverter.setSupportedMediaTypes(Arrays.asList(
                 MediaType.APPLICATION_JSON,
                 MediaType.TEXT_PLAIN,
                 new MediaType("application", "*+json"))
         );
         tokenResponseHttpMessageConverter.setAccessTokenResponseConverter(responseParameters -> {
-            // 避免 token_type 空校验异常
+            // 解决微信没有返回 token_type 导致的空校验异常
             Converter<Map<String, Object>, OAuth2AccessTokenResponse> delegate = new DefaultMapOAuth2AccessTokenResponseConverter();
             responseParameters.put(OAuth2ParameterNames.TOKEN_TYPE, OAuth2AccessToken.TokenType.BEARER.getValue());
             return delegate.convert(responseParameters);
