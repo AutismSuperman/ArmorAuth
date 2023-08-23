@@ -1,6 +1,7 @@
 package com.armorauth.federat.converter;
 
 import com.armorauth.federat.converter.OAuth2AuthorizationCodeGrantRequestConverter;
+import com.armorauth.federat.qq.QqOAuth2AuthorizationCodeGrantRequestConverter;
 import com.armorauth.federat.wechat.WechatAuthorizationCodeGrantRequestConverter;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.RequestEntity;
@@ -15,12 +16,13 @@ public class DelegatingOAuth2AuthorizationCodeGrantRequestEntityConverter implem
 
     private final OAuth2AuthorizationCodeGrantRequestEntityConverter defaultConverter = new OAuth2AuthorizationCodeGrantRequestEntityConverter();
 
-    private final List<OAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters;
+    private final List<OAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters = new ArrayList<>();
+    ;
 
 
     public DelegatingOAuth2AuthorizationCodeGrantRequestEntityConverter() {
-        this.authorizationCodeGrantRequestConverters = new ArrayList<>();
-        authorizationCodeGrantRequestConverters.add(new WechatAuthorizationCodeGrantRequestConverter());
+        this.authorizationCodeGrantRequestConverters.add(new WechatAuthorizationCodeGrantRequestConverter());
+        this.authorizationCodeGrantRequestConverters.add(new QqOAuth2AuthorizationCodeGrantRequestConverter());
     }
 
 
@@ -36,10 +38,9 @@ public class DelegatingOAuth2AuthorizationCodeGrantRequestEntityConverter implem
         return defaultConverter.convert(request);
     }
 
-   public  void addAuthorizationCodeGrantRequestConverter(OAuth2AuthorizationCodeGrantRequestConverter auth2AuthorizationCodeGrantRequestConverter){
+    public void addAuthorizationCodeGrantRequestConverter(OAuth2AuthorizationCodeGrantRequestConverter auth2AuthorizationCodeGrantRequestConverter) {
         authorizationCodeGrantRequestConverters.add(auth2AuthorizationCodeGrantRequestConverter);
-   }
-
+    }
 
 
 }

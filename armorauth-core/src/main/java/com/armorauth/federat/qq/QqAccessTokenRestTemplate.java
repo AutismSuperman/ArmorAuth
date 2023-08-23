@@ -1,4 +1,4 @@
-package com.armorauth.federat.wechat;
+package com.armorauth.federat.qq;
 
 import com.armorauth.federat.ExtendedOAuth2ClientProvider;
 import com.armorauth.federat.converter.OAuth2AccessTokenRestTemplate;
@@ -17,7 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Arrays;
 import java.util.Map;
 
-public class WechatAccessTokenRestTemplate implements OAuth2AccessTokenRestTemplate {
+public class QqAccessTokenRestTemplate implements OAuth2AccessTokenRestTemplate {
     @Override
     public RestTemplate getRestTemplate(OAuth2AuthorizationCodeGrantRequest authorizationGrantRequest) {
         OAuth2AccessTokenResponseHttpMessageConverter tokenResponseHttpMessageConverter =
@@ -30,7 +30,7 @@ public class WechatAccessTokenRestTemplate implements OAuth2AccessTokenRestTempl
                 new MediaType("application", "*+json"))
         );
         tokenResponseHttpMessageConverter.setAccessTokenResponseConverter(responseParameters -> {
-            // 解决微信没有返回 token_type 导致的空校验异常
+            // 解决QQ没有返回 token_type 导致的空校验异常
             Converter<Map<String, Object>, OAuth2AccessTokenResponse> delegate = new DefaultMapOAuth2AccessTokenResponseConverter();
             responseParameters.put(OAuth2ParameterNames.TOKEN_TYPE, OAuth2AccessToken.TokenType.BEARER.getValue());
             return delegate.convert(responseParameters);
@@ -42,6 +42,6 @@ public class WechatAccessTokenRestTemplate implements OAuth2AccessTokenRestTempl
 
     @Override
     public boolean supports(String registrationId) {
-        return ExtendedOAuth2ClientProvider.matchNameLowerCase(ExtendedOAuth2ClientProvider.WECHAT, registrationId);
+        return ExtendedOAuth2ClientProvider.matchNameLowerCase(ExtendedOAuth2ClientProvider.QQ, registrationId);
     }
 }

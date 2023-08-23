@@ -17,6 +17,7 @@ package com.armorauth.federat;
 
 import com.armorauth.federat.converter.DelegatingOAuth2AuthorizationCodeGrantRequestEntityConverter;
 import com.armorauth.federat.converter.OAuth2AccessTokenRestTemplate;
+import com.armorauth.federat.qq.QqAccessTokenRestTemplate;
 import com.armorauth.federat.wechat.WechatAccessTokenRestTemplate;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
@@ -28,15 +29,14 @@ import java.util.List;
 
 public class DelegateAccessTokenResponseClient implements OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> {
 
-    private final DefaultAuthorizationCodeTokenResponseClient delegate;
+    private final DefaultAuthorizationCodeTokenResponseClient delegate = new DefaultAuthorizationCodeTokenResponseClient();
 
-    private final List<OAuth2AccessTokenRestTemplate> restTemplates;
+    private final List<OAuth2AccessTokenRestTemplate> restTemplates= new ArrayList<>();
 
 
     public DelegateAccessTokenResponseClient() {
-        this.delegate = new DefaultAuthorizationCodeTokenResponseClient();
-        this.restTemplates = new ArrayList<>();
         this.restTemplates.add(new WechatAccessTokenRestTemplate());
+        this.restTemplates.add(new QqAccessTokenRestTemplate());
         this.delegate.setRequestEntityConverter(new DelegatingOAuth2AuthorizationCodeGrantRequestEntityConverter());
     }
 

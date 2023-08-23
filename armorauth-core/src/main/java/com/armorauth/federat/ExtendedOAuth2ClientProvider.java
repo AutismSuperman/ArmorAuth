@@ -57,7 +57,7 @@ public enum ExtendedOAuth2ClientProvider {
             builder.scope("get_user_info");
             builder.authorizationUri("https://graph.qq.com/oauth2.0/authorize");
             builder.tokenUri("https://graph.qq.com/oauth2.0/token");
-            builder.userInfoUri("https://graph.qq.com/oauth2.0/me");
+            builder.userInfoUri("https://graph.qq.com/user/get_user_info");
             builder.userNameAttributeName("openid");
             builder.clientName("gitee");
             return builder;

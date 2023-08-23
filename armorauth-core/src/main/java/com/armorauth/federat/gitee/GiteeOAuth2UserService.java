@@ -30,7 +30,6 @@ import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.util.Assert;
@@ -57,7 +56,7 @@ import java.util.Set;
  * @see OAuth2UserService
  * @see OAuth2UserRequest
  * @see OAuth2User
- * @see GiteeOAuthUser
+ * @see GiteeOAuth2User
  */
 public class GiteeOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
@@ -109,7 +108,7 @@ public class GiteeOAuth2UserService implements OAuth2UserService<OAuth2UserReque
         for (String authority : token.getScopes()) {
             authorities.add(new SimpleGrantedAuthority("SCOPE_" + authority));
         }
-        return new GiteeOAuthUser(authorities, userAttributes, userNameAttributeName);
+        return new GiteeOAuth2User(authorities, userAttributes, userNameAttributeName);
     }
 
     private ResponseEntity<Map<String, Object>> getResponse(OAuth2UserRequest userRequest, RequestEntity<?> request) {

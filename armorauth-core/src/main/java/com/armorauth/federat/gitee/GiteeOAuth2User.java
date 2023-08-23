@@ -26,7 +26,7 @@ import java.util.*;
 
 
 @EqualsAndHashCode
-public class GiteeOAuthUser implements OAuth2User, Serializable {
+public class GiteeOAuth2User implements OAuth2User, Serializable {
 
     private final Set<GrantedAuthority> authorities;
 
@@ -35,8 +35,8 @@ public class GiteeOAuthUser implements OAuth2User, Serializable {
     private final String nameAttributeKey;
 
 
-    public GiteeOAuthUser(Collection<? extends GrantedAuthority> authorities, Map<String, Object> attributes,
-                             String nameAttributeKey) {
+    public GiteeOAuth2User(Collection<? extends GrantedAuthority> authorities, Map<String, Object> attributes,
+                           String nameAttributeKey) {
         Assert.notEmpty(attributes, "attributes cannot be empty");
         Assert.hasText(nameAttributeKey, "nameAttributeKey cannot be empty");
         if (!attributes.containsKey(nameAttributeKey)) {
