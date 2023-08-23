@@ -17,6 +17,7 @@ package com.armorauth.federat.wechat;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -25,11 +26,12 @@ import org.springframework.util.Assert;
 import java.util.*;
 
 @Data
+@NoArgsConstructor
 public class WechatOAuth2User implements OAuth2User {
 
     private Set<GrantedAuthority> authorities;
 
-    private final Map<String, Object> attributes;
+    private Map<String, Object> attributes;
 
     /**
      * 普通用户的标识，对当前开发者账号唯一
