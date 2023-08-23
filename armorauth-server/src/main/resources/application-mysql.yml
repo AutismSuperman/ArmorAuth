@@ -9,6 +9,9 @@ spring:
           gitee:
             client-id: 6117b6e01c09e53cd5b28c04492e1bb7c8eb33c343492e69f599160b464ef971
             client-secret: bf1d6812ee3f1e97f2f87e49d4d39224247e9c3ebbaac2bbf089b22140dfdd72
+          qq:
+            client-id: 102061483
+            client-secret: DLGxQfgT2NUP7bst
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://127.0.0.1:3306/identity_server
