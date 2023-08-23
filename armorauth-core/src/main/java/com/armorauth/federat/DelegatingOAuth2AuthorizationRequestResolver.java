@@ -41,9 +41,9 @@ public class DelegatingOAuth2AuthorizationRequestResolver implements OAuth2Autho
         if (authorizationRequestBaseUri == null)
             authorizationRequestBaseUri = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
         this.authorizationRequestConverters = new ArrayList<>();
-        authorizationRequestConverters.add(new WechatAuthorizationRequestConverter());
-        delegate = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestBaseUri);
-        delegate.setAuthorizationRequestCustomizer(this::authorizationRequestCustomizer);
+        this.authorizationRequestConverters.add(new WechatAuthorizationRequestConverter());
+        this.delegate = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestBaseUri);
+        this.delegate.setAuthorizationRequestCustomizer(this::authorizationRequestCustomizer);
     }
 
     @Override

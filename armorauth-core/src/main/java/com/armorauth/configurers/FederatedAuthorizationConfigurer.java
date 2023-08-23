@@ -15,7 +15,7 @@
  */
 package com.armorauth.configurers;
 
-import com.armorauth.federat.DelegateOAuth2AccessTokenResponseClient;
+import com.armorauth.federat.DelegateAccessTokenResponseClient;
 import com.armorauth.federat.DelegatingOAuth2AuthorizationRequestResolver;
 import com.armorauth.federat.DelegatingOAuth2UserService;
 import com.armorauth.security.FederatedAuthenticationEntryPoint;
@@ -174,8 +174,8 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
         OAuth2AuthorizedClientService authorizedClientService =
                 applicationContext.getBean(OAuth2AuthorizedClientService.class);
 
-        DelegateOAuth2AccessTokenResponseClient oAuth2AccessTokenResponseClient =
-                new DelegateOAuth2AccessTokenResponseClient();
+        DelegateAccessTokenResponseClient oAuth2AccessTokenResponseClient =
+                new DelegateAccessTokenResponseClient();
 
         DelegatingOAuth2AuthorizationRequestResolver requestResolver =
                 new DelegatingOAuth2AuthorizationRequestResolver(

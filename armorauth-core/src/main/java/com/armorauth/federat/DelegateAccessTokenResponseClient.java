@@ -16,25 +16,41 @@
 package com.armorauth.federat;
 
 import com.armorauth.federat.converter.DelegatingOAuth2AuthorizationCodeGrantRequestEntityConverter;
+import com.armorauth.federat.converter.OAuth2AccessTokenRestTemplate;
+import com.armorauth.federat.wechat.WechatAccessTokenRestTemplate;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 
-public class DelegateOAuth2AccessTokenResponseClient implements OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> {
+import java.util.ArrayList;
+import java.util.List;
+
+public class DelegateAccessTokenResponseClient implements OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> {
 
     private final DefaultAuthorizationCodeTokenResponseClient delegate;
 
+    private final List<OAuth2AccessTokenRestTemplate> restTemplates;
 
-    public DelegateOAuth2AccessTokenResponseClient() {
-        delegate = new DefaultAuthorizationCodeTokenResponseClient();
-        delegate.setRequestEntityConverter(new DelegatingOAuth2AuthorizationCodeGrantRequestEntityConverter());
+
+    public DelegateAccessTokenResponseClient() {
+        this.delegate = new DefaultAuthorizationCodeTokenResponseClient();
+        this.restTemplates = new ArrayList<>();
+        this.restTemplates.add(new WechatAccessTokenRestTemplate());
+        this.delegate.setRequestEntityConverter(new DelegatingOAuth2AuthorizationCodeGrantRequestEntityConverter());
     }
 
     @Override
     public OAuth2AccessTokenResponse getTokenResponse(OAuth2AuthorizationCodeGrantRequest authorizationGrantRequest) {
+        String registrationId = authorizationGrantRequest.getClientRegistration().getRegistrationId();
+        restTemplates.stream().filter(f -> f.supports(registrationId)).findFirst().ifPresent(accessTokenRestTemplate -> {
+            delegate.setRestOperations(accessTokenRestTemplate.getRestTemplate(authorizationGrantRequest));
+        });
         return delegate.getTokenResponse(authorizationGrantRequest);
     }
 
+    public void addAccessTokenRestTemplate(OAuth2AccessTokenRestTemplate restTemplate) {
+        restTemplates.add(restTemplate);
+    }
 
 }
