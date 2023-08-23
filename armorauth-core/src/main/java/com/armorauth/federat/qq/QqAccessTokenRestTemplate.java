@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.core.endpoint.DefaultMapOAuth2AccessT
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
@@ -22,7 +23,7 @@ public class QqAccessTokenRestTemplate implements OAuth2AccessTokenRestTemplate 
     public RestTemplate getRestTemplate(OAuth2AuthorizationCodeGrantRequest authorizationGrantRequest) {
         OAuth2AccessTokenResponseHttpMessageConverter tokenResponseHttpMessageConverter =
                 new OAuth2AccessTokenResponseHttpMessageConverter();
-        // 微信返回的 Content-type 是 text-plain
+        // QQ返回的 Content-type 是 text-html
         tokenResponseHttpMessageConverter.setSupportedMediaTypes(Arrays.asList(
                 MediaType.APPLICATION_JSON,
                 MediaType.TEXT_HTML,
@@ -33,6 +34,7 @@ public class QqAccessTokenRestTemplate implements OAuth2AccessTokenRestTemplate 
             // 解决QQ没有返回 token_type 导致的空校验异常
             Converter<Map<String, Object>, OAuth2AccessTokenResponse> delegate = new DefaultMapOAuth2AccessTokenResponseConverter();
             responseParameters.put(OAuth2ParameterNames.TOKEN_TYPE, OAuth2AccessToken.TokenType.BEARER.getValue());
+            responseParameters.put(OAuth2ParameterNames.SCOPE, StringUtils.collectionToCommaDelimitedString(authorizationGrantRequest.getClientRegistration().getScopes()));
             return delegate.convert(responseParameters);
         });
         RestTemplate restTemplate = new RestTemplate(Arrays.asList(new FormHttpMessageConverter(), tokenResponseHttpMessageConverter));

@@ -16,6 +16,7 @@
 package com.armorauth.federat.qq;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -25,12 +26,12 @@ import java.util.*;
 
 
 @Data
+@NoArgsConstructor
 public class QqOAuth2User implements OAuth2User {
 
     private Set<GrantedAuthority> authorities;
 
-
-    private final Map<String, Object> attributes;
+    private Map<String, Object> attributes;
 
     /**
      * 返回码
@@ -110,9 +111,8 @@ public class QqOAuth2User implements OAuth2User {
     private String is_yellow_year_vip;
 
 
-
     public QqOAuth2User(Collection<? extends GrantedAuthority> authorities, Map<String, Object> attributes,
-                            String openid) {
+                        String openid) {
         Assert.hasText(openid, "openid cannot be empty");
         this.authorities = (authorities != null)
                 ? Collections.unmodifiableSet(new LinkedHashSet<>(this.sortAuthorities(authorities)))

@@ -21,9 +21,10 @@ public class QqOAuth2AuthorizationCodeGrantRequestConverter implements OAuth2Aut
         OAuth2AuthorizationExchange authorizationExchange = request.getAuthorizationExchange();
         MultiValueMap<String, String> queryParameters = new LinkedMultiValueMap<>();
         queryParameters.add(OAuth2ParameterNames.GRANT_TYPE, request.getGrantType().getValue());
-        queryParameters.add(OAuth2ParameterNames.CODE, authorizationExchange.getAuthorizationResponse().getCode());
         queryParameters.add(OAuth2ParameterNames.CLIENT_ID, clientRegistration.getClientId());
         queryParameters.add(OAuth2ParameterNames.CLIENT_SECRET, clientRegistration.getClientSecret());
+        queryParameters.add(OAuth2ParameterNames.CODE, authorizationExchange.getAuthorizationResponse().getCode());
+        queryParameters.add(OAuth2ParameterNames.REDIRECT_URI, authorizationExchange.getAuthorizationRequest().getRedirectUri());
         queryParameters.add(QqParameterNames.FMT, QqParameterNames.FMT_JOSN);
         // 1 is response openid
         queryParameters.add(QqParameterNames.NEED_OPENID, "1");

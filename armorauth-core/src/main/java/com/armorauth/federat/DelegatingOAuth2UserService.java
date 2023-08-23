@@ -45,7 +45,7 @@ public class DelegatingOAuth2UserService implements OAuth2UserService<OAuth2User
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService = userServices.get(registrationId.toUpperCase());
+        OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService = userServices.get(registrationId.toLowerCase());
         if (oAuth2UserService == null) {
             oAuth2UserService = defaultOAuth2UserService;
         }

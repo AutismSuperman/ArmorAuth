@@ -74,7 +74,7 @@ public enum ExtendedOAuth2ClientProvider {
             builder.tokenUri("https://api.weixin.qq.com/sns/oauth2/access_token");
             builder.userInfoUri("https://api.weixin.qq.com/sns/userinfo");
             builder.userNameAttributeName("openid");
-            builder.clientName("gitee");
+            builder.clientName("wechat");
             return builder;
         }
     };

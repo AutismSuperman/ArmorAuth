@@ -64,10 +64,6 @@ public class QqOAuth2UserService implements OAuth2UserService<OAuth2UserRequest,
 
     private static final String INVALID_USER_INFO_RESPONSE_ERROR_CODE = "invalid_user_info_response";
 
-    private static final String OPENID_KEY = "openid";
-
-    private static final ParameterizedTypeReference<Map<String, Object>> PARAMETERIZED_RESPONSE_TYPE = new ParameterizedTypeReference<>() {
-    };
 
     private static final ParameterizedTypeReference<QqOAuth2User> OAUTH2_USER_OBJECT = new ParameterizedTypeReference<>() {
     };
@@ -123,20 +119,16 @@ public class QqOAuth2UserService implements OAuth2UserService<OAuth2UserRequest,
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
         }
         RequestEntity<?> request = this.requestEntityConverter.convert(userRequest);
-        ResponseEntity<Map<String, Object>> response = getResponse(userRequest, request);
-        Map<String, Object> userAttributes = response.getBody();
-        Set<GrantedAuthority> authorities = new LinkedHashSet<>();
-        authorities.add(new OAuth2UserAuthority(userAttributes));
-        OAuth2AccessToken token = userRequest.getAccessToken();
-        for (String authority : token.getScopes()) {
-            authorities.add(new SimpleGrantedAuthority("SCOPE_" + authority));
-        }
-        return new QqOAuth2User(authorities, userAttributes, openid);
+        ResponseEntity<QqOAuth2User> response = getResponse(userRequest, request);
+        QqOAuth2User oAuth2User = response.getBody();
+        assert oAuth2User != null;
+        oAuth2User.setOpenid(openid);
+        return oAuth2User;
     }
 
-    private ResponseEntity<Map<String, Object>> getResponse(OAuth2UserRequest userRequest, RequestEntity<?> request) {
+    private ResponseEntity<QqOAuth2User> getResponse(OAuth2UserRequest userRequest, RequestEntity<?> request) {
         try {
-            return this.restOperations.exchange(request, PARAMETERIZED_RESPONSE_TYPE);
+            return this.restOperations.exchange(request, OAUTH2_USER_OBJECT);
         } catch (OAuth2AuthorizationException ex) {
             OAuth2Error oauth2Error = ex.getError();
             StringBuilder errorDetails = new StringBuilder();
@@ -178,7 +170,7 @@ public class QqOAuth2UserService implements OAuth2UserService<OAuth2UserRequest,
         private final GenericHttpMessageConverter<Object> jsonMessageConverter = HttpMessageConverters.getJsonMessageConverter();
 
         public QqOAuth2UserHttpMessageConverter() {
-            super(DEFAULT_CHARSET, MediaType.TEXT_PLAIN,
+            super(DEFAULT_CHARSET, MediaType.TEXT_PLAIN, MediaType.TEXT_HTML,
                     MediaType.APPLICATION_JSON,
                     new MediaType("application", "*+json"));
         }
