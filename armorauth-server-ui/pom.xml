@@ -103,6 +103,9 @@
         </plugins>
         <resources>
             <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
                 <directory>target/dist</directory>
                 <targetPath>META-INF/armorauth-server-ui</targetPath>
                 <filtering>false</filtering>
