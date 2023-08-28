@@ -20,6 +20,7 @@
     </licenses>
 
     <properties>
+        <resource.delimiter>@</resource.delimiter>
         <!-- revision -->
         <revision>0.0.1</revision>
         <!-- Tool -->
@@ -44,6 +45,8 @@
         <maven.pmd.version>3.8</maven.pmd.version>
         <maven.flatten.version>1.5.0</maven.flatten.version>
         <maven.spotless.version>2.25.0</maven.spotless.version>
+        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+        <frontend-maven-plugin.version>1.13.4</frontend-maven-plugin.version>
         <!-- CheckStyle -->
         <spotless.license-header.file>
             license-header.txt
@@ -57,6 +60,7 @@
         <module>armorauth-spring-boot</module>
         <module>armorauth-samples</module>
         <module>armorauth-server</module>
+        <module>armorauth-server-ui</module>
     </modules>
 
     <dependencyManagement>
@@ -188,6 +192,22 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.eirslett</groupId>
+                    <artifactId>frontend-maven-plugin</artifactId>
+                    <version>${frontend-maven-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${maven-resources-plugin.version}</version>
+                    <configuration>
+                        <delimiters>
+                            <delimiter>${resource.delimiter}</delimiter>
+                        </delimiters>
+                        <useDefaultDelimiters>false</useDefaultDelimiters>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
