@@ -1,11 +1,13 @@
 package com.armorauth.security;
 
 import com.armorauth.web.endpoint.ConsentSuccessResponse;
+import com.armorauth.web.endpoint.LoginSuccessResponse;
 import com.armorauth.web.http.converter.ConsentSuccessResponseHttpMessageConverter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
@@ -25,7 +27,7 @@ public class OAuth2AuthorizationResponseHandler implements AuthenticationSuccess
     private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
 
-    private ConsentSuccessResponseHttpMessageConverter consentSuccessConverter=new ConsentSuccessResponseHttpMessageConverter();
+    private HttpMessageConverter<ConsentSuccessResponse> consentSuccessConverter=new ConsentSuccessResponseHttpMessageConverter();
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -63,7 +65,7 @@ public class OAuth2AuthorizationResponseHandler implements AuthenticationSuccess
         return uriBuilder.build(true).toUriString();
     }
 
-    public void setConsentSuccessConverter(ConsentSuccessResponseHttpMessageConverter consentSuccessConverter) {
+    public void setConsentSuccessConverter(HttpMessageConverter<ConsentSuccessResponse> consentSuccessConverter) {
         this.consentSuccessConverter = consentSuccessConverter;
     }
 }
