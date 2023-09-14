@@ -76,10 +76,10 @@ public final class FederatedAuthenticationSuccessHandler implements Authenticati
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         if (authentication instanceof OAuth2AuthenticationToken) {
-            if (authentication.getPrincipal() instanceof OidcUser) {
+            if (authentication.getPrincipal() instanceof OAuth2User) {
                 //this.oidcUserHandler.accept((OidcUser) authentication.getPrincipal());
                 this.delegateAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
-            } else if (authentication.getPrincipal() instanceof OAuth2User) {
+            } else if (authentication.getPrincipal() instanceof OidcUser) {
                 //this.oauth2UserHandler.accept((OAuth2User) authentication.getPrincipal());
                 this.delegateAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
             } else {

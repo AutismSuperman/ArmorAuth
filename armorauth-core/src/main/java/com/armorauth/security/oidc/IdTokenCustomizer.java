@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.armorauth.security;
+package com.armorauth.security.oidc;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,7 +32,7 @@ import org.springframework.security.oauth2.server.authorization.token.JwtEncodin
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 
 
-public final class FederatedIdTokenCustomizer implements OAuth2TokenCustomizer<JwtEncodingContext> {
+public final class IdTokenCustomizer implements OAuth2TokenCustomizer<JwtEncodingContext> {
 
     private static final Set<String> ID_TOKEN_CLAIMS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             IdTokenClaimNames.ISS,

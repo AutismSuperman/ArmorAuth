@@ -15,9 +15,9 @@
  */
 package com.armorauth.web.http.converter;
 
-import com.armorauth.web.converter.DefaultLoginSuccessTokenResponseMapConverter;
-import com.armorauth.web.converter.DefaultMapLoginSuccessResponseConverter;
 import com.armorauth.web.endpoint.LoginSuccessResponse;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpInputMessage;
@@ -47,11 +47,13 @@ public class LoginSuccessResponseHttpMessageConverter extends AbstractHttpMessag
     private static final ParameterizedTypeReference<Map<String, Object>> STRING_OBJECT_MAP = new ParameterizedTypeReference<>() {
     };
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     private GenericHttpMessageConverter<Object> jsonMessageConverter = HttpMessageConverters.getJsonMessageConverter();
 
-    private Converter<Map<String, Object>, LoginSuccessResponse> loginSuccessResponseConverter = new DefaultLoginSuccessTokenResponseMapConverter();
+    private Converter<Map<String, Object>, LoginSuccessResponse> loginSuccessResponseConverter = this::loginSuccessResponseMapConverter;
 
-    private Converter<LoginSuccessResponse, Map<String, Object>> loginSuccessResponseParametersConverter = new DefaultMapLoginSuccessResponseConverter();
+    private Converter<LoginSuccessResponse, Map<String, Object>> loginSuccessResponseParametersConverter = this::loginSuccessResponseParametersConverter;
 
 
     public LoginSuccessResponseHttpMessageConverter() {
@@ -91,6 +93,16 @@ public class LoginSuccessResponseHttpMessageConverter extends AbstractHttpMessag
         }
     }
 
+
+    private LoginSuccessResponse loginSuccessResponseMapConverter(Map<String, Object> source) {
+        return objectMapper.convertValue(source, new TypeReference<>() {
+        });
+    }
+
+    private Map<String, Object> loginSuccessResponseParametersConverter(LoginSuccessResponse source) {
+        return objectMapper.convertValue(source, new TypeReference<>() {
+        });
+    }
 
     public void setLoginSuccessResponseConverter(Converter<Map<String, Object>, LoginSuccessResponse> loginSuccessResponseConverter) {
         Assert.notNull(loginSuccessResponseConverter, "loginSuccessResponseConverter cannot be null");

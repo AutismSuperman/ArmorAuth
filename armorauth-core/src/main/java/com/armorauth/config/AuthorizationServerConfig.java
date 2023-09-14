@@ -36,7 +36,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
@@ -47,14 +46,16 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 
 @Configuration(proxyBeanMethods = false)
 public class AuthorizationServerConfig {
 
     private static final String CUSTOM_CONSENT_PAGE_URI = "/oauth2/consent";
 
+    public static final String CUSTOM_ACTIVATE_PAGE = "/activate";
+
     private static final String CUSTOM_LOGIN_PAGE = "/login";
+
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -81,7 +82,7 @@ public class AuthorizationServerConfig {
         // Custom OAuth2AuthorizationServerConfigurer
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .deviceAuthorizationEndpoint(deviceAuthorizationEndpoint ->
-                        deviceAuthorizationEndpoint.verificationUri("/activate")
+                        deviceAuthorizationEndpoint.verificationUri(CUSTOM_ACTIVATE_PAGE)
                 )
                 .deviceVerificationEndpoint(deviceVerificationEndpoint ->
                         deviceVerificationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)
@@ -91,8 +92,9 @@ public class AuthorizationServerConfig {
                                 .authenticationConverter(deviceClientAuthenticationConverter)
                                 .authenticationProvider(deviceClientAuthenticationProvider)
                 )
-                .authorizationEndpoint(authorizationEndpoint ->
-                        authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI))
+                .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
+                        .consentPage(CUSTOM_CONSENT_PAGE_URI)
+                )
                 // Enable OpenID Connect 1.0 Provider support
                 .oidc(Customizer.withDefaults());
         // OAuth2ResourceServerConfigurer
@@ -129,7 +131,7 @@ public class AuthorizationServerConfig {
     }
 
 
-    //*********************************************jose*********************************************//
+    //*********************************************Jose*********************************************//
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
