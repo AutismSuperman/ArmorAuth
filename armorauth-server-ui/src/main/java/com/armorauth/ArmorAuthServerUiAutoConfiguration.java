@@ -1,14 +1,29 @@
+/*
+ * Copyright (c) 2023-present ArmorAuth. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.armorauth;
 
+import com.armorauth.properties.ArmorAuthUiProperties;
 import com.armorauth.web.servlet.ArmorAuthControllerHandlerMapping;
 import com.armorauth.web.servlet.HomepageForwardingFilter;
-import com.armorauth.util.CssColorUtils;
 import com.armorauth.util.PathUtils;
 import com.armorauth.web.UiController;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,26 +42,29 @@ import java.util.List;
 
 import static java.util.Arrays.asList;
 
+@Slf4j
 @Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties({
+        ArmorAuthUiProperties.class
+})
 public class ArmorAuthServerUiAutoConfiguration {
 
-    private static final Logger log = LoggerFactory.getLogger(ArmorAuthServerUiAutoConfiguration.class);
 
     /**
      * path patterns that will be forwarded to the homepage (webapp)
      */
-    private static final List<String> DEFAULT_UI_ROUTES = asList("/about/**", "/user/**");
+    private static final List<String> DEFAULT_UI_ROUTES =
+            asList("/activate/**","/activated/**");
 
 
     private final ApplicationContext applicationContext;
 
-    public ArmorAuthServerUiAutoConfiguration(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
-    }
 
-    @Bean
-    public CssColorUtils cssColorUtils() {
-        return new CssColorUtils();
+    private final ArmorAuthUiProperties armorAuthUiProperties;
+
+    public ArmorAuthServerUiAutoConfiguration(ApplicationContext applicationContext, ArmorAuthUiProperties armorAuthUiProperties) {
+        this.applicationContext = applicationContext;
+        this.armorAuthUiProperties = armorAuthUiProperties;
     }
 
     @Bean
@@ -60,7 +78,7 @@ public class ArmorAuthServerUiAutoConfiguration {
     public SpringResourceTemplateResolver armorauthTemplateResolver() {
         SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
         resolver.setApplicationContext(this.applicationContext);
-        resolver.setPrefix("classpath:/META-INF/armorauth-server-ui/");
+        resolver.setPrefix(armorAuthUiProperties.getTemplateLocation());
         resolver.setSuffix(".html");
         resolver.setTemplateMode(TemplateMode.HTML);
         resolver.setCharacterEncoding(StandardCharsets.UTF_8.name());
@@ -87,13 +105,19 @@ public class ArmorAuthServerUiAutoConfiguration {
     }
 
 
-
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     public static class ServletUiConfiguration {
 
+
         @Configuration(proxyBeanMethods = false)
         public static class AdminUiWebMvcConfig implements WebMvcConfigurer {
+
+            private final ArmorAuthUiProperties armorAuthUiProperties;
+
+            public AdminUiWebMvcConfig(ArmorAuthUiProperties armorAuthUiProperties) {
+                this.armorAuthUiProperties = armorAuthUiProperties;
+            }
 
             @Override
             @SuppressWarnings("deprecation")
@@ -102,7 +126,7 @@ public class ArmorAuthServerUiAutoConfiguration {
             }
 
             @Bean
-            public HomepageForwardingFilterConfig homepageForwardingFilterConfig() throws IOException {
+            public HomepageForwardingFilterConfig homepageForwardingFilterConfig() {
                 String homepage = normalizeHomepageUrl("/");
                 return new HomepageForwardingFilterConfig(homepage, DEFAULT_UI_ROUTES);
             }
@@ -110,7 +134,7 @@ public class ArmorAuthServerUiAutoConfiguration {
             @Override
             public void addResourceHandlers(ResourceHandlerRegistry registry) {
                 registry.addResourceHandler("/**")
-                        .addResourceLocations("classpath:/META-INF/armorauth-server-ui/")
+                        .addResourceLocations(this.armorAuthUiProperties.getResourceLocations())
                         .setCacheControl(CacheControl.noStore());
             }
 

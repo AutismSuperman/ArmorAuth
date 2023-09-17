@@ -100,7 +100,7 @@ public final class FederatedAuthenticationSuccessHandler implements Authenticati
         SavedRequest savedRequest = this.requestCache.getRequest(request, response);
         String redirectUrl = savedRequest == null ? this.redirect : savedRequest.getRedirectUrl();
         clearAuthenticationAttributes(request);
-        loginSuccessResponse.setRedirectUrl(redirectUrl);
+        loginSuccessResponse.setRedirectUri(redirectUrl);
         loginSuccessResponse.setDescription("登录成功");
         ServletServerHttpResponse httpResponse = new ServletServerHttpResponse(response);
         this.loginSuccessHttpResponseConverter.write(loginSuccessResponse, null, httpResponse);

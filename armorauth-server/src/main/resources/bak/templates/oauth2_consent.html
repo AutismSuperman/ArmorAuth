@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+
+
+<head th:replace="common/include :: common_header(~{::title},~{::link},~{::style})">
+    <title>ArmorAuth OAuth2授权</title>
+    <link rel="stylesheet" href="/static/oauth/css/styles.css">
+    <style>
+        .btn-border {
+            border: 1px solid #ced4da;
+        }
+    </style>
+</head>
+
+
+<body>
+<div style="display: table-cell; vertical-align: middle;width: 100vw;height: 100vh;">
+    <div class="container col-11 col-md-6" id="form-container">
+        <div class="row align-items-center gx-5">
+            <div class="col-md-6 order-md-2">
+                <h2 th:text="${clientName}+'此第三方应用想要访问您的账号'+${principalName}+'请求获得以下权限:'"></h2>
+                <form class="row g-3" id="consent_form" name="consent_form" th:action="${authorizationEndpoint}"
+                      method="post">
+                    <input type="hidden" name="client_id" th:value="${clientId}">
+                    <input type="hidden" name="state" th:value="${state}">
+                    <div class="mb-3">
+                        <div th:each="scope,scopeStat:${scopes}" class="form-check mb-2">
+                            <input type="checkbox" class="form-check-input" name="scope"
+                                   checked th:value="${scope.scope}" th:id="${scope.scope}">
+                            <label for="newsletter" class="form-check-label" th:text="${scope.description}"></label>
+                        </div>
+                        <th:block th:if="${previouslyApprovedScopes != null}">
+                            <p>您已对上述应用授予以下权限：</p>
+                            <div th:each="scope,scopeStat:${previouslyApprovedScopes}" class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input"
+                                       checked disabled th:id="${scope.scope}">
+                                <label for="newsletter" class="form-check-label">${scope.description}</label>
+                            </div>
+                        </th:block>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <input type="submit" class="btn btn-primary" value="同意授权">
+                        <input type="button" class="btn btn-border" value="拒绝" onclick="cancelConsent();">
+                    </div>
+                </form>
+                <div class="row g-3 mt-2">
+                    <div class="align-items-center my-4 mb-2">
+                        <p class="text-center  mx-3 mb-0 text-muted">你可以随时在 帐号设置>第三方应用中取消你的授权</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 order-md-1">
+                <div class="co-12">
+                    <img src="/static/oauth/img/authorize.png" alt="Log in" class="img-fluid">
+                </div>
+            </div>
+        </div>
+        <div class="footer text-center mt-5">
+            <p>Apache2 Licensed | Copyright © 2022 ArmorAuth</p>
+        </div>
+    </div>
+</div>
+<script>
+    function cancelConsent() {
+        document.consent_form.reset();
+        document.consent_form.submit();
+    }
+</script>
+</body>
+
+</html>

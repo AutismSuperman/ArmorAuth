@@ -24,7 +24,7 @@ import java.util.Map;
 @Data
 public class LoginSuccessResponse implements Serializable {
 
-    private String redirectUrl;
+    private String redirectUri;
 
     private String description;
 

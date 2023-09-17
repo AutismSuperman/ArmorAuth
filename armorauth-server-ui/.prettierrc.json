@@ -1,0 +1,8 @@
+{
+    "printWidth":120,
+    "singleQuote": true,
+    "importOrder": ["(.*).css$","^[./]" ,"^@/components/(.*)$","^@/(.*)$"],
+    "importOrderSeparation": true,
+    "importOrderSortSpecifiers": true
+  }
+  

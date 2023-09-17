@@ -35,8 +35,7 @@ public class FailureAuthenticationEntryPoint implements AuthenticationEntryPoint
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        String message = exceptionMessage(authException);
-        response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
+        response.sendError(HttpStatus.UNAUTHORIZED.value(), exceptionMessage(authException));
     }
 
     private String exceptionMessage(AuthenticationException exception) {

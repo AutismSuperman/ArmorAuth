@@ -46,7 +46,7 @@
         <maven.flatten.version>1.5.0</maven.flatten.version>
         <maven.spotless.version>2.25.0</maven.spotless.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-        <frontend-maven-plugin.version>1.13.4</frontend-maven-plugin.version>
+        <frontend-maven-plugin.version>1.14.0</frontend-maven-plugin.version>
         <!-- CheckStyle -->
         <spotless.license-header.file>
             license-header.txt

@@ -3,6 +3,8 @@ server:
   servlet:
     session:
       tracking-modes: cookie
+  error:
+    include-message: always
 spring:
   profiles:
     active: mysql

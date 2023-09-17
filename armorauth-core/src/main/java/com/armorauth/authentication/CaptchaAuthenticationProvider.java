@@ -57,7 +57,6 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider, In
                         "CaptchaAuthenticationProvider.onlySupports",
                         "Only CaptchaAuthenticationToken is supported"));
         CaptchaAuthenticationToken unAuthenticationToken = (CaptchaAuthenticationToken) authentication;
-
         String phone = unAuthenticationToken.getName();
         String rawCode = (String) unAuthenticationToken.getCredentials();
         // verifyCaptcha

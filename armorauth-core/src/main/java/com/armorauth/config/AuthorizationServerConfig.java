@@ -50,7 +50,7 @@ import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 @Configuration(proxyBeanMethods = false)
 public class AuthorizationServerConfig {
 
-    private static final String CUSTOM_CONSENT_PAGE_URI = "/oauth2/consent";
+    private static final String CUSTOM_CONSENT_PAGE_URI = "/consent";
 
     public static final String CUSTOM_ACTIVATE_PAGE = "/activate";
 

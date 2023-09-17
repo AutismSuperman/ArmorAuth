@@ -154,6 +154,7 @@ public class DefaultSecurityConfig {
                 .requestMatchers("/favicon.ico")
                 .requestMatchers("/static/**")
                 .requestMatchers("/resources/**")
+                .requestMatchers("/assets/**")
                 .requestMatchers("/webjars/**")
                 .requestMatchers("/h2-console/**")
                 .requestMatchers("/actuator/health")

@@ -36,11 +36,12 @@ build/
 ### Mac OS ###
 .DS_Store!/.idea/
 
-
 ### UI ###
-.DS_Store
 node_modules/
-/dist/
+node/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+
+.DS_Store

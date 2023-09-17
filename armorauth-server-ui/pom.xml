@@ -14,7 +14,7 @@
     <properties>
         <node.version>v18.17.1</node.version>
         <npm.version>9.6.7</npm.version>
-        <frontend.download.root>http://npm.taobao.org/mirrors/</frontend.download.root>
+        <node.download.root>http://nodejs.org/dist/</node.download.root>
     </properties>
 
 
@@ -58,8 +58,13 @@
                         <goals>
                             <goal>install-node-and-npm</goal>
                         </goals>
+                        <!--
+                        Not working https://github.com/eirslett/frontend-maven-plugin/issues/487
+                        delete this folder from your maven repository -> \.m2\repository\com\github\eirslett
+                        delete this folder from your application -> <MY_PROJECT>\frontend\src\main\frontend\node
+                        -->
                         <configuration>
-                            <downloadRoot>${frontend.download.root}</downloadRoot>
+                            <nodeDownloadRoot>${node.download.root}</nodeDownloadRoot>
                             <nodeVersion>${node.version}</nodeVersion>
                             <npmVersion>${npm.version}</npmVersion>
                         </configuration>
