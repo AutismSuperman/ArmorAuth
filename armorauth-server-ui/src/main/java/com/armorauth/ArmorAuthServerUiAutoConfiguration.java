@@ -16,10 +16,6 @@
 package com.armorauth;
 
 import com.armorauth.properties.ArmorAuthUiProperties;
-import com.armorauth.web.servlet.ArmorAuthControllerHandlerMapping;
-import com.armorauth.web.servlet.HomepageForwardingFilter;
-import com.armorauth.util.PathUtils;
-import com.armorauth.web.UiController;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -28,19 +24,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.CacheControl;
-import org.springframework.web.accept.ContentNegotiationManager;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-
-import static java.util.Arrays.asList;
 
 @Slf4j
 @Configuration(proxyBeanMethods = false)
@@ -53,8 +44,6 @@ public class ArmorAuthServerUiAutoConfiguration {
     /**
      * path patterns that will be forwarded to the homepage (webapp)
      */
-    private static final List<String> DEFAULT_UI_ROUTES =
-            asList("/activate/**","/activated/**");
 
 
     private final ApplicationContext applicationContext;
@@ -65,12 +54,6 @@ public class ArmorAuthServerUiAutoConfiguration {
     public ArmorAuthServerUiAutoConfiguration(ApplicationContext applicationContext, ArmorAuthUiProperties armorAuthUiProperties) {
         this.applicationContext = applicationContext;
         this.armorAuthUiProperties = armorAuthUiProperties;
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public UiController homeUiController() {
-        return new UiController();
     }
 
 
@@ -87,23 +70,6 @@ public class ArmorAuthServerUiAutoConfiguration {
         resolver.setCheckExistence(true);
         return resolver;
     }
-
-    static String normalizeHomepageUrl(String homepage) {
-        if (!"/".equals(homepage)) {
-            homepage = PathUtils.normalizePath(homepage);
-        }
-        return homepage;
-    }
-
-
-    @Bean
-    public RequestMappingHandlerMapping adminHandlerMapping(ContentNegotiationManager contentNegotiationManager) {
-        RequestMappingHandlerMapping mapping = new ArmorAuthControllerHandlerMapping();
-        mapping.setOrder(0);
-        mapping.setContentNegotiationManager(contentNegotiationManager);
-        return mapping;
-    }
-
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
@@ -125,27 +91,16 @@ public class ArmorAuthServerUiAutoConfiguration {
                 configurer.setUseTrailingSlashMatch(true);
             }
 
-            @Bean
-            public HomepageForwardingFilterConfig homepageForwardingFilterConfig() {
-                String homepage = normalizeHomepageUrl("/");
-                return new HomepageForwardingFilterConfig(homepage, DEFAULT_UI_ROUTES);
-            }
-
             @Override
             public void addResourceHandlers(ResourceHandlerRegistry registry) {
                 registry.addResourceHandler("/**")
                         .addResourceLocations(this.armorAuthUiProperties.getResourceLocations())
                         .setCacheControl(CacheControl.noStore());
             }
-
-            @Bean
-            @ConditionalOnMissingBean
-            public HomepageForwardingFilter homepageForwardFilter(HomepageForwardingFilterConfig homepageForwardingFilterConfig) throws IOException {
-                return new HomepageForwardingFilter(homepageForwardingFilterConfig);
-            }
-
         }
 
     }
+
+
 
 }

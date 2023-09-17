@@ -1,10 +1,31 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { useAppStore } from '@/stores/theme';
+import { reactive, ref } from 'vue';
 import { useI18nLocale } from '@/composables/i18n-locale';
+
+interface DeviceCodeInfo {
+  deviceVerificationEndpoint: string;
+}
+
 const { t } = useI18nLocale();
 const appStore = useAppStore();
 const { layoutSetting } = storeToRefs(appStore);
+const userCode = ref('');
+const info = reactive<DeviceCodeInfo>((window as any).deviceCodeInfo);
+const activate = () => {
+  const consentForm = document.createElement('form');
+  consentForm.method = 'POST';
+  consentForm.style.display = 'none';
+  consentForm.action = info.deviceVerificationEndpoint;
+  // form data user_code
+  const clientIdInput = document.createElement('input');
+  clientIdInput.name = 'user_code';
+  clientIdInput.value = userCode.value;
+  consentForm.appendChild(clientIdInput);
+  document.body.appendChild(consentForm);
+  consentForm.submit();
+};
 </script>
 
 <template>
@@ -56,10 +77,10 @@ const { layoutSetting } = storeToRefs(appStore);
             </div>
             <a-form class="w-[320px]">
               <a-form-item>
-                <a-input allow-clear :placeholder="t('activate.code')" size="large" />
+                <a-input allow-clear :placeholder="t('activate.code')" v-model:value="userCode" size="large" />
               </a-form-item>
               <a-form-item>
-                <a-button type="primary" class="w-full" size="large">
+                <a-button type="primary" class="w-full" @click="activate()" size="large">
                   {{ t('activate.button.submit') }}
                 </a-button>
               </a-form-item>

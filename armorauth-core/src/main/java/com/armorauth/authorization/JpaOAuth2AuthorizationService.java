@@ -189,9 +189,9 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
         // DeviceCode
         if (authorization.getDeviceCodeValue() != null) {
             OAuth2DeviceCode deviceCode = new OAuth2DeviceCode(
-                    authorization.getUserCodeValue(),
-                    authorization.getUserCodeIssuedAt(),
-                    authorization.getUserCodeExpiresAt());
+                    authorization.getDeviceCodeValue(),
+                    authorization.getDeviceCodeIssuedAt(),
+                    authorization.getDeviceCodeExpiresAt());
             builder.token(deviceCode, metadata -> metadata.putAll(parseMap(authorization.getDeviceCodeMetadata())));
         }
         return builder.build();

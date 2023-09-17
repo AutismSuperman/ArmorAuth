@@ -23,6 +23,7 @@ import com.armorauth.data.repository.AuthorizationConsentRepository;
 import com.armorauth.data.repository.AuthorizationRepository;
 import com.armorauth.data.repository.OAuth2ClientRepository;
 import com.armorauth.jose.Jwks;
+import com.armorauth.security.DeviceVerificationResponseHandler;
 import com.armorauth.web.authentication.DeviceClientAuthenticationConverter;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -54,7 +55,10 @@ public class AuthorizationServerConfig {
 
     public static final String CUSTOM_ACTIVATE_PAGE = "/activate";
 
+    private static final String CUSTOM_ACTIVATED_PAGE = "/activated";
+
     private static final String CUSTOM_LOGIN_PAGE = "/login";
+
 
 
     @Bean
@@ -79,6 +83,8 @@ public class AuthorizationServerConfig {
                         authorizationServerSettings.getDeviceAuthorizationEndpoint());
         DeviceClientAuthenticationProvider deviceClientAuthenticationProvider =
                 new DeviceClientAuthenticationProvider(registeredClientRepository);
+        DeviceVerificationResponseHandler deviceVerificationResponseHandler =
+                new DeviceVerificationResponseHandler(CUSTOM_ACTIVATED_PAGE);
         // Custom OAuth2AuthorizationServerConfigurer
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .deviceAuthorizationEndpoint(deviceAuthorizationEndpoint ->
@@ -86,6 +92,7 @@ public class AuthorizationServerConfig {
                 )
                 .deviceVerificationEndpoint(deviceVerificationEndpoint ->
                         deviceVerificationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)
+                                .deviceVerificationResponseHandler(deviceVerificationResponseHandler)
                 )
                 .clientAuthentication(clientAuthentication ->
                         clientAuthentication

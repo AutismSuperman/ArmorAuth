@@ -24,7 +24,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 public class ArmorAuthUiProperties {
 
-    private static final String[] CLASSPATH_RESOURCE_LOCATIONS = {"classpath:/META-INF/armorauth-server-ui//"};
+    private static final String[] CLASSPATH_RESOURCE_LOCATIONS = {"classpath:/META-INF/armorauth-server-ui/"};
 
     private String[] resourceLocations = CLASSPATH_RESOURCE_LOCATIONS;
 

@@ -11,7 +11,8 @@ interface Scope {
 }
 
 interface ScopeInfo {
-  authorizationEndpoint: string;
+  requestURI: string;
+  userCode: string;
   clientId: string;
   clientName: string;
   state: string;
@@ -62,7 +63,7 @@ const submitConsent = (type: string) => {
   try {
     consentForm.method = 'POST';
     consentForm.style.display = 'none';
-    consentForm.action = info.authorizationEndpoint;
+    consentForm.action = info.requestURI;
     // form data client_id
     const clientIdInput = document.createElement('input');
     clientIdInput.name = 'client_id';
@@ -73,6 +74,13 @@ const submitConsent = (type: string) => {
     stateInput.name = 'state';
     stateInput.value = info.state;
     consentForm.appendChild(stateInput);
+    if(info.userCode){
+      // form data user_code
+      const userCodeInput = document.createElement('input');
+      userCodeInput.name = 'user_code';
+      userCodeInput.value = info.userCode;
+      consentForm.appendChild(userCodeInput);
+    }
     if (type === 'allow') {
       for (let key in state.checkedList) {
         if (state.checkedList.hasOwnProperty(key)) {
@@ -148,7 +156,12 @@ const allow = () => {
             <div class="ant-pro-form-consent-main-center-panel">
               <div class="text-16px text-center mt-2 mb-4">
                 <img src="@/assets/logo.svg" class="h-[128px] w-[128px] ml-auto" />
-                <span class="block">
+                <span class="block" v-if="info.userCode">
+                  <span class="text-xl font-bold"> {{ t('consent.device.have') }}</span><br />
+                  <span class="text-base font-bold text-red-500">{{ info.userCode }}</span><br />
+                  <span class="text-base font-bold">{{ t('consent.device.verify') }}</span>
+                </span>
+                <span class="block mt-2">
                   <span class="text-xl font-bold">{{ info.clientName }}</span>
                   {{ t('consent.wantAccess') }}
                   <span class="text-base font-bold"> {{ t('consent.account') }}</span>

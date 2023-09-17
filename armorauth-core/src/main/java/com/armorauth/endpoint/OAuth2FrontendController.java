@@ -76,7 +76,8 @@ public class OAuth2FrontendController {
     public String consent(Principal principal, Model model,
                           @RequestParam(OAuth2ParameterNames.CLIENT_ID) String clientId,
                           @RequestParam(OAuth2ParameterNames.SCOPE) String scope,
-                          @RequestParam(OAuth2ParameterNames.STATE) String state) {
+                          @RequestParam(OAuth2ParameterNames.STATE) String state,
+                          @RequestParam(name = OAuth2ParameterNames.USER_CODE, required = false) String userCode) {
         RegisteredClient registeredClient = this.registeredClientRepository.findByClientId(clientId);
         assert registeredClient != null;
         String id = registeredClient.getId();
@@ -96,7 +97,12 @@ public class OAuth2FrontendController {
         });
         String clientName = registeredClient.getClientName();
         model.addAttribute("model", "consent");
-        model.addAttribute("authorizationEndpoint", authorizationServerSettings.getAuthorizationEndpoint());
+        model.addAttribute("userCode", userCode);
+        if (StringUtils.hasText(userCode)) {
+            model.addAttribute("requestURI", authorizationServerSettings.getDeviceVerificationEndpoint());
+        } else {
+            model.addAttribute("requestURI", authorizationServerSettings.getAuthorizationEndpoint());
+        }
         model.addAttribute("clientId", clientId);
         model.addAttribute("clientName", clientName);
         model.addAttribute("state", state);

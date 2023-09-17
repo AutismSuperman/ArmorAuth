@@ -18,7 +18,8 @@
     <th:block th:if="${ model == 'consent'}">
         <script th:inline="javascript" type="text/javascript">
           let scopeInfo = {
-            authorizationEndpoint: [[${authorizationEndpoint}]],
+            requestURI: [[${requestURI}]],
+            userCode: [[${userCode}]],
             clientId: [[${clientId}]],
             principalName: [[${principalName}]],
             clientName: [[${clientName}]],
@@ -27,6 +28,14 @@
             previouslyApprovedScopes: [[${previouslyApprovedScopes}]]
           };
           window.scopeInfo = scopeInfo;
+        </script>
+    </th:block>
+    <th:block th:if="${ model == 'device'}">
+        <script th:inline="javascript" type="text/javascript">
+          let deviceCodeInfo = {
+            deviceVerificationEndpoint: [[${deviceVerificationEndpoint}]]
+          };
+          window.deviceCodeInfo = deviceCodeInfo;
         </script>
     </th:block>
 </head>

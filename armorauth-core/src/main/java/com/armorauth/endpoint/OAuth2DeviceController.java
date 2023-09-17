@@ -15,24 +15,35 @@
  */
 package com.armorauth.endpoint;
 
+import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class OAuth2DeviceController {
 
+    private final AuthorizationServerSettings authorizationServerSettings;
+
+    public OAuth2DeviceController(AuthorizationServerSettings authorizationServerSettings) {
+        this.authorizationServerSettings = authorizationServerSettings;
+    }
+
     @GetMapping("/activate")
-    public String activate(@RequestParam(value = "user_code", required = false) String userCode) {
+    public String activate(Model model, @RequestParam(value = "user_code", required = false) String userCode) {
         if (userCode != null) {
             return "redirect:/oauth2/device_verification?user_code=" + userCode;
         }
-        return "device/device_activate";
+        model.addAttribute("model", "device");
+        model.addAttribute("deviceVerificationEndpoint",
+                authorizationServerSettings.getDeviceVerificationEndpoint());
+        return "index";
     }
 
     @GetMapping("/activated")
     public String activated() {
-        return "device/device_activated";
+        return "index";
     }
 
 
