@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { useAppStore } from '@/stores/theme';
-import { reactive, watch, shallowRef } from 'vue';
+import { reactive, watch } from 'vue';
 import { useI18nLocale } from '@/composables/i18n-locale';
 import { message } from 'ant-design-vue';
 
