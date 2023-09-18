@@ -20,8 +20,6 @@ interface ScopeInfo {
   scopes: Array<Scope>;
   previouslyApprovedScopes: Array<Scope>;
 }
-
-const formRef = shallowRef();
 const { t } = useI18nLocale();
 const appStore = useAppStore();
 const { layoutSetting } = storeToRefs(appStore);
@@ -74,7 +72,7 @@ const submitConsent = (type: string) => {
     stateInput.name = 'state';
     stateInput.value = info.state;
     consentForm.appendChild(stateInput);
-    if(info.userCode){
+    if (info.userCode) {
       // form data user_code
       const userCodeInput = document.createElement('input');
       userCodeInput.name = 'user_code';
@@ -156,9 +154,11 @@ const allow = () => {
             <div class="ant-pro-form-consent-main-center-panel">
               <div class="text-16px text-center mt-2 mb-4">
                 <img src="@/assets/logo.svg" class="h-[128px] w-[128px] ml-auto" />
-                <span class="block" v-if="info.userCode">
-                  <span class="text-xl font-bold"> {{ t('consent.device.have') }}</span><br />
-                  <span class="text-base font-bold text-red-500">{{ info.userCode }}</span><br />
+                <span v-if="info.userCode" class="block">
+                  <span class="text-xl font-bold"> {{ t('consent.device.have') }}</span
+                  ><br />
+                  <span class="text-base font-bold text-red-500">{{ info.userCode }}</span
+                  ><br />
                   <span class="text-base font-bold">{{ t('consent.device.verify') }}</span>
                 </span>
                 <span class="block mt-2">
@@ -190,10 +190,10 @@ const allow = () => {
                 />
               </div>
               <div class="flex flex-justify-between mb-4">
-                <a-button type="primary" class="block w-[80px]" @click="deny" danger size="large">
+                <a-button type="primary" class="block w-[80px]" danger size="large" @click="deny">
                   {{ t('consent.button.deny') }}
                 </a-button>
-                <a-button type="primary" class="block w-[80px]" @click="allow" size="large">
+                <a-button type="primary" class="block w-[80px]" size="large" @click="allow">
                   {{ t('consent.button.allow') }}
                 </a-button>
               </div>

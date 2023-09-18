@@ -77,10 +77,10 @@ const activate = () => {
             </div>
             <a-form class="w-[320px]">
               <a-form-item>
-                <a-input allow-clear :placeholder="t('activate.code')" v-model:value="userCode" size="large" />
+                <a-input v-model:value="userCode" allow-clear :placeholder="t('activate.code')" size="large" />
               </a-form-item>
               <a-form-item>
-                <a-button type="primary" class="w-full" @click="activate()" size="large">
+                <a-button type="primary" class="w-full" size="large" @click="activate()">
                   {{ t('activate.button.submit') }}
                 </a-button>
               </a-form-item>

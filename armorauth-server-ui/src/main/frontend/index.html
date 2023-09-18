@@ -1,46 +1,44 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite App</title>
     <script type="text/javascript">
-      (function() {
-        const prefersDark =
-          window.matchMedia &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches;
-        const setting = localStorage.getItem("vueuse-color-scheme") || "auto";
-        if (setting === "dark" || (prefersDark && setting !== "light"))
-          document.documentElement.classList.toggle("dark", true);
+      (function () {
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const setting = localStorage.getItem('vueuse-color-scheme') || 'auto';
+        if (setting === 'dark' || (prefersDark && setting !== 'light'))
+          document.documentElement.classList.toggle('dark', true);
       })();
     </script>
     <th:block th:if="${ model == 'consent'}">
-        <script th:inline="javascript" type="text/javascript">
-          let scopeInfo = {
-            requestURI: [[${requestURI}]],
-            userCode: [[${userCode}]],
-            clientId: [[${clientId}]],
-            principalName: [[${principalName}]],
-            clientName: [[${clientName}]],
-            state: [[${state}]],
-            scopes: [[${scopes}]],
-            previouslyApprovedScopes: [[${previouslyApprovedScopes}]]
-          };
-          window.scopeInfo = scopeInfo;
-        </script>
+      <script th:inline="javascript" type="text/javascript">
+        let scopeInfo = {
+          requestURI: [[${requestURI}]],
+          userCode: [[${userCode}]],
+          clientId: [[${clientId}]],
+          principalName: [[${principalName}]],
+          clientName: [[${clientName}]],
+          state: [[${state}]],
+          scopes: [[${scopes}]],
+          previouslyApprovedScopes: [[${previouslyApprovedScopes}]]
+        };
+        window.scopeInfo = scopeInfo;
+      </script>
     </th:block>
     <th:block th:if="${ model == 'device'}">
-        <script th:inline="javascript" type="text/javascript">
-          let deviceCodeInfo = {
-            deviceVerificationEndpoint: [[${deviceVerificationEndpoint}]]
-          };
-          window.deviceCodeInfo = deviceCodeInfo;
-        </script>
+      <script th:inline="javascript" type="text/javascript">
+        let deviceCodeInfo = {
+          deviceVerificationEndpoint: [[${deviceVerificationEndpoint}]]
+        };
+        window.deviceCodeInfo = deviceCodeInfo;
+      </script>
     </th:block>
-</head>
-<body>
-<div id="app"></div>
-<script type="module" src="./main.ts"></script>
-</body>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
 </html>

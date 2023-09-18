@@ -57,7 +57,7 @@ const getCode = async () => {
   }
 };
 
-const  errorMsg=ref("");
+const errorMsg = ref('');
 
 const loginModel = reactive({
   username: 'admin',
@@ -77,14 +77,14 @@ const submit = async () => {
       let loginParams = {
         username: loginModel.username,
         password: loginModel.password,
-        'remember-me': loginModel.remember
+        'remember-me': loginModel.remember,
       } as unknown as LoginParams;
       data = await login(loginParams);
     } else if (loginModel.type === 'account') {
       let loginCaptchaParams = {
         account: loginModel.account,
         captcha: loginModel.captcha,
-        'remember-me': loginModel.remember
+        'remember-me': loginModel.remember,
       } as unknown as LoginCaptchaParams;
       data = await loginCaptcha(loginCaptchaParams);
     }
@@ -99,7 +99,7 @@ const submit = async () => {
   } catch (e) {
     submitLoading.value = false;
     if (e instanceof AxiosError) {
-      errorMsg.value=e.response.data.message;
+      errorMsg.value = e.response.data.message;
       errorAlert.value = true;
     }
   }
@@ -150,7 +150,7 @@ const submit = async () => {
           <a-divider m-0 type="vertical" class="ant-pro-login-divider min-h-[550px]" />
           <!-- 登录框右侧 -->
           <div class="ant-pro-form-login-main-right px-5 w-[360px] flex-center flex-col relative z-11">
-            <div class="text-center py-4 text-2xl -mt-18 ">
+            <div class="text-center py-4 text-2xl -mt-18">
               {{ t('login.tips') }}
             </div>
             <a-form ref="formRef" class="w-[320px]" :model="loginModel">
@@ -162,14 +162,14 @@ const submit = async () => {
               <a-alert
                 v-if="errorAlert && loginModel.type === 'username'"
                 mb-24px
-                :message=errorMsg
+                :message="errorMsg"
                 type="error"
                 show-icon
               />
               <a-alert
                 v-if="errorAlert && loginModel.type === 'account'"
                 mb-24px
-                :message=errorMsg
+                :message="errorMsg"
                 type="error"
                 show-icon
               />

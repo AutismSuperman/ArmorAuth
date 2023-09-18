@@ -1,5 +1,5 @@
 import axios from '@/util/axios';
-import * as qs from "qs"
+import * as qs from 'qs';
 
 export interface LoginParams {
   username: string;
@@ -15,4 +15,4 @@ export interface LoginCaptchaParams {
 
 export const login = (params: LoginParams) => axios.post('/login', qs.stringify(params));
 
-export const loginCaptcha = (params: LoginCaptchaParams) => axios.post('/login/captcha',  qs.stringify(params));
+export const loginCaptcha = (params: LoginCaptchaParams) => axios.post('/login/captcha', qs.stringify(params));

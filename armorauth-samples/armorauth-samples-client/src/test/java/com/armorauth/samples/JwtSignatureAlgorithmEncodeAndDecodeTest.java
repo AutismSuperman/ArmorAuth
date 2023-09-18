@@ -20,7 +20,6 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyType;
-import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
@@ -56,14 +55,14 @@ public class JwtSignatureAlgorithmEncodeAndDecodeTest {
         Instant issuedAt = Instant.now();
         Instant expiresAt = issuedAt.plus(Duration.ofSeconds(60));
         // JWK
-        RSAKey rsaKey = Jwks.generateRsa();
-        KeyPair keyPair = rsaKey.toKeyPair();
+        JWK jwk = Jwks.generateRsa();
+        KeyPair keyPair =  jwk.toRSAKey().toKeyPair();
         PrivateKey privateKey = keyPair.getPrivate();
         PublicKey publicKey = keyPair.getPublic();
         log.info("keyPair.getPrivate: {}", privateKey);
         log.info("keyPair.getPublic: {}", publicKey);
         // resolveAlgorithm
-        JwsAlgorithm jwsAlgorithm = resolveAlgorithm(rsaKey);
+        JwsAlgorithm jwsAlgorithm = resolveAlgorithm(jwk);
         // JwtClaimsSet
         JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder()
                 .issuer(clientId)
@@ -76,7 +75,7 @@ public class JwtSignatureAlgorithmEncodeAndDecodeTest {
         // JwsHeader
         JwsHeader.Builder headersBuilder = JwsHeader.with(jwsAlgorithm);
         JwsHeader jwsHeader = headersBuilder.build();
-        JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(new JWKSet(rsaKey));
+        JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(new JWKSet(jwk));
         JwtEncoder jwsEncoder = new NimbusJwtEncoder(jwkSource);
         Jwt jws = jwsEncoder.encode(JwtEncoderParameters.from(jwsHeader, jwtClaimsSet));
         log.info("private key jwt parameter:{} jwt: {}", OAuth2ParameterNames.CLIENT_ASSERTION, jws.getTokenValue());
