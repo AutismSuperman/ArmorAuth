@@ -61,6 +61,7 @@
         <module>armorauth-samples</module>
         <module>armorauth-server</module>
         <module>armorauth-server-ui</module>
+        <module>armorauth-federation</module>
     </modules>
 
     <dependencyManagement>

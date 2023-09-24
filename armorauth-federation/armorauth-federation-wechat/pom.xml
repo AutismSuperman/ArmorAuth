@@ -5,20 +5,18 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.armorauth</groupId>
-        <artifactId>armorauth-parent</artifactId>
+        <artifactId>armorauth-federation</artifactId>
         <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>armorauth-samples</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>armorauth-samples-oidc-login</module>
-        <module>armorauth-samples-client</module>
-        <module>armorauth-samples-pkce</module>
-        <module>armorauth-samples-test</module>
-    </modules>
+    <artifactId>armorauth-federation-wechat</artifactId>
 
-
+   <dependencies>
+       <dependency>
+           <groupId>com.armorauth</groupId>
+           <artifactId>armorauth-federation-core</artifactId>
+           <version>${revision}</version>
+       </dependency>
+   </dependencies>
 
 </project>

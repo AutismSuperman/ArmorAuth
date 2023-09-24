@@ -7,18 +7,17 @@
         <groupId>com.armorauth</groupId>
         <artifactId>armorauth-parent</artifactId>
         <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>armorauth-samples</artifactId>
+    <artifactId>armorauth-federation</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>armorauth-samples-oidc-login</module>
-        <module>armorauth-samples-client</module>
-        <module>armorauth-samples-pkce</module>
-        <module>armorauth-samples-test</module>
+        <module>armorauth-federation-core</module>
+        <module>armorauth-federation-qq</module>
+        <module>armorauth-federation-integration</module>
+        <module>armorauth-federation-wechat</module>
+        <module>armorauth-federation-gitee</module>
     </modules>
-
 
 
 </project>

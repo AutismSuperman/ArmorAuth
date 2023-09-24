@@ -15,9 +15,9 @@
  */
 package com.armorauth.configurers;
 
-import com.armorauth.federat.DelegateAccessTokenResponseClient;
-import com.armorauth.federat.DelegatingOAuth2AuthorizationRequestResolver;
-import com.armorauth.federat.DelegatingOAuth2UserService;
+import com.armorauth.federation.DelegateAccessTokenResponseClient;
+import com.armorauth.federation.DelegatingOAuth2AuthorizationRequestResolver;
+import com.armorauth.federation.DelegatingOAuth2UserService;
 import com.armorauth.security.FederatedAuthenticationEntryPoint;
 import com.armorauth.security.FederatedAuthenticationSuccessHandler;
 import org.springframework.context.ApplicationContext;

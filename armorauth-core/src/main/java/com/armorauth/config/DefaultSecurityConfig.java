@@ -20,7 +20,7 @@ import com.armorauth.configurers.OAuth2FederatedLoginServerConfigurer;
 import com.armorauth.configurers.web.OAuth2UserLoginFilterSecurityConfigurer;
 import com.armorauth.data.repository.UserInfoRepository;
 import com.armorauth.details.DelegateUserDetailsService;
-import com.armorauth.federat.ExtendedOAuth2ClientPropertiesMapper;
+import com.armorauth.federation.ExtendedOAuth2ClientPropertiesMapper;
 import com.armorauth.security.FailureAuthenticationEntryPoint;
 import com.armorauth.security.FederatedAuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
