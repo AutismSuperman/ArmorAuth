@@ -30,7 +30,7 @@ import java.util.LinkedHashMap;
  * 微信协议 {@code #wechat_redirect}，同时 {@code client_id}应该替换为{@code app_id}  <br/>
  * {@code https://open.weixin.qq.com/connect/qrconnect?response_type=code&appid=APPID&scope=snsapi_userinfo&state=STATEredirect_uri=REDIRECT_URI&#wechat_redirect}
  *
- * @author AustismSuperman
+ * @author AutismSuperman
  */
 public class WechatAuthorizationRequestConverter implements OAuth2AuthorizationRequestConverter {
 

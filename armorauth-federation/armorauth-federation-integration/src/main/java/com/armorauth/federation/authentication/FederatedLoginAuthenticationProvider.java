@@ -35,8 +35,6 @@ public class FederatedLoginAuthenticationProvider implements AuthenticationProvi
 
     private final OAuth2AuthorizationCodeAuthenticationProvider authorizationCodeAuthenticationProvider;
 
-    private OAuth2AuthorizedClientService authorizedClientService;
-
     private final OAuth2UserService<OAuth2UserRequest, OAuth2User> userService;
 
     private GrantedAuthoritiesMapper authoritiesMapper = ((authorities) -> authorities);
@@ -52,15 +50,12 @@ public class FederatedLoginAuthenticationProvider implements AuthenticationProvi
      */
     public FederatedLoginAuthenticationProvider(
             OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient,
-            OAuth2UserService<OAuth2UserRequest, OAuth2User> userService,
-            OAuth2AuthorizedClientService authorizedClientService
+            OAuth2UserService<OAuth2UserRequest, OAuth2User> userService
     ) {
         Assert.notNull(userService, "userService cannot be null");
         this.authorizationCodeAuthenticationProvider = new OAuth2AuthorizationCodeAuthenticationProvider(
                 accessTokenResponseClient);
-
         this.userService = userService;
-        this.authorizedClientService = authorizedClientService;
     }
 
 
@@ -105,11 +100,6 @@ public class FederatedLoginAuthenticationProvider implements AuthenticationProvi
         Assert.notNull(authoritiesMapper, "authoritiesMapper cannot be null");
         this.authoritiesMapper = authoritiesMapper;
     }
-
-    public OAuth2AuthorizedClientService getAuthorizedClientService() {
-        return authorizedClientService;
-    }
-
 
     @Override
     public boolean supports(Class<?> authentication) {

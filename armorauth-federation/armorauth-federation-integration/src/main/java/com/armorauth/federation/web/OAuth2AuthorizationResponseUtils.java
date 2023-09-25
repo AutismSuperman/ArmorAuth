@@ -8,12 +8,12 @@ import org.springframework.util.StringUtils;
 
 import java.util.Map;
 
-final class OAuth2AuthorizationResponseUtils {
+public final class OAuth2AuthorizationResponseUtils {
 
     private OAuth2AuthorizationResponseUtils() {
     }
 
-    static MultiValueMap<String, String> toMultiMap(Map<String, String[]> map) {
+    public static MultiValueMap<String, String> toMultiMap(Map<String, String[]> map) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>(map.size());
         map.forEach((key, values) -> {
             for (String value : values) {
@@ -23,21 +23,21 @@ final class OAuth2AuthorizationResponseUtils {
         return params;
     }
 
-    static boolean isAuthorizationResponse(MultiValueMap<String, String> request) {
+    public static boolean isAuthorizationResponse(MultiValueMap<String, String> request) {
         return isAuthorizationResponseSuccess(request) || isAuthorizationResponseError(request);
     }
 
-    static boolean isAuthorizationResponseSuccess(MultiValueMap<String, String> request) {
+    public static boolean isAuthorizationResponseSuccess(MultiValueMap<String, String> request) {
         return StringUtils.hasText(request.getFirst(OAuth2ParameterNames.CODE))
                 && StringUtils.hasText(request.getFirst(OAuth2ParameterNames.STATE));
     }
 
-    static boolean isAuthorizationResponseError(MultiValueMap<String, String> request) {
+    public static boolean isAuthorizationResponseError(MultiValueMap<String, String> request) {
         return StringUtils.hasText(request.getFirst(OAuth2ParameterNames.ERROR))
                 && StringUtils.hasText(request.getFirst(OAuth2ParameterNames.STATE));
     }
 
-    static OAuth2AuthorizationResponse convert(MultiValueMap<String, String> request, String redirectUri) {
+    public static OAuth2AuthorizationResponse convert(MultiValueMap<String, String> request, String redirectUri) {
         String code = request.getFirst(OAuth2ParameterNames.CODE);
         String errorCode = request.getFirst(OAuth2ParameterNames.ERROR);
         String state = request.getFirst(OAuth2ParameterNames.STATE);
