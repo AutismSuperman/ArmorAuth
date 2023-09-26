@@ -17,7 +17,9 @@ public class FederatedBindUserRequest implements Serializable {
 
     private final OAuth2User principal;
 
-    private final ClientRegistration clientRegistration;
+    private final String registrationId;
+
+    private final String userNameAttributeName;
 
 
 }

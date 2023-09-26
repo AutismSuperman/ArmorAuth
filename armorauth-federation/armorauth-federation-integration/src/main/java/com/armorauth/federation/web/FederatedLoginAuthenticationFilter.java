@@ -64,7 +64,6 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
     private String bindUserPage;
 
 
-
     public FederatedLoginAuthenticationFilter(ClientRegistrationRepository clientRegistrationRepository,
                                               OAuth2AuthorizedClientService authorizedClientService) {
         this(clientRegistrationRepository, authorizedClientService, DEFAULT_FILTER_PROCESSES_URI);
@@ -153,7 +152,13 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
             //send redirect to bind user page
             FederatedBindUserRequest federatedBindUserRequest =
                     new FederatedBindUserRequest(authenticationResult.getPrincipal(),
-                            authenticationResult.getClientRegistration());
+                            authenticationResult.getClientRegistration().getRegistrationId(),
+                            authenticationResult
+                                    .getClientRegistration()
+                                    .getProviderDetails()
+                                    .getUserInfoEndpoint()
+                                    .getUserNameAttributeName()
+                    );
             federatedBindUserRequestRepository.saveBindUserRequest(federatedBindUserRequest, request, response);
             sendBindUser(request, response);
         }
@@ -166,7 +171,6 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
         this.authorizedClientRepository.saveAuthorizedClient(authorizedClient, oauth2Authentication, request, response);
         return oauth2Authentication;
     }
-
 
 
     public void setBindUserPage(String bindUserPage) {

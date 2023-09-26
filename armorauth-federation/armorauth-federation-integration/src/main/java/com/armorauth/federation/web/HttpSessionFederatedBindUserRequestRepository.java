@@ -6,7 +6,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.util.Assert;
 
-public final class HttpSessionFederatedBindUserRequestRepository implements FederatedBindUserRequestRepository<FederatedBindUserRequest> {
+public final class HttpSessionFederatedBindUserRequestRepository
+        implements FederatedBindUserRequestRepository<FederatedBindUserRequest> {
 
     private static final String DEFAULT_AUTHORIZATION_REQUEST_ATTR_NAME = HttpSessionFederatedBindUserRequestRepository.class
             .getName() + ".BIND_USER_REQUEST";
