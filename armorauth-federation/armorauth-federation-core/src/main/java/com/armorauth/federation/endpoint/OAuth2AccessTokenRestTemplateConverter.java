@@ -13,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
  * @see OAuth2AccessTokenResponseClient
  * @see DefaultAuthorizationCodeTokenResponseClient#setRestOperations(RestOperations)
  */
-public interface OAuth2AccessTokenRestTemplateResolver {
+public interface OAuth2AccessTokenRestTemplateConverter {
 
 
     RestTemplate getRestTemplate(OAuth2AuthorizationCodeGrantRequest authorizationGrantRequest);

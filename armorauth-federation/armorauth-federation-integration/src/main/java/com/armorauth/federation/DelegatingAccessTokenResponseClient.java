@@ -15,10 +15,8 @@
  */
 package com.armorauth.federation;
 
-import com.armorauth.federation.endpoint.OAuth2AccessTokenRestTemplateResolver;
+import com.armorauth.federation.endpoint.OAuth2AccessTokenRestTemplateConverter;
 import com.armorauth.federation.endpoint.OAuth2AuthorizationCodeGrantRequestConverter;
-import com.armorauth.federation.qq.endpoint.QqAccessTokenRestTemplateResolver;
-import com.armorauth.federation.wechat.endpoint.WechatAccessTokenRestTemplateResolver;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
@@ -31,13 +29,14 @@ public class DelegatingAccessTokenResponseClient implements OAuth2AccessTokenRes
 
     private final DefaultAuthorizationCodeTokenResponseClient delegate = new DefaultAuthorizationCodeTokenResponseClient();
 
-    private final List<OAuth2AccessTokenRestTemplateResolver> restTemplates = new ArrayList<>();
+    private final List<OAuth2AccessTokenRestTemplateConverter> restTemplates;
 
 
     public DelegatingAccessTokenResponseClient(
-            List<OAuth2AccessTokenRestTemplateResolver> restTemplates,
+            List<OAuth2AccessTokenRestTemplateConverter> restTemplates,
             List<OAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters
     ) {
+        this.restTemplates = restTemplates;
         this.delegate.setRequestEntityConverter(
                 new DelegatingAuthorizationCodeGrantRequestConverter(authorizationCodeGrantRequestConverters)
         );
@@ -52,7 +51,7 @@ public class DelegatingAccessTokenResponseClient implements OAuth2AccessTokenRes
         return delegate.getTokenResponse(authorizationGrantRequest);
     }
 
-    public void addAccessTokenRestTemplate(OAuth2AccessTokenRestTemplateResolver restTemplate) {
+    public void addAccessTokenRestTemplate(OAuth2AccessTokenRestTemplateConverter restTemplate) {
         restTemplates.add(restTemplate);
     }
 

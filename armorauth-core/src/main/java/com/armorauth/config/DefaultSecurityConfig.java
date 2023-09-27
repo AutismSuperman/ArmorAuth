@@ -21,14 +21,14 @@ import com.armorauth.constant.ConfigBeanNameConstants;
 import com.armorauth.data.repository.UserInfoRepository;
 import com.armorauth.details.DelegateUserDetailsService;
 import com.armorauth.federation.*;
-import com.armorauth.federation.endpoint.OAuth2AccessTokenRestTemplateResolver;
+import com.armorauth.federation.endpoint.OAuth2AccessTokenRestTemplateConverter;
 import com.armorauth.federation.endpoint.OAuth2AuthorizationCodeGrantRequestConverter;
 import com.armorauth.federation.gitee.user.GiteeOAuth2UserService;
-import com.armorauth.federation.qq.endpoint.QqAccessTokenRestTemplateResolver;
+import com.armorauth.federation.qq.endpoint.QqAccessTokenRestTemplateConverter;
 import com.armorauth.federation.qq.endpoint.QqAuthorizationCodeGrantRequestConverter;
 import com.armorauth.federation.web.configurers.FederatedLoginConfigurer;
 import com.armorauth.federation.web.converter.OAuth2AuthorizationRequestConverter;
-import com.armorauth.federation.wechat.endpoint.WechatAccessTokenRestTemplateResolver;
+import com.armorauth.federation.wechat.endpoint.WechatAccessTokenRestTemplateConverter;
 import com.armorauth.federation.wechat.endpoint.WechatAuthorizationCodeGrantRequestConverter;
 import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestConverter;
 import com.armorauth.security.FailureAuthenticationEntryPoint;
@@ -54,11 +54,10 @@ import org.springframework.security.oauth2.client.registration.InMemoryClientReg
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
-import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationEntryPointFailureHandler;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import com.armorauth.federation.web.FederatedAuthenticationEntryPoint;
 
 import java.util.*;
 
@@ -129,7 +128,12 @@ public class DefaultSecurityConfig {
     ) throws Exception {
         FederatedLoginConfigurer federatedLoginConfigurer = new FederatedLoginConfigurer();
         http.apply(federatedLoginConfigurer);
-
+        FederatedAuthenticationEntryPoint authenticationEntryPoint =
+                new FederatedAuthenticationEntryPoint("/login", clientRegistrationRepository);
+        http.exceptionHandling(exceptionHandling ->
+                exceptionHandling
+                        .authenticationEntryPoint(authenticationEntryPoint)
+        );
 
         List<OAuth2AuthorizationRequestConverter> authorizationRequestConverters = new ArrayList<>();
         authorizationRequestConverters.add(new WechatAuthorizationRequestConverter());
@@ -137,11 +141,11 @@ public class DefaultSecurityConfig {
                 new DelegatingAuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestConverters);
 
 
-        List<OAuth2AccessTokenRestTemplateResolver> restTemplates = new ArrayList<>();
+        List<OAuth2AccessTokenRestTemplateConverter> restTemplates = new ArrayList<>();
         List<OAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters = new ArrayList<>();
-        restTemplates.add(new WechatAccessTokenRestTemplateResolver());
+        restTemplates.add(new WechatAccessTokenRestTemplateConverter());
         authorizationCodeGrantRequestConverters.add(new WechatAuthorizationCodeGrantRequestConverter());
-        restTemplates.add(new QqAccessTokenRestTemplateResolver());
+        restTemplates.add(new QqAccessTokenRestTemplateConverter());
         authorizationCodeGrantRequestConverters.add(new QqAuthorizationCodeGrantRequestConverter());
         DelegatingAccessTokenResponseClient accessTokenResponseClient = new DelegatingAccessTokenResponseClient(
                 restTemplates,

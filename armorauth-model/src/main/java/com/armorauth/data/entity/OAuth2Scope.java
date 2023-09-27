@@ -16,6 +16,7 @@
 package com.armorauth.data.entity;
 
 
+import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.Hibernate;
 
@@ -25,6 +26,7 @@ import java.util.Objects;
 
 /**
  * 作用域信息
+ *
  * @author fulin
  * @since 2022-08-31
  */

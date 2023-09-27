@@ -17,6 +17,7 @@ package com.armorauth.data.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
 import org.hibernate.Hibernate;
