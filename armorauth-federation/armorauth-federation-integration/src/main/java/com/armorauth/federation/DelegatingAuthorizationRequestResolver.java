@@ -21,11 +21,16 @@ public class DelegatingAuthorizationRequestResolver implements OAuth2Authorizati
     private final List<OAuth2AuthorizationRequestConverter> authorizationRequestConverters;
 
     public DelegatingAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
+                                                  List<OAuth2AuthorizationRequestConverter> authorizationRequestConverters) {
+        this(clientRegistrationRepository,
+                OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI, authorizationRequestConverters);
+    }
+
+
+    public DelegatingAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
                                                   String authorizationRequestBaseUri,
                                                   List<OAuth2AuthorizationRequestConverter> authorizationRequestConverters) {
         Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
-        if (authorizationRequestBaseUri == null)
-            authorizationRequestBaseUri = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
         this.authorizationRequestConverters = authorizationRequestConverters;
         this.delegate = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestBaseUri);
         this.delegate.setAuthorizationRequestCustomizer(this::authorizationRequestCustomizer);

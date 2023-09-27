@@ -15,13 +15,12 @@
  */
 package com.armorauth.data.entity;
 
-import lombok.Data;
-import org.hibernate.Hibernate;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Data;
+import org.hibernate.Hibernate;
 
 import java.io.Serial;
 import java.io.Serializable;

@@ -62,6 +62,7 @@
         <module>armorauth-server</module>
         <module>armorauth-server-ui</module>
         <module>armorauth-federation</module>
+        <module>armorauth-model</module>
     </modules>
 
     <dependencyManagement>

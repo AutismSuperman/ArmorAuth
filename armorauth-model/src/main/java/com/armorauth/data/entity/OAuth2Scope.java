@@ -19,24 +19,20 @@ package com.armorauth.data.entity;
 import lombok.Data;
 import org.hibernate.Hibernate;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * 客户端设置信息
+ * 作用域信息
  * @author fulin
  * @since 2022-08-31
  */
 @Data
 @Entity
-@Table(name = "oauth2_client_settings")
-public class OAuth2ClientSettings implements Serializable {
+@Table(name = "oauth2_scope")
+@IdClass(OAuth2Scope.OAuth2ScopeId.class)
+public class OAuth2Scope implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -45,21 +41,33 @@ public class OAuth2ClientSettings implements Serializable {
     @Column(name = "client_id", insertable = false, updatable = false)
     private String clientId;
 
-    private String jwkSetUrl;
+    @Id
+    private String scope;
 
-    private Boolean requireAuthorizationConsent;
+    private String description;
 
-    private Boolean requireProofKey;
 
-    private String signingAlgorithm;
-
+    @Data
+    public static class OAuth2ScopeId implements Serializable {
+        private static final long serialVersionUID = 1991088202139468930L;
+        private String clientId;
+        private String scope;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        OAuth2ClientSettings OAuth2ClientSettings = (OAuth2ClientSettings) o;
-        return clientId != null && Objects.equals(clientId, OAuth2ClientSettings.clientId);
+        OAuth2Scope that = (OAuth2Scope) o;
+        return clientId != null && Objects.equals(clientId, that.clientId)
+                && scope != null && Objects.equals(scope, that.scope);
     }
+
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(clientId, scope);
+    }
+
 
 }

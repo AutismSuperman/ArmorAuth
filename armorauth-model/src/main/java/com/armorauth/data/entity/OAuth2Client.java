@@ -22,8 +22,6 @@ import lombok.ToString;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.GenericGenerator;
 
-import jakarta.persistence.*;
-
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;

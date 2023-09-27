@@ -16,27 +16,29 @@
 package com.armorauth.data.entity;
 
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
-
-import jakarta.persistence.*;
 
 import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * 用户信息表
+ * 用户联合登录绑定表
  *
  * @author fulin
  * @since 2022-08-31
  */
 @Data
 @Entity
-@Table(name = "user_info")
-public class UserInfo implements Serializable {
-
+@Table(name = "user_federated_binding")
+public class UserFederatedBinding implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
+
     /**
      * id
      */
@@ -45,30 +47,10 @@ public class UserInfo implements Serializable {
     @GeneratedValue(generator = "uuid-hex")
     private String id;
 
+    private String user_id;
 
-    @Column(name = "username", nullable = false)
-    private String username;
+    private String uniqueIdentification;
 
-    @Column(name = "display_name", nullable = false)
-    private String displayName;
-
-    @Column(name = "password", nullable = false)
-    private String password;
-
-
-    @Column(name = "phone", length = 20)
-    private String phone;
-
-    /**
-     * 用户账号状态 0：正常 1：冻结 2：禁用 3: 注销
-     */
-    @Column(name = "status", columnDefinition = "int default 0", nullable = false, length = 1)
-    private Integer status;
-
-    @Column(name = "create_time", columnDefinition = "datetime", nullable = false)
-    private String createTime;
-
-    @Column(name = "last_login_time", columnDefinition = "datetime", nullable = false)
-    private String lastLoginTime;
+    private String registrationId;
 
 }

@@ -17,9 +17,20 @@ package com.armorauth.config;
 
 
 import com.armorauth.configurers.web.OAuth2UserLoginFilterSecurityConfigurer;
+import com.armorauth.constant.ConfigBeanNameConstants;
 import com.armorauth.data.repository.UserInfoRepository;
 import com.armorauth.details.DelegateUserDetailsService;
-import com.armorauth.federation.ExtendedOAuth2ClientPropertiesMapper;
+import com.armorauth.federation.*;
+import com.armorauth.federation.endpoint.OAuth2AccessTokenRestTemplateResolver;
+import com.armorauth.federation.endpoint.OAuth2AuthorizationCodeGrantRequestConverter;
+import com.armorauth.federation.gitee.user.GiteeOAuth2UserService;
+import com.armorauth.federation.qq.endpoint.QqAccessTokenRestTemplateResolver;
+import com.armorauth.federation.qq.endpoint.QqAuthorizationCodeGrantRequestConverter;
+import com.armorauth.federation.web.configurers.FederatedLoginConfigurer;
+import com.armorauth.federation.web.converter.OAuth2AuthorizationRequestConverter;
+import com.armorauth.federation.wechat.endpoint.WechatAccessTokenRestTemplateResolver;
+import com.armorauth.federation.wechat.endpoint.WechatAuthorizationCodeGrantRequestConverter;
+import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestConverter;
 import com.armorauth.security.FailureAuthenticationEntryPoint;
 import com.armorauth.security.FederatedAuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,12 +51,18 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationEntryPointFailureHandler;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 import java.util.*;
+
+import static com.armorauth.federation.ExtendedOAuth2ClientProvider.*;
 
 @EnableWebSecurity(debug = true)
 @Configuration(proxyBeanMethods = false)
@@ -56,9 +73,9 @@ public class DefaultSecurityConfig {
     private static final String REMEMBER_ME_COOKIE_NAME = "armorauth-remember-me";
 
 
-    @Bean
+    @Bean(name = ConfigBeanNameConstants.DEFAULT_SECURITY_FILTER_CHAIN)
     @Order(Ordered.HIGHEST_PRECEDENCE + 1)
-    SecurityFilterChain defaultSecurityFilterChain(
+    public SecurityFilterChain defaultSecurityFilterChain(
             HttpSecurity http,
             DelegateUserDetailsService delegateUserDetailsService) throws Exception {
         AuthenticationEntryPointFailureHandler authenticationFailureHandler =
@@ -87,10 +104,7 @@ public class DefaultSecurityConfig {
                         .rememberMeCookieName(REMEMBER_ME_COOKIE_NAME)
                         .userDetailsService(delegateUserDetailsService)
                 );
-
-        DefaultSecurityFilterChain build = http.build();
-        System.out.println(http);
-        return build;
+        return http.build();
     }
 
     private boolean verifyCaptchaMock(String account, String captcha) {
@@ -109,6 +123,56 @@ public class DefaultSecurityConfig {
     //*********************************************ClientRegistration*********************************************//
 
     @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE + 1)
+    public SecurityFilterChain federatedSecurityFilterChain(HttpSecurity http,
+                                                            ClientRegistrationRepository clientRegistrationRepository
+    ) throws Exception {
+        FederatedLoginConfigurer federatedLoginConfigurer = new FederatedLoginConfigurer();
+        http.apply(federatedLoginConfigurer);
+
+
+        List<OAuth2AuthorizationRequestConverter> authorizationRequestConverters = new ArrayList<>();
+        authorizationRequestConverters.add(new WechatAuthorizationRequestConverter());
+        DelegatingAuthorizationRequestResolver delegatingAuthorizationRequestResolver =
+                new DelegatingAuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestConverters);
+
+
+        List<OAuth2AccessTokenRestTemplateResolver> restTemplates = new ArrayList<>();
+        List<OAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters = new ArrayList<>();
+        restTemplates.add(new WechatAccessTokenRestTemplateResolver());
+        authorizationCodeGrantRequestConverters.add(new WechatAuthorizationCodeGrantRequestConverter());
+        restTemplates.add(new QqAccessTokenRestTemplateResolver());
+        authorizationCodeGrantRequestConverters.add(new QqAuthorizationCodeGrantRequestConverter());
+        DelegatingAccessTokenResponseClient accessTokenResponseClient = new DelegatingAccessTokenResponseClient(
+                restTemplates,
+                authorizationCodeGrantRequestConverters
+        );
+
+        Map<String, OAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices = new HashMap<>();
+        userServices.put(ExtendedOAuth2ClientProvider.getNameLowerCase(GITEE), new GiteeOAuth2UserService());
+        userServices.put(ExtendedOAuth2ClientProvider.getNameLowerCase(QQ), new GiteeOAuth2UserService());
+        userServices.put(ExtendedOAuth2ClientProvider.getNameLowerCase(WECHAT), new GiteeOAuth2UserService());
+        DelegatingOAuth2UserService delegatingOAuth2UserService = new DelegatingOAuth2UserService(userServices);
+
+
+        http.getConfigurer(FederatedLoginConfigurer.class)
+                .loginPage(CUSTOM_LOGIN_PAGE)
+                .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
+                        .authorizationRequestResolver(delegatingAuthorizationRequestResolver)
+                )
+                .tokenEndpoint(tokenEndpoint -> tokenEndpoint
+                        .accessTokenResponseClient(accessTokenResponseClient)
+                )
+                .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
+                        .userService(delegatingOAuth2UserService)
+                        .bindUserPage("/bind")
+                )
+        ;
+        return http.build();
+    }
+
+
+    @Bean
     public ClientRegistrationRepository clientRegistrationRepository(@Autowired(required = false) OAuth2ClientProperties properties) {
         InMemoryClientRegistrationRepository clientRegistrations;
         ExtendedOAuth2ClientPropertiesMapper extendedOAuth2ClientPropertiesMapper = new ExtendedOAuth2ClientPropertiesMapper(properties);
@@ -121,7 +185,6 @@ public class DefaultSecurityConfig {
     public OAuth2AuthorizedClientService authorizedClientService(
             JdbcTemplate jdbcTemplate,
             ClientRegistrationRepository clientRegistrationRepository) {
-        // TODO 保存认证信息 可以扩展
         return new JdbcOAuth2AuthorizedClientService(jdbcTemplate, clientRegistrationRepository);
     }
 

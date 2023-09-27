@@ -19,6 +19,7 @@ import com.armorauth.authentication.DeviceClientAuthenticationProvider;
 import com.armorauth.authorization.JpaOAuth2AuthorizationConsentService;
 import com.armorauth.authorization.JpaOAuth2AuthorizationService;
 import com.armorauth.authorization.client.JpaRegisteredClientRepository;
+import com.armorauth.constant.ConfigBeanNameConstants;
 import com.armorauth.data.repository.AuthorizationConsentRepository;
 import com.armorauth.data.repository.AuthorizationRepository;
 import com.armorauth.data.repository.OAuth2ClientRepository;
@@ -61,7 +62,7 @@ public class AuthorizationServerConfig {
 
 
 
-    @Bean
+    @Bean(name = ConfigBeanNameConstants.AUTHORIZATION_SERVER_SECURITY_FILTER_CHAIN)
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain authorizationServerSecurityFilterChain(
             HttpSecurity http,
