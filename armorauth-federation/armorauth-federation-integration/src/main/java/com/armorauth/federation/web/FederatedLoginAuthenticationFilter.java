@@ -43,7 +43,7 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
      * The default {@code URI} where this {@code Filter} processes authentication
      * requests.
      */
-    public static final String DEFAULT_FILTER_PROCESSES_URI = "/federated/oauth2/code/*";
+    public static final String DEFAULT_FILTER_PROCESSES_URI = "/login/federated/code/*";
 
     private static final String AUTHORIZATION_REQUEST_NOT_FOUND_ERROR_CODE = "authorization_request_not_found";
 
@@ -144,10 +144,13 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
                 .convert(authenticationResult);
         // authenticationManager bind user
         Assert.notNull(oauth2Authentication, "authentication result cannot be null");
-        FederatedBindUserCheckToken checkBindUserRequest = new FederatedBindUserCheckToken(oauth2Authentication.getPrincipal(),
-                authenticationResult.getAuthorities(), oauth2Authentication.getAuthorizedClientRegistrationId());
+        FederatedBindUserCheckToken checkBindUserRequest = new FederatedBindUserCheckToken(
+                oauth2Authentication.getPrincipal(),
+                authenticationResult.getClientRegistration()
+        );
         FederatedBindUserCheckToken checkBindUserResult =
                 (FederatedBindUserCheckToken) this.getAuthenticationManager().authenticate(checkBindUserRequest);
+        // if not authenticated, send redirect to bind user page
         if (!checkBindUserResult.isAuthenticated()) {
             //send redirect to bind user page
             FederatedBindUserRequest federatedBindUserRequest =
@@ -162,7 +165,6 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
             federatedBindUserRequestRepository.saveBindUserRequest(federatedBindUserRequest, request, response);
             sendBindUser(request, response);
         }
-        Authentication authentication = null;
         Assert.notNull(oauth2Authentication, "authentication result cannot be null");
         oauth2Authentication.setDetails(authenticationDetails);
         OAuth2AuthorizedClient authorizedClient = new OAuth2AuthorizedClient(

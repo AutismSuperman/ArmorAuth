@@ -16,22 +16,22 @@ public class FederatedBindUserCheckProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        //check if the user is binded
+        //check if the user is bind
         //1.需要绑定的话，就返回一个FederatedBindUserAuthenticationToken认证为false
         //1.不需要绑定的话，就返回一个FederatedBindUserAuthenticationToken认证为true
-        FederatedLoginAuthenticationToken loginAuthenticationToken = (FederatedLoginAuthenticationToken) authentication;
-        String userNameAttributeName = loginAuthenticationToken.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
+        FederatedBindUserCheckToken bindUserCheckToken = (FederatedBindUserCheckToken) authentication;
+        String userNameAttributeName = bindUserCheckToken.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
         Boolean requireBindUser = bindUserCheckService.requireBindUser(
-                loginAuthenticationToken.getPrincipal().getAttributes().get(userNameAttributeName).toString(),
-                loginAuthenticationToken.getClientRegistration().getRegistrationId()
+                bindUserCheckToken.getPrincipal().getAttributes().get(userNameAttributeName).toString(),
+                bindUserCheckToken.getClientRegistration().getRegistrationId()
         );
-        loginAuthenticationToken.setAuthenticated(requireBindUser);
-        return loginAuthenticationToken;
+        bindUserCheckToken.setAuthenticated(requireBindUser);
+        return bindUserCheckToken;
     }
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return FederatedLoginAuthenticationToken.class.isAssignableFrom(authentication);
+        return FederatedBindUserCheckToken.class.isAssignableFrom(authentication);
     }
 
 }

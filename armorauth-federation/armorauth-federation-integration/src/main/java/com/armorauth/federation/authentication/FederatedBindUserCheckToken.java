@@ -3,6 +3,7 @@ package com.armorauth.federation.authentication;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.util.Assert;
 
@@ -12,16 +13,15 @@ public class FederatedBindUserCheckToken extends AbstractAuthenticationToken {
 
     private final OAuth2User principal;
 
-    private final String authorizedClientRegistrationId;
+    private ClientRegistration clientRegistration;
 
 
-    public FederatedBindUserCheckToken(OAuth2User principal, Collection<? extends GrantedAuthority> authorities,
-                                       String authorizedClientRegistrationId) {
-        super(authorities);
+    public FederatedBindUserCheckToken(OAuth2User principal, ClientRegistration clientRegistration) {
+        super(null);
         Assert.notNull(principal, "principal cannot be null");
-        Assert.hasText(authorizedClientRegistrationId, "authorizedClientRegistrationId cannot be empty");
+        Assert.notNull(clientRegistration, "clientRegistration cannot be null");
         this.principal = principal;
-        this.authorizedClientRegistrationId = authorizedClientRegistrationId;
+        this.clientRegistration = clientRegistration;
         this.setAuthenticated(false);
     }
 
@@ -36,15 +36,7 @@ public class FederatedBindUserCheckToken extends AbstractAuthenticationToken {
         return principal;
     }
 
-    /**
-     * Returns the registration identifier of the {@link OAuth2AuthorizedClient Authorized
-     * Client}.
-     * @return the registration identifier of the Authorized Client.
-     */
-    public String getAuthorizedClientRegistrationId() {
-        return this.authorizedClientRegistrationId;
+    public ClientRegistration getClientRegistration() {
+        return clientRegistration;
     }
-
-
-
 }

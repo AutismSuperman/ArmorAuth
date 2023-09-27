@@ -61,6 +61,8 @@ public class FederatedLoginConfigurer
 
     private String loginPage;
 
+    private String bindUserPage;
+
     private String loginProcessingUrl = FederatedLoginAuthenticationFilter.DEFAULT_FILTER_PROCESSES_URI;
 
 
@@ -101,6 +103,12 @@ public class FederatedLoginConfigurer
         Assert.notNull(authorizedClientService, "authorizedClientService cannot be null");
         this.authorizedClientRepository(
                 new AuthenticatedPrincipalOAuth2AuthorizedClientRepository(authorizedClientService));
+        return this;
+    }
+
+    public FederatedLoginConfigurer bindUserPage(String bindUserPage) {
+        Assert.hasText(bindUserPage, "bindUserPage cannot be empty");
+        this.bindUserPage = bindUserPage;
         return this;
     }
 
@@ -178,6 +186,10 @@ public class FederatedLoginConfigurer
         authenticationFilter.setSecurityContextHolderStrategy(getSecurityContextHolderStrategy());
         this.setAuthenticationFilter(authenticationFilter);
         super.loginProcessingUrl(this.loginProcessingUrl);
+        if (this.bindUserPage != null) {
+            // Set custom bind user page
+            authenticationFilter.setBindUserPage(this.bindUserPage);
+        }
         if (this.loginPage != null) {
             // Set custom login page
             super.loginPage(this.loginPage);

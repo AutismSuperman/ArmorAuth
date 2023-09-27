@@ -88,7 +88,7 @@ public class FederatedLoginAuthenticationProvider implements AuthenticationProvi
                 loginAuthenticationToken.getClientRegistration(), accessToken, additionalParameters));
         Collection<? extends GrantedAuthority> mappedAuthorities = this.authoritiesMapper
                 .mapAuthorities(oauth2User.getAuthorities());
-        OAuth2LoginAuthenticationToken authenticationResult = new OAuth2LoginAuthenticationToken(
+        FederatedLoginAuthenticationToken authenticationResult = new FederatedLoginAuthenticationToken(
                 loginAuthenticationToken.getClientRegistration(), loginAuthenticationToken.getAuthorizationExchange(),
                 oauth2User, mappedAuthorities, accessToken, authorizationCodeAuthenticationToken.getRefreshToken());
         authenticationResult.setDetails(loginAuthenticationToken.getDetails());
