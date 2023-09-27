@@ -1,8 +1,10 @@
 package com.armorauth.federation.web;
 
-import com.armorauth.federation.authentication.FederatedBindUserCheckToken;
+import com.armorauth.federation.authentication.BindUserCheckToken;
 import com.armorauth.federation.authentication.FederatedLoginAuthenticationToken;
-import com.armorauth.federation.endpoint.FederatedBindUserRequest;
+import com.armorauth.federation.endpoint.BindUserRequest;
+import com.armorauth.federation.endpoint.BindUserRequestRepository;
+import com.armorauth.federation.endpoint.HttpSessionBindUserRequestRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -57,7 +59,7 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
 
     private AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository = new HttpSessionOAuth2AuthorizationRequestRepository();
 
-    private FederatedBindUserRequestRepository<FederatedBindUserRequest> federatedBindUserRequestRepository = new HttpSessionFederatedBindUserRequestRepository();
+    private BindUserRequestRepository<BindUserRequest> bindUserRequestRepository = new HttpSessionBindUserRequestRepository();
 
     private Converter<FederatedLoginAuthenticationToken, OAuth2AuthenticationToken> authenticationResultConverter = this::createAuthenticationResult;
 
@@ -144,17 +146,17 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
                 .convert(authenticationResult);
         // authenticationManager bind user
         Assert.notNull(oauth2Authentication, "authentication result cannot be null");
-        FederatedBindUserCheckToken checkBindUserRequest = new FederatedBindUserCheckToken(
+        BindUserCheckToken checkBindUserRequest = new BindUserCheckToken(
                 oauth2Authentication.getPrincipal(),
                 authenticationResult.getClientRegistration()
         );
-        FederatedBindUserCheckToken checkBindUserResult =
-                (FederatedBindUserCheckToken) this.getAuthenticationManager().authenticate(checkBindUserRequest);
+        BindUserCheckToken checkBindUserResult =
+                (BindUserCheckToken) this.getAuthenticationManager().authenticate(checkBindUserRequest);
         // if not authenticated, send redirect to bind user page
         if (!checkBindUserResult.isAuthenticated()) {
             //send redirect to bind user page
-            FederatedBindUserRequest federatedBindUserRequest =
-                    new FederatedBindUserRequest(authenticationResult.getPrincipal(),
+            BindUserRequest bindUserRequest =
+                    new BindUserRequest(authenticationResult.getPrincipal(),
                             authenticationResult.getClientRegistration().getRegistrationId(),
                             authenticationResult
                                     .getClientRegistration()
@@ -162,7 +164,7 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
                                     .getUserInfoEndpoint()
                                     .getUserNameAttributeName()
                     );
-            federatedBindUserRequestRepository.saveBindUserRequest(federatedBindUserRequest, request, response);
+            bindUserRequestRepository.saveBindUserRequest(bindUserRequest, request, response);
             sendBindUser(request, response);
         }
         Assert.notNull(oauth2Authentication, "authentication result cannot be null");
@@ -197,9 +199,9 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
     }
 
     public void setFederatedBindUserRequestRepository(
-            FederatedBindUserRequestRepository<FederatedBindUserRequest> federatedBindUserRequestRepository) {
-        Assert.notNull(federatedBindUserRequestRepository, "federatedBindUserRequestRepository cannot be null");
-        this.federatedBindUserRequestRepository = federatedBindUserRequestRepository;
+            BindUserRequestRepository<BindUserRequest> bindUserRequestRepository) {
+        Assert.notNull(bindUserRequestRepository, "federatedBindUserRequestRepository cannot be null");
+        this.bindUserRequestRepository = bindUserRequestRepository;
     }
 
     /**

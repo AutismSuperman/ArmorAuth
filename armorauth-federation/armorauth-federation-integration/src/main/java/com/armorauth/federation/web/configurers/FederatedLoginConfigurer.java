@@ -1,5 +1,8 @@
 package com.armorauth.federation.web.configurers;
 
+import com.armorauth.federation.authentication.BindUserCheckProvider;
+import com.armorauth.federation.authentication.BindUserCheckService;
+import com.armorauth.federation.authentication.DefaultBindUserCheckService;
 import com.armorauth.federation.web.FederatedAuthorizationRequestRedirectFilter;
 import com.armorauth.federation.web.FederatedLoginAuthenticationFilter;
 import com.armorauth.federation.web.HttpSecurityFilterOrderRegistrationUtils;
@@ -61,8 +64,6 @@ public class FederatedLoginConfigurer
 
     private String loginPage;
 
-    private String bindUserPage;
-
     private String loginProcessingUrl = FederatedLoginAuthenticationFilter.DEFAULT_FILTER_PROCESSES_URI;
 
 
@@ -106,11 +107,6 @@ public class FederatedLoginConfigurer
         return this;
     }
 
-    public FederatedLoginConfigurer bindUserPage(String bindUserPage) {
-        Assert.hasText(bindUserPage, "bindUserPage cannot be empty");
-        this.bindUserPage = bindUserPage;
-        return this;
-    }
 
     @Override
     public FederatedLoginConfigurer loginPage(String loginPage) {
@@ -186,9 +182,9 @@ public class FederatedLoginConfigurer
         authenticationFilter.setSecurityContextHolderStrategy(getSecurityContextHolderStrategy());
         this.setAuthenticationFilter(authenticationFilter);
         super.loginProcessingUrl(this.loginProcessingUrl);
-        if (this.bindUserPage != null) {
+        if (this.userInfoEndpointConfig.bindUserPage != null) {
             // Set custom bind user page
-            authenticationFilter.setBindUserPage(this.bindUserPage);
+            authenticationFilter.setBindUserPage(this.userInfoEndpointConfig.bindUserPage);
         }
         if (this.loginPage != null) {
             // Set custom login page
@@ -208,6 +204,10 @@ public class FederatedLoginConfigurer
             oauth2LoginAuthenticationProvider.setAuthoritiesMapper(userAuthoritiesMapper);
         }
         http.authenticationProvider(this.postProcess(oauth2LoginAuthenticationProvider));
+        BindUserCheckService bindUserCheckService = getBindUserCheckService();
+        BindUserCheckProvider bindUserCheckProvider =
+                new BindUserCheckProvider(bindUserCheckService);
+        http.authenticationProvider(this.postProcess(bindUserCheckProvider));
         // check OIDC enable
         boolean oidcAuthenticationProviderEnabled = ClassUtils
                 .isPresent("org.springframework.security.oauth2.jwt.JwtDecoder", this.getClass().getClassLoader());
@@ -282,6 +282,15 @@ public class FederatedLoginConfigurer
         return (bean != null) ? bean : new DefaultOAuth2UserService();
     }
 
+    private BindUserCheckService getBindUserCheckService() {
+        if (this.userInfoEndpointConfig.bindUserCheckService != null) {
+            return this.userInfoEndpointConfig.bindUserCheckService;
+        }
+        ResolvableType type = ResolvableType.forClass(BindUserCheckService.class);
+        BindUserCheckService bean = getBeanOrNull(type);
+        return (bean != null) ? bean : new DefaultBindUserCheckService();
+    }
+
     private OAuth2UserService<OidcUserRequest, OidcUser> getOidcUserService() {
         if (this.userInfoEndpointConfig.oidcUserService != null) {
             return this.userInfoEndpointConfig.oidcUserService;
@@ -343,6 +352,33 @@ public class FederatedLoginConfigurer
         return new AntPathRequestMatcher(loginProcessingUrl);
     }
 
+    private static class OidcAuthenticationRequestChecker implements AuthenticationProvider {
+
+        @Override
+        public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+            OAuth2LoginAuthenticationToken authorizationCodeAuthentication = (OAuth2LoginAuthenticationToken) authentication;
+            OAuth2AuthorizationRequest authorizationRequest = authorizationCodeAuthentication.getAuthorizationExchange()
+                    .getAuthorizationRequest();
+            if (authorizationRequest.getScopes().contains(OidcScopes.OPENID)) {
+                // Section 3.1.2.1 Authentication Request -
+                // https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest scope
+                // REQUIRED. OpenID Connect requests MUST contain the "openid" scope
+                // value.
+                OAuth2Error oauth2Error = new OAuth2Error("oidc_provider_not_configured",
+                        "An OpenID Connect Authentication Provider has not been configured. "
+                                + "Check to ensure you include the dependency 'spring-security-oauth2-jose'.",
+                        null);
+                throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
+            }
+            return null;
+        }
+
+        @Override
+        public boolean supports(Class<?> authentication) {
+            return OAuth2LoginAuthenticationToken.class.isAssignableFrom(authentication);
+        }
+
+    }
 
     public final class AuthorizationEndpointConfig {
 
@@ -467,6 +503,11 @@ public class FederatedLoginConfigurer
 
         private OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService;
 
+        private String bindUserPage;
+
+        private BindUserCheckService bindUserCheckService;
+
+
         private UserInfoEndpointConfig() {
         }
 
@@ -513,32 +554,16 @@ public class FederatedLoginConfigurer
             return this;
         }
 
-    }
-
-    private static class OidcAuthenticationRequestChecker implements AuthenticationProvider {
-
-        @Override
-        public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-            OAuth2LoginAuthenticationToken authorizationCodeAuthentication = (OAuth2LoginAuthenticationToken) authentication;
-            OAuth2AuthorizationRequest authorizationRequest = authorizationCodeAuthentication.getAuthorizationExchange()
-                    .getAuthorizationRequest();
-            if (authorizationRequest.getScopes().contains(OidcScopes.OPENID)) {
-                // Section 3.1.2.1 Authentication Request -
-                // https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest scope
-                // REQUIRED. OpenID Connect requests MUST contain the "openid" scope
-                // value.
-                OAuth2Error oauth2Error = new OAuth2Error("oidc_provider_not_configured",
-                        "An OpenID Connect Authentication Provider has not been configured. "
-                                + "Check to ensure you include the dependency 'spring-security-oauth2-jose'.",
-                        null);
-                throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
-            }
-            return null;
+        public UserInfoEndpointConfig bindUserCheckService(BindUserCheckService bindUserCheckService) {
+            Assert.notNull(bindUserCheckService, "bindUserCheckService cannot be null");
+            this.bindUserCheckService = bindUserCheckService;
+            return this;
         }
 
-        @Override
-        public boolean supports(Class<?> authentication) {
-            return OAuth2LoginAuthenticationToken.class.isAssignableFrom(authentication);
+        public UserInfoEndpointConfig bindUserPage(String bindUserPage) {
+            Assert.hasText(bindUserPage, "bindUserPage cannot be null");
+            this.bindUserPage = bindUserPage;
+            return this;
         }
 
     }

@@ -1,10 +1,9 @@
-package com.armorauth.federation.web;
+package com.armorauth.federation.endpoint;
 
-import com.armorauth.federation.endpoint.FederatedBindUserRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public interface FederatedBindUserRequestRepository<T extends FederatedBindUserRequest> {
+public interface BindUserRequestRepository<T extends BindUserRequest> {
 
     T loadBindUserRequest(HttpServletRequest request);
 

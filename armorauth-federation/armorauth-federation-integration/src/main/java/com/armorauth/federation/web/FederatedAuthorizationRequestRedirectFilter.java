@@ -1,6 +1,5 @@
 package com.armorauth.federation.web;
 
-import com.armorauth.federation.endpoint.FederatedBindUserRequest;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

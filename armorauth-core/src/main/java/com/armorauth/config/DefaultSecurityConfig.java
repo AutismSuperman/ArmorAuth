@@ -16,7 +16,6 @@
 package com.armorauth.config;
 
 
-import com.armorauth.configurers.OAuth2FederatedLoginServerConfigurer;
 import com.armorauth.configurers.web.OAuth2UserLoginFilterSecurityConfigurer;
 import com.armorauth.data.repository.UserInfoRepository;
 import com.armorauth.details.DelegateUserDetailsService;
@@ -89,12 +88,6 @@ public class DefaultSecurityConfig {
                         .userDetailsService(delegateUserDetailsService)
                 );
 
-        // OAuth2FederatedLoginServerConfigurer Customizer
-        http.apply(new OAuth2FederatedLoginServerConfigurer())
-                .federatedAuthorization(federatedAuthorization -> federatedAuthorization
-                        .loginPageUrl(CUSTOM_LOGIN_PAGE)
-                )
-        ;
         DefaultSecurityFilterChain build = http.build();
         System.out.println(http);
         return build;

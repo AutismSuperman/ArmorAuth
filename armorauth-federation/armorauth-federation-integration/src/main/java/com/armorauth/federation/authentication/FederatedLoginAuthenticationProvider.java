@@ -25,12 +25,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Map;
 
-/**
- * 用于处理联合登录的AuthenticationProvider
- * 具有可以刷新Token的能力
- *
- * @author AutismSuperman
- */
+
 public class FederatedLoginAuthenticationProvider implements AuthenticationProvider {
 
     private final OAuth2AuthorizationCodeAuthenticationProvider authorizationCodeAuthenticationProvider;
@@ -75,9 +70,9 @@ public class FederatedLoginAuthenticationProvider implements AuthenticationProvi
         try {
             authorizationCodeAuthenticationToken = (OAuth2AuthorizationCodeAuthenticationToken)
                     this.authorizationCodeAuthenticationProvider
-                    .authenticate(new OAuth2AuthorizationCodeAuthenticationToken(
-                            loginAuthenticationToken.getClientRegistration(),
-                            loginAuthenticationToken.getAuthorizationExchange()));
+                            .authenticate(new OAuth2AuthorizationCodeAuthenticationToken(
+                                    loginAuthenticationToken.getClientRegistration(),
+                                    loginAuthenticationToken.getAuthorizationExchange()));
         } catch (OAuth2AuthorizationException ex) {
             OAuth2Error oauth2Error = ex.getError();
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
