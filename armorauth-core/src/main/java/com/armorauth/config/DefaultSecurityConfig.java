@@ -26,6 +26,7 @@ import com.armorauth.federation.endpoint.OAuth2AuthorizationCodeGrantRequestConv
 import com.armorauth.federation.gitee.user.GiteeOAuth2UserService;
 import com.armorauth.federation.qq.endpoint.QqAccessTokenRestTemplateConverter;
 import com.armorauth.federation.qq.endpoint.QqAuthorizationCodeGrantRequestConverter;
+import com.armorauth.federation.web.FederatedAuthenticationEntryPoint;
 import com.armorauth.federation.web.configurers.FederatedLoginConfigurer;
 import com.armorauth.federation.web.converter.OAuth2AuthorizationRequestConverter;
 import com.armorauth.federation.wechat.endpoint.WechatAccessTokenRestTemplateConverter;
@@ -57,9 +58,11 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationEntryPointFailureHandler;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
-import com.armorauth.federation.web.FederatedAuthenticationEntryPoint;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.armorauth.federation.ExtendedOAuth2ClientProvider.*;
 
@@ -73,7 +76,7 @@ public class DefaultSecurityConfig {
 
 
     @Bean(name = ConfigBeanNameConstants.DEFAULT_SECURITY_FILTER_CHAIN)
-    @Order(Ordered.HIGHEST_PRECEDENCE + 1)
+    @Order(Ordered.HIGHEST_PRECEDENCE + 2)
     public SecurityFilterChain defaultSecurityFilterChain(
             HttpSecurity http,
             DelegateUserDetailsService delegateUserDetailsService) throws Exception {
@@ -119,93 +122,18 @@ public class DefaultSecurityConfig {
     }
 
 
-    //*********************************************ClientRegistration*********************************************//
-
     @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE + 1)
-    public SecurityFilterChain federatedSecurityFilterChain(HttpSecurity http,
-                                                            ClientRegistrationRepository clientRegistrationRepository
-    ) throws Exception {
-        FederatedLoginConfigurer federatedLoginConfigurer = new FederatedLoginConfigurer();
-        http.apply(federatedLoginConfigurer);
-        FederatedAuthenticationEntryPoint authenticationEntryPoint =
-                new FederatedAuthenticationEntryPoint("/login", clientRegistrationRepository);
-        http.exceptionHandling(exceptionHandling ->
-                exceptionHandling
-                        .authenticationEntryPoint(authenticationEntryPoint)
-        );
-
-        List<OAuth2AuthorizationRequestConverter> authorizationRequestConverters = new ArrayList<>();
-        authorizationRequestConverters.add(new WechatAuthorizationRequestConverter());
-        DelegatingAuthorizationRequestResolver delegatingAuthorizationRequestResolver =
-                new DelegatingAuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestConverters);
-
-
-        List<OAuth2AccessTokenRestTemplateConverter> restTemplates = new ArrayList<>();
-        List<OAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters = new ArrayList<>();
-        restTemplates.add(new WechatAccessTokenRestTemplateConverter());
-        authorizationCodeGrantRequestConverters.add(new WechatAuthorizationCodeGrantRequestConverter());
-        restTemplates.add(new QqAccessTokenRestTemplateConverter());
-        authorizationCodeGrantRequestConverters.add(new QqAuthorizationCodeGrantRequestConverter());
-        DelegatingAccessTokenResponseClient accessTokenResponseClient = new DelegatingAccessTokenResponseClient(
-                restTemplates,
-                authorizationCodeGrantRequestConverters
-        );
-
-        Map<String, OAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices = new HashMap<>();
-        userServices.put(ExtendedOAuth2ClientProvider.getNameLowerCase(GITEE), new GiteeOAuth2UserService());
-        userServices.put(ExtendedOAuth2ClientProvider.getNameLowerCase(QQ), new GiteeOAuth2UserService());
-        userServices.put(ExtendedOAuth2ClientProvider.getNameLowerCase(WECHAT), new GiteeOAuth2UserService());
-        DelegatingOAuth2UserService delegatingOAuth2UserService = new DelegatingOAuth2UserService(userServices);
-
-
-        http.getConfigurer(FederatedLoginConfigurer.class)
-                .loginPage(CUSTOM_LOGIN_PAGE)
-                .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
-                        .authorizationRequestResolver(delegatingAuthorizationRequestResolver)
-                )
-                .tokenEndpoint(tokenEndpoint -> tokenEndpoint
-                        .accessTokenResponseClient(accessTokenResponseClient)
-                )
-                .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
-                        .userService(delegatingOAuth2UserService)
-                        .bindUserPage("/bind")
-                )
-        ;
-        return http.build();
-    }
-
-
-    @Bean
-    public ClientRegistrationRepository clientRegistrationRepository(@Autowired(required = false) OAuth2ClientProperties properties) {
-        InMemoryClientRegistrationRepository clientRegistrations;
-        ExtendedOAuth2ClientPropertiesMapper extendedOAuth2ClientPropertiesMapper = new ExtendedOAuth2ClientPropertiesMapper(properties);
-        Map<String, ClientRegistration> extendedClientRegistrations = extendedOAuth2ClientPropertiesMapper.asClientRegistrations();
-        clientRegistrations = new InMemoryClientRegistrationRepository(extendedClientRegistrations);
-        return clientRegistrations;
-    }
-
-    @Bean
-    public OAuth2AuthorizedClientService authorizedClientService(
-            JdbcTemplate jdbcTemplate,
-            ClientRegistrationRepository clientRegistrationRepository) {
-        return new JdbcOAuth2AuthorizedClientService(jdbcTemplate, clientRegistrationRepository);
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
     }
 
 
     //*********************************************SessionRegistry*********************************************//
 
     @Bean
-    public SessionRegistry sessionRegistry() {
-        return new SessionRegistryImpl();
-    }
-
-    @Bean
     public HttpSessionEventPublisher httpSessionEventPublisher() {
         return new HttpSessionEventPublisher();
     }
-
-    //*********************************************WebSecurity*********************************************//
 
     @Bean
     WebSecurityCustomizer webSecurityCustomizer() {
@@ -222,5 +150,84 @@ public class DefaultSecurityConfig {
                 ;
     }
 
+    //*********************************************WebSecurity*********************************************//
+
+
+    @Configuration(proxyBeanMethods = false)
+    public static class FederatedLoginConfig {
+
+        //*********************************************FederatedLoginConfigurer*********************************************//
+
+        @Bean
+        @Order(Ordered.HIGHEST_PRECEDENCE + 1)
+        public SecurityFilterChain federatedSecurityFilterChain(HttpSecurity http,
+                                                                ClientRegistrationRepository clientRegistrationRepository
+        ) throws Exception {
+
+            FederatedLoginConfigurer federatedLoginConfigurer = new FederatedLoginConfigurer();
+            http.securityMatcher("/federated/**");
+            http.apply(federatedLoginConfigurer);
+            FederatedAuthenticationEntryPoint authenticationEntryPoint =
+                    new FederatedAuthenticationEntryPoint("/login", clientRegistrationRepository);
+            http.exceptionHandling(exceptionHandling ->
+                    exceptionHandling
+                            .authenticationEntryPoint(authenticationEntryPoint)
+            );
+            //OAuth 授权地址转换 OAuth2AuthorizationRequestConverter
+            List<OAuth2AuthorizationRequestConverter> authorizationRequestConverters = new ArrayList<>();
+            authorizationRequestConverters.add(new WechatAuthorizationRequestConverter());
+            DelegatingAuthorizationRequestResolver delegatingAuthorizationRequestResolver =
+                    new DelegatingAuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestConverters);
+            //OAuth 请求AccessToken的RestTemplate转换 OAuth2AccessTokenRestTemplateConverter
+            List<OAuth2AccessTokenRestTemplateConverter> restTemplates = new ArrayList<>();
+            List<OAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters = new ArrayList<>();
+            restTemplates.add(new WechatAccessTokenRestTemplateConverter());
+            authorizationCodeGrantRequestConverters.add(new WechatAuthorizationCodeGrantRequestConverter());
+            restTemplates.add(new QqAccessTokenRestTemplateConverter());
+            authorizationCodeGrantRequestConverters.add(new QqAuthorizationCodeGrantRequestConverter());
+            DelegatingAccessTokenResponseClient accessTokenResponseClient = new DelegatingAccessTokenResponseClient(
+                    restTemplates,
+                    authorizationCodeGrantRequestConverters
+            );
+            //OAuth 查询用户信息 UserService
+            Map<String, OAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices = new HashMap<>();
+            userServices.put(ExtendedOAuth2ClientProvider.getNameLowerCase(GITEE), new GiteeOAuth2UserService());
+            userServices.put(ExtendedOAuth2ClientProvider.getNameLowerCase(QQ), new GiteeOAuth2UserService());
+            userServices.put(ExtendedOAuth2ClientProvider.getNameLowerCase(WECHAT), new GiteeOAuth2UserService());
+            DelegatingOAuth2UserService delegatingOAuth2UserService = new DelegatingOAuth2UserService(userServices);
+            //OAuth2LoginConfigurer
+            http.getConfigurer(FederatedLoginConfigurer.class)
+                    .loginPage(CUSTOM_LOGIN_PAGE)
+                    .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
+                            .authorizationRequestResolver(delegatingAuthorizationRequestResolver)
+                    )
+                    .tokenEndpoint(tokenEndpoint -> tokenEndpoint
+                            .accessTokenResponseClient(accessTokenResponseClient)
+                    )
+                    .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
+                            .userService(delegatingOAuth2UserService)
+                            .bindUserPage("/bind")
+                    )
+            ;
+            return http.build();
+        }
+
+
+        @Bean
+        public ClientRegistrationRepository clientRegistrationRepository(@Autowired(required = false) OAuth2ClientProperties properties) {
+            InMemoryClientRegistrationRepository clientRegistrations;
+            ExtendedOAuth2ClientPropertiesMapper extendedOAuth2ClientPropertiesMapper = new ExtendedOAuth2ClientPropertiesMapper(properties);
+            Map<String, ClientRegistration> extendedClientRegistrations = extendedOAuth2ClientPropertiesMapper.asClientRegistrations();
+            clientRegistrations = new InMemoryClientRegistrationRepository(extendedClientRegistrations);
+            return clientRegistrations;
+        }
+
+        @Bean
+        public OAuth2AuthorizedClientService authorizedClientService(
+                JdbcTemplate jdbcTemplate,
+                ClientRegistrationRepository clientRegistrationRepository) {
+            return new JdbcOAuth2AuthorizedClientService(jdbcTemplate, clientRegistrationRepository);
+        }
+    }
 
 }

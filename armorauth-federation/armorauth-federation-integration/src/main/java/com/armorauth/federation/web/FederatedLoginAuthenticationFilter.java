@@ -185,7 +185,6 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
         this.redirectStrategy.sendRedirect(request, response, bindUserPage);
     }
 
-
     /**
      * Sets the repository for stored {@link OAuth2AuthorizationRequest}'s.
      *
