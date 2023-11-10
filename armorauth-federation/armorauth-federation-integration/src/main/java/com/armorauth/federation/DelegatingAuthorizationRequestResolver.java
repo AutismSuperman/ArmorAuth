@@ -17,17 +17,14 @@ package com.armorauth.federation;
 
 import com.armorauth.federation.web.FederatedAuthorizationRequestRedirectFilter;
 import com.armorauth.federation.web.converter.OAuth2AuthorizationRequestConverter;
-import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestConverter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class DelegatingAuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {

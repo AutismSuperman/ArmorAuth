@@ -79,6 +79,7 @@ public class FederatedAuthorizationRequestRedirectFilter extends OncePerRequestF
                                                        String authorizationRequestBaseUri) {
         Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
         Assert.hasText(authorizationRequestBaseUri, "authorizationRequestBaseUri cannot be empty");
+        // Default AuthorizationRequestResolver may result in loss of functionality
         this.authorizationRequestResolver = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository,
                 authorizationRequestBaseUri);
     }

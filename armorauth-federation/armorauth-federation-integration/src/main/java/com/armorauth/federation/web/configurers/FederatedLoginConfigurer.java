@@ -59,26 +59,25 @@ import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class FederatedLoginConfigurer
         extends AbstractAuthenticationFilterConfigurer<HttpSecurity, FederatedLoginConfigurer, FederatedLoginAuthenticationFilter> {
 
 
-    private final AuthorizationEndpointConfig authorizationEndpointConfig = new AuthorizationEndpointConfig();
-
-    private final TokenEndpointConfig tokenEndpointConfig = new TokenEndpointConfig();
-
-    private final RedirectionEndpointConfig redirectionEndpointConfig = new RedirectionEndpointConfig();
-
-    private final UserInfoEndpointConfig userInfoEndpointConfig = new UserInfoEndpointConfig();
-
     private String loginPage;
-
+    private final AuthorizationEndpointConfig authorizationEndpointConfig = new AuthorizationEndpointConfig();
+    private final TokenEndpointConfig tokenEndpointConfig = new TokenEndpointConfig();
+    private final RedirectionEndpointConfig redirectionEndpointConfig = new RedirectionEndpointConfig();
+    private final UserInfoEndpointConfig userInfoEndpointConfig = new UserInfoEndpointConfig();
+    private RequestMatcher endpointsMatcher;
     private String loginProcessingUrl = FederatedLoginAuthenticationFilter.DEFAULT_FILTER_PROCESSES_URI;
 
 
@@ -122,13 +121,13 @@ public class FederatedLoginConfigurer
         return this;
     }
 
-
     @Override
     public FederatedLoginConfigurer loginPage(String loginPage) {
         Assert.hasText(loginPage, "loginPage cannot be empty");
         this.loginPage = loginPage;
         return this;
     }
+
 
     @Override
     public FederatedLoginConfigurer loginProcessingUrl(String loginProcessingUrl) {
@@ -189,17 +188,28 @@ public class FederatedLoginConfigurer
     }
 
 
+    public RequestMatcher getEndpointsMatcher() {
+        // Return a deferred RequestMatcher
+        // since endpointsMatcher is constructed in init(HttpSecurity).
+        return (request) -> this.endpointsMatcher.matches(request);
+    }
+
     @Override
     public void init(HttpSecurity http) throws Exception {
+        List<RequestMatcher> requestMatchers = new ArrayList<>();
         FederatedLoginAuthenticationFilter authenticationFilter = new FederatedLoginAuthenticationFilter(
                 OAuth2ClientConfigurerUtils.getClientRegistrationRepository(this.getBuilder()),
                 OAuth2ClientConfigurerUtils.getAuthorizedClientRepository(this.getBuilder()), this.loginProcessingUrl);
         authenticationFilter.setSecurityContextHolderStrategy(getSecurityContextHolderStrategy());
         this.setAuthenticationFilter(authenticationFilter);
         super.loginProcessingUrl(this.loginProcessingUrl);
+        // add login processing url to request matchers
+        requestMatchers.add(new AntPathRequestMatcher(this.loginProcessingUrl));
         if (this.userInfoEndpointConfig.bindUserPage != null) {
             // Set custom bind user page
             authenticationFilter.setBindUserPage(this.userInfoEndpointConfig.bindUserPage);
+            // add login processing url to request matchers
+            requestMatchers.add(new AntPathRequestMatcher(this.loginProcessingUrl));
         }
         if (this.loginPage != null) {
             // Set custom login page
@@ -241,6 +251,14 @@ public class FederatedLoginConfigurer
         } else {
             http.authenticationProvider(new OidcAuthenticationRequestChecker());
         }
+
+        String authorizationRequestBaseUri = this.authorizationEndpointConfig.authorizationRequestBaseUri;
+        if (authorizationRequestBaseUri == null) {
+            authorizationRequestBaseUri = FederatedAuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
+        }
+        // add login processing url to request matchers
+        requestMatchers.add(new AntPathRequestMatcher(authorizationRequestBaseUri + "/**"));
+        this.endpointsMatcher = new OrRequestMatcher(requestMatchers);
     }
 
     @Override

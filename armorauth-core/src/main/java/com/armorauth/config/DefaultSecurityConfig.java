@@ -58,6 +58,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationEntryPointFailureHandler;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -165,10 +166,11 @@ public class DefaultSecurityConfig {
         ) throws Exception {
 
             FederatedLoginConfigurer federatedLoginConfigurer = new FederatedLoginConfigurer();
-            http.securityMatcher("/federated/**");
+            RequestMatcher endpointsMatcher = federatedLoginConfigurer.getEndpointsMatcher();
+            http.securityMatcher(endpointsMatcher);
             http.apply(federatedLoginConfigurer);
             FederatedAuthenticationEntryPoint authenticationEntryPoint =
-                    new FederatedAuthenticationEntryPoint("/login", clientRegistrationRepository);
+                    new FederatedAuthenticationEntryPoint(CUSTOM_LOGIN_PAGE, clientRegistrationRepository);
             http.exceptionHandling(exceptionHandling ->
                     exceptionHandling
                             .authenticationEntryPoint(authenticationEntryPoint)
