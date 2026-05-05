@@ -59,7 +59,7 @@ ArmorAuth 是一个基于 Spring Security 和 Spring Authorization Server 的认
 - Spring Security 7.0.4
 - Spring Authorization Server 7.0.4
 - Spring Data JPA
-- MariaDB / MySQL
+- MySQL
 - H2（仅本地 `local` profile 调试）
 - FreeMarker
 - Ant Design Vue
@@ -95,7 +95,7 @@ armorauth-server/src/main/resources/application-mysql.yml
 
 - 服务端端口 `9000`
 - 默认激活 `mysql` profile
-- 数据源指向本地 MariaDB / MySQL
+- 数据源指向本地 MySQL
 
 数据库脚本：
 

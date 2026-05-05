@@ -9,9 +9,6 @@ spring:
   application:
     name: armorauth-server
   jpa:
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MariaDBDialect
     show-sql: true
     generate-ddl: true
     open-in-view: false
