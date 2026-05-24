@@ -1,5 +1,5 @@
 <template>
-  <div class="main-page page-container">
+  <div class="page-container">
     <div class="page-header">
       <div>
         <h2>会话管理</h2>
@@ -117,25 +117,9 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
-.page-container {
-  flex-direction: column;
-  gap: 16px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.page-header h2 {
-  margin: 0;
-}
-
 .page-subtitle {
   margin-top: 6px;
-  color: #6b7280;
+  color: var(--aa-text-secondary);
   font-size: 13px;
 }
 
@@ -147,15 +131,8 @@ onMounted(fetchData)
   width: 100%;
 }
 
-.metric-card {
-  min-height: 104px;
-  background: #f8fafc;
-  border: 1px solid #edf1f7;
-  border-radius: 8px;
-}
-
 .session-id {
-  font-family: Consolas, 'Courier New', monospace;
+  font-family: var(--aa-font-mono);
   font-size: 12px;
 }
 

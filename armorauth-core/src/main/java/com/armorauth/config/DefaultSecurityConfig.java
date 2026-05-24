@@ -21,6 +21,8 @@ import java.net.URISyntaxException;
 import com.armorauth.authentication.CaptchaVerifyService;
 import com.armorauth.authentication.MfaAuthenticationSuccessHandler;
 import com.armorauth.authentication.MfaPolicyService;
+import com.armorauth.authentication.SmsOtpService;
+import com.armorauth.captcha.GraphicCaptchaService;
 import com.armorauth.configurers.web.CaptchaLoginConfigurer;
 import com.armorauth.configurers.web.MfaLoginConfigurer;
 import com.armorauth.crypto.SecretCryptoService;
@@ -38,11 +40,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -62,7 +66,7 @@ import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.util.StringUtils;
 
 @EnableWebSecurity
 @Configuration(proxyBeanMethods = false)
@@ -82,6 +86,8 @@ public class DefaultSecurityConfig {
             @Qualifier("formAuthenticationSuccessHandler") AuthenticationSuccessHandler authenticationSuccessHandler,
             SecurityContextRepository securityContextRepository,
             ObjectProvider<CaptchaVerifyService> captchaVerifyServiceProvider,
+            ObjectProvider<GraphicCaptchaService> graphicCaptchaServiceProvider,
+            ObjectProvider<SmsOtpService> smsOtpServiceProvider,
             ObjectProvider<AuthFactorRepository> authFactorRepositoryProvider,
             ObjectProvider<UserInfoRepository> userInfoRepositoryProvider,
             ObjectProvider<TotpService> totpServiceProvider,
@@ -90,19 +96,37 @@ public class DefaultSecurityConfig {
             RequestCache requestCache,
             AuditEventPublisher auditEventPublisher,
             LoginLockoutService loginLockoutService,
+            PasswordEncoder passwordEncoder,
             ObjectProvider<ArmorAuthSecurityCustomizer> securityCustomizers) throws Exception {
         SimpleUrlAuthenticationFailureHandler delegateFailureHandler =
                 new SimpleUrlAuthenticationFailureHandler(CUSTOM_LOGIN_PAGE + "?error");
+        SimpleUrlAuthenticationFailureHandler graphicCaptchaFailureHandler =
+                new SimpleUrlAuthenticationFailureHandler(CUSTOM_LOGIN_PAGE + "?error&tab=graphic");
+        SimpleUrlAuthenticationFailureHandler smsCaptchaFailureHandler =
+                new SimpleUrlAuthenticationFailureHandler(CUSTOM_LOGIN_PAGE + "?error&tab=sms");
         AuthenticationFailureHandler authenticationFailureHandler = (request, response, exception) -> {
             String username = request.getParameter("username");
-            if (username != null && !username.isBlank()) {
+            if (!StringUtils.hasText(username)) {
+                username = request.getParameter("account");
+            }
+            if (StringUtils.hasText(username)) {
                 loginLockoutService.recordFailure(username);
             }
             auditEventPublisher.publishLoginFailure(
-                    username != null ? username : "unknown",
+                    StringUtils.hasText(username) ? username : "unknown",
                     SecurityAuditUtils.getRemoteAddress(request),
                     "认证失败: " + exception.getMessage());
-            delegateFailureHandler.onAuthenticationFailure(request, response, exception);
+            if (request.getRequestURI().endsWith("/login/captcha")) {
+                if (StringUtils.hasText(request.getParameter("captchaId"))) {
+                    graphicCaptchaFailureHandler.onAuthenticationFailure(request, response, exception);
+                }
+                else {
+                    smsCaptchaFailureHandler.onAuthenticationFailure(request, response, exception);
+                }
+            }
+            else {
+                delegateFailureHandler.onAuthenticationFailure(request, response, exception);
+            }
         };
 
         // 如果配置了 MFA，使用 MFA 感知的成功处理器
@@ -157,6 +181,10 @@ public class DefaultSecurityConfig {
                 .securityContext(securityContext -> securityContext.securityContextRepository(securityContextRepository))
                 .userDetailsService(delegateUserDetailsService);
 
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider(delegateUserDetailsService);
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
+        http.authenticationProvider(daoAuthenticationProvider);
+
         http.formLogin(formLogin -> formLogin
                         .loginPage(CUSTOM_LOGIN_PAGE)
                         .successHandler(effectiveSuccessHandler)
@@ -166,11 +194,16 @@ public class DefaultSecurityConfig {
                         .rememberMeCookieName(REMEMBER_ME_COOKIE_NAME)
                         .userDetailsService(delegateUserDetailsService));
 
-        CaptchaVerifyService captchaVerifyService = captchaVerifyServiceProvider.getIfAvailable();
+        GraphicCaptchaService graphicCaptchaService = graphicCaptchaServiceProvider.getIfAvailable();
+        SmsOtpService smsOtpService = smsOtpServiceProvider.getIfAvailable();
+        CaptchaVerifyService captchaVerifyService = smsOtpService != null
+                ? smsOtpService::verifyOtp
+                : captchaVerifyServiceProvider.getIfAvailable();
         if (captchaVerifyService != null) {
             http.with(new CaptchaLoginConfigurer<>(), captchaLogin -> captchaLogin
                     .loginPage(CUSTOM_LOGIN_PAGE)
                     .captchaVerifyService(captchaVerifyService)
+                    .graphicCaptchaService(graphicCaptchaService)
                     .userDetailsService(delegateUserDetailsService)
                     .securityContextRepository(securityContextRepository)
                     .successHandler(effectiveSuccessHandler)

@@ -1,5 +1,5 @@
 <template>
-  <div class="main-page page-container">
+  <div class="page-container">
     <div class="page-header">
       <h2>监控管理</h2>
       <a-space>
@@ -75,6 +75,4 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
-.page-container { flex-direction: column; }
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 </style>

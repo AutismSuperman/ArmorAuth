@@ -6,7 +6,7 @@
     <title>连接设备 - ArmorAuth</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
-    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=20260429">
+    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026052402">
 </head>
 <body>
 <div class="page-shell">
@@ -73,7 +73,8 @@
                 <form class="auth-form" action="${deviceVerificationEndpoint}" method="post">
                     <div class="field-group">
                         <label for="user_code">激活码</label>
-                        <input id="user_code" name="user_code" type="text" placeholder="例如：ABCD-EFGH" autofocus required>
+                        <input id="user_code" name="user_code" type="text" placeholder="例如：ABCD-EFGH" autofocus required
+                               style="text-align: center; font-size: 1.1rem; letter-spacing: 0.15em; font-weight: 600;">
                     </div>
                     <div class="action-row">
                         <button class="button primary" type="submit">继续验证</button>
@@ -95,6 +96,6 @@
         </div>
     </footer>
 </div>
-<script src="/assets/armorauth-ui.js?v=20260429"></script>
+<script src="/assets/armorauth-ui.js?v=20260524"></script>
 </body>
 </html>

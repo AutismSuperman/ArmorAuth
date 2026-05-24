@@ -1,5 +1,5 @@
 <template>
-  <div class="main-page page-container">
+  <div class="page-container">
     <div class="page-header">
       <h2>外部账号绑定</h2>
       <a-button @click="fetchData">
@@ -123,24 +123,24 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
-.page-container { flex-direction: column; }
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .toolbar {
-  display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) auto auto;
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
   margin-bottom: 16px;
 }
 .json-preview {
-  background: #f7f8fa;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  background: var(--aa-bg-light);
+  border: 1px solid var(--aa-border);
+  border-radius: var(--aa-radius-sm);
   margin: 0;
   max-height: 420px;
   overflow: auto;
   padding: 12px;
   white-space: pre-wrap;
   word-break: break-word;
+  font-family: var(--aa-font-mono);
+  font-size: 13px;
 }
 </style>

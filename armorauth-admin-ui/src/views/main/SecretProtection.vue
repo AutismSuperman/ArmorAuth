@@ -1,5 +1,5 @@
 <template>
-  <div class="main-page page-container">
+  <div class="page-container">
     <div class="page-header">
       <div>
         <h2>Secret 保护</h2>
@@ -162,41 +162,18 @@ onMounted(() => runRekey(true))
 </script>
 
 <style scoped>
-.page-container {
-  flex-direction: column;
-  gap: 16px;
-}
-
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.page-header h2 {
-  margin: 0;
-}
-
 .page-subtitle {
   margin-top: 6px;
-  color: #6b7280;
+  color: var(--aa-text-secondary);
   font-size: 13px;
 }
 
 .risk-alert {
-  border-radius: 6px;
+  border-radius: var(--aa-radius);
 }
 
 .metric-grid {
   width: 100%;
-}
-
-.metric-card {
-  min-height: 108px;
-  background: #f8fafc;
-  border: 1px solid #edf1f7;
-  border-radius: 8px;
 }
 
 .key-band {
@@ -205,13 +182,14 @@ onMounted(() => runRekey(true))
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #fbfcff;
-  border: 1px solid #edf1f7;
-  border-radius: 8px;
+  background: var(--aa-card-bg);
+  border: 1px solid var(--aa-border-light);
+  border-radius: var(--aa-radius);
+  box-shadow: var(--aa-shadow);
 }
 
 .key-label {
-  color: #4b5563;
+  color: var(--aa-text-secondary);
   font-weight: 600;
 }
 
@@ -221,12 +199,12 @@ onMounted(() => runRekey(true))
 
 .resource-name {
   font-weight: 600;
-  color: #111827;
+  color: var(--aa-text-primary);
 }
 
 .resource-desc,
 .muted {
-  color: #6b7280;
+  color: var(--aa-text-secondary);
   font-size: 12px;
 }
 

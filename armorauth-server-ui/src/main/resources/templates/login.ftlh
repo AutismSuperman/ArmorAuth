@@ -6,7 +6,7 @@
     <title>欢迎登录 - ArmorAuth</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
-    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026052403">
+    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026052404">
     <script src="/assets/iconfont.js"></script>
 </head>
 <body class="authing-login-page identity-page">

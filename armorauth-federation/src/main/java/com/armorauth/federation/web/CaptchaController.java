@@ -16,7 +16,7 @@
 package com.armorauth.federation.web;
 
 import com.armorauth.captcha.GraphicCaptchaService;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -35,13 +35,12 @@ import java.util.Map;
  * @since 2026-05-23
  */
 @Controller
-@ConditionalOnBean(GraphicCaptchaService.class)
 public class CaptchaController {
 
-    private final GraphicCaptchaService captchaService;
+    private final ObjectProvider<GraphicCaptchaService> captchaServiceProvider;
 
-    public CaptchaController(GraphicCaptchaService captchaService) {
-        this.captchaService = captchaService;
+    public CaptchaController(ObjectProvider<GraphicCaptchaService> captchaServiceProvider) {
+        this.captchaServiceProvider = captchaServiceProvider;
     }
 
     /**
@@ -51,6 +50,10 @@ public class CaptchaController {
      */
     @GetMapping(path = "/login/captcha/image", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> captchaImage() {
+        GraphicCaptchaService captchaService = captchaServiceProvider.getIfAvailable();
+        if (captchaService == null) {
+            return ResponseEntity.notFound().build();
+        }
         GraphicCaptchaService.CaptchaResult result = captchaService.generate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_PNG);
@@ -66,6 +69,10 @@ public class CaptchaController {
      */
     @GetMapping(path = "/login/captcha/info", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, String>> captchaInfo() {
+        GraphicCaptchaService captchaService = captchaServiceProvider.getIfAvailable();
+        if (captchaService == null) {
+            return ResponseEntity.notFound().build();
+        }
         GraphicCaptchaService.CaptchaResult result = captchaService.generate();
         return ResponseEntity.ok()
                 .header("X-Captcha-Id", result.captchaId())

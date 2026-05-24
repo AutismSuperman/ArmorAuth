@@ -1,5 +1,5 @@
 <template>
-  <div class="main-page page-container">
+  <div class="page-container">
     <div class="page-header">
       <h2>审计日志</h2>
       <a-space>
@@ -85,7 +85,5 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
-.page-container { flex-direction: column; }
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .detail-text { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; }
 </style>

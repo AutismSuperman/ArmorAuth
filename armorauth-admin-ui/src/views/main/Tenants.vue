@@ -1,5 +1,5 @@
 <template>
-  <div class="main-page page-container">
+  <div class="page-container">
     <div class="page-header">
       <div>
         <h2>租户管理</h2>
@@ -238,31 +238,15 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
-.page-container {
-  flex-direction: column;
-  gap: 16px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.page-header h2 {
-  margin: 0;
-}
-
 .page-subtitle,
 .tenant-code {
   margin-top: 6px;
-  color: #6b7280;
+  color: var(--aa-text-secondary);
   font-size: 13px;
 }
 
 .tenant-name {
-  color: #111827;
+  color: var(--aa-text-primary);
   font-weight: 600;
 }
 
@@ -271,7 +255,7 @@ onMounted(fetchData)
   height: 18px;
   display: inline-block;
   margin-right: 8px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--aa-border);
   border-radius: 50%;
   vertical-align: -4px;
 }
@@ -285,8 +269,8 @@ onMounted(fetchData)
   width: 42px;
   height: 32px;
   padding: 0;
-  border: 1px solid #d9d9d9;
-  border-radius: 6px;
+  border: 1px solid var(--aa-border);
+  border-radius: var(--aa-radius-sm);
   background: #fff;
 }
 

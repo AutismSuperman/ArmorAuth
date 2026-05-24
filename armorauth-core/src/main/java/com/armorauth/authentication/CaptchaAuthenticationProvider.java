@@ -15,6 +15,7 @@
  */
 package com.armorauth.authentication;
 
+import com.armorauth.captcha.GraphicCaptchaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -32,6 +33,7 @@ import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 
@@ -47,11 +49,19 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider, In
     private final GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
     private final UserDetailsService userDetailsService;
     private final CaptchaVerifyService captchaService;
+    private final GraphicCaptchaService graphicCaptchaService;
     private MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
     public CaptchaAuthenticationProvider(UserDetailsService userDetailsService, CaptchaVerifyService captchaService) {
+        this(userDetailsService, captchaService,
+                captchaService instanceof GraphicCaptchaService graphicCaptchaService ? graphicCaptchaService : null);
+    }
+
+    public CaptchaAuthenticationProvider(UserDetailsService userDetailsService, CaptchaVerifyService captchaService,
+                                         GraphicCaptchaService graphicCaptchaService) {
         this.userDetailsService = userDetailsService;
         this.captchaService = captchaService;
+        this.graphicCaptchaService = graphicCaptchaService;
     }
 
     @Override
@@ -65,7 +75,7 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider, In
         String rawCode = (String) unAuthenticationToken.getCredentials();
         log.info("Processing captcha authentication for account={}", maskAccount(phone));
         // verifyCaptcha
-        if (captchaService.verifyCaptcha(phone, rawCode)) {
+        if (verifyCaptcha(unAuthenticationToken, phone, rawCode)) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(phone);
             log.info("Captcha authentication succeeded for account={}", maskAccount(phone));
             return createSuccessAuthentication(authentication, userDetails);
@@ -84,6 +94,19 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider, In
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(userDetailsService, "userDetailsService must not be null");
         Assert.notNull(captchaService, "captchaService must not be null");
+    }
+
+    private boolean verifyCaptcha(CaptchaAuthenticationToken authenticationToken, String account, String rawCode) {
+        String captchaId = authenticationToken.getCaptchaId();
+        if (StringUtils.hasText(captchaId)) {
+            if (graphicCaptchaService != null) {
+                return graphicCaptchaService.verify(captchaId, rawCode);
+            }
+            if (captchaService instanceof GraphicCaptchaService captchaServiceAdapter) {
+                return captchaServiceAdapter.verify(captchaId, rawCode);
+            }
+        }
+        return captchaService.verifyCaptcha(account, rawCode);
     }
 
     @Override

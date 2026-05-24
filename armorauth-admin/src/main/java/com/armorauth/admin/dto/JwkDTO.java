@@ -41,4 +41,9 @@ public class JwkDTO {
             String message
     ) {
     }
+
+    public record RotateRequest(
+            String algorithm
+    ) {
+    }
 }

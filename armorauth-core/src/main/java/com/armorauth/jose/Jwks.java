@@ -48,7 +48,11 @@ public final class Jwks {
     }
 
     public static ECKey generateEc() {
-        KeyPair keyPair = KeyGeneratorUtils.generateEcKey();
+        return generateEc("secp256r1");
+    }
+
+    public static ECKey generateEc(String curveName) {
+        KeyPair keyPair = KeyGeneratorUtils.generateEcKey(curveName);
         ECPublicKey publicKey = (ECPublicKey) keyPair.getPublic();
         ECPrivateKey privateKey = (ECPrivateKey) keyPair.getPrivate();
         Curve curve = Curve.forECParameterSpec(publicKey.getParams());

@@ -6,28 +6,39 @@
     <title>二次验证 - ArmorAuth</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
-    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=20260429">
+    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026052402">
 </head>
-<body class="authing-login-page">
+<body class="authing-login-page identity-page">
 <div class="page-shell">
     <main class="login-product-shell">
         <section class="login-visual-panel">
-            <div class="login-visual-decor" aria-hidden="true">
-                <div class="login-decor-circle login-decor-circle-1"></div>
-                <div class="login-decor-circle login-decor-circle-2"></div>
-                <div class="login-decor-circle login-decor-circle-3"></div>
-            </div>
             <div class="login-brand">
                 <img class="login-brand-mark" src="/brand/icon.svg" alt="ArmorAuth logo">
                 <span>
                     <strong>ArmorAuth</strong>
-                    <small>Identity Platform</small>
+                    <small>身份云控制台</small>
                 </span>
             </div>
             <div class="login-visual-copy">
-                <span class="login-kicker">安全验证</span>
-                <h1>多因素认证保护</h1>
-                <p>请输入身份验证器应用中显示的验证码，以完成登录。</p>
+                <span class="login-kicker">MFA Challenge</span>
+                <h1>完成二次验证</h1>
+                <p>当前会话需要额外验证，确认后继续进入授权流程。</p>
+            </div>
+            <div class="identity-menu" aria-label="二次验证状态">
+                <div class="identity-menu-item is-active">
+                    <span class="identity-menu-icon">01</span>
+                    <span>
+                        <strong>账号已验证</strong>
+                        <small>${principal!'-'}</small>
+                    </span>
+                </div>
+                <div class="identity-menu-item is-active">
+                    <span class="identity-menu-icon">02</span>
+                    <span>
+                        <strong>等待 MFA</strong>
+                        <small>TOTP / Recovery / Passkey</small>
+                    </span>
+                </div>
             </div>
         </section>
 
@@ -36,13 +47,14 @@
                 <div class="login-card-toolbar">
                     <div class="login-card-logo">
                         <img src="/brand/icon.svg" alt="ArmorAuth logo">
-                        <span>ArmorAuth</span>
+                        <span>安全验证</span>
                     </div>
                 </div>
 
                 <div class="login-card-title">
+                    <span class="login-card-kicker">Multi-factor</span>
                     <h1>二次验证</h1>
-                    <p>请输入身份验证器应用中的 6 位验证码。</p>
+                    <p>使用身份验证器、恢复码或 Passkey 完成验证。</p>
                 </div>
 
                 <#if errorMessage??>
@@ -51,8 +63,9 @@
 
                 <form class="auth-form" action="/login/mfa" method="post">
                     <input type="hidden" name="principal" value="${principal!}">
-                    <div class="field-group">
+                    <div class="field-group field-with-affix">
                         <label for="mfaCode">验证码</label>
+                        <span class="field-affix">OTP</span>
                         <input id="mfaCode" name="mfaCode" type="text"
                                autocomplete="one-time-code"
                                inputmode="numeric"
@@ -77,6 +90,7 @@
         </section>
     </main>
 </div>
+<script src="/assets/armorauth-ui.js?v=20260524"></script>
 <script>
     const passkeyButton = document.getElementById('passkeyButton');
     const passkeyNotice = document.getElementById('passkeyNotice');
@@ -122,6 +136,7 @@
     passkeyButton?.addEventListener('click', async () => {
         passkeyNotice.style.display = 'none';
         passkeyButton.disabled = true;
+        passkeyButton.classList.add('is-loading');
         try {
             if (!window.PublicKeyCredential || !navigator.credentials?.get) {
                 throw new Error('当前浏览器不支持 Passkey');
@@ -156,6 +171,7 @@
             showPasskeyError(error.message);
         } finally {
             passkeyButton.disabled = false;
+            passkeyButton.classList.remove('is-loading');
         }
     });
 </script>

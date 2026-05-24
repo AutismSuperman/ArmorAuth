@@ -33,12 +33,16 @@ public class CaptchaAuthenticationFilter extends AbstractAuthenticationProcessin
 
     public static final String SPRING_SECURITY_FORM_CAPTCHA_KEY = "captcha";
 
+    public static final String SPRING_SECURITY_FORM_CAPTCHA_ID_KEY = "captchaId";
+
     private static final PathPatternRequestMatcher DEFAULT_ANT_PATH_REQUEST_MATCHER =
             PathPatternRequestMatcher.pathPattern(HttpMethod.POST, "/login/captcha");
 
     private String accountParameter = SPRING_SECURITY_FORM_ACCOUNT_KEY;
 
     private String captchaParameter = SPRING_SECURITY_FORM_CAPTCHA_KEY;
+
+    private String captchaIdParameter = SPRING_SECURITY_FORM_CAPTCHA_ID_KEY;
 
     private Converter<HttpServletRequest, CaptchaAuthenticationToken> captchaAuthenticationTokenConverter;
 
@@ -72,7 +76,9 @@ public class CaptchaAuthenticationFilter extends AbstractAuthenticationProcessin
             account = (account != null) ? account.trim() : "";
             String captcha = request.getParameter(this.captchaParameter);
             captcha = (captcha != null) ? captcha.trim() : "";
-            return new CaptchaAuthenticationToken(account, captcha);
+            String captchaId = request.getParameter(this.captchaIdParameter);
+            captchaId = (captchaId != null) ? captchaId.trim() : "";
+            return new CaptchaAuthenticationToken(account, captcha, captchaId);
         };
     }
 
@@ -90,6 +96,11 @@ public class CaptchaAuthenticationFilter extends AbstractAuthenticationProcessin
         this.captchaParameter = captchaParameter;
     }
 
+    public void setCaptchaIdParameter(String captchaIdParameter) {
+        Assert.hasText(captchaIdParameter, "captchaId parameter must not be empty or null");
+        this.captchaIdParameter = captchaIdParameter;
+    }
+
     public void setConverter(Converter<HttpServletRequest, CaptchaAuthenticationToken> converter) {
         Assert.notNull(converter, "Converter must not be null");
         this.captchaAuthenticationTokenConverter = converter;
@@ -105,5 +116,9 @@ public class CaptchaAuthenticationFilter extends AbstractAuthenticationProcessin
 
     public final String getCaptchaParameter() {
         return this.captchaParameter;
+    }
+
+    public final String getCaptchaIdParameter() {
+        return this.captchaIdParameter;
     }
 }

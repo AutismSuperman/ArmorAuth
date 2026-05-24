@@ -6,7 +6,7 @@
     <title>账号确认 - ArmorAuth</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
-    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=20260429">
+    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026052402">
 </head>
 <body>
 <div class="page-shell">
@@ -163,6 +163,6 @@
         </div>
     </footer>
 </div>
-<script src="/assets/armorauth-ui.js?v=20260429"></script>
+<script src="/assets/armorauth-ui.js?v=20260524"></script>
 </body>
 </html>

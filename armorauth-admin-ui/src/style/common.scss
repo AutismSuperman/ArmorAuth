@@ -1,9 +1,72 @@
+// ── ArmorAuth Design Tokens ──
+:root {
+  --aa-primary: #3b82f6;
+  --aa-primary-hover: #2563eb;
+  --aa-primary-light: #eff6ff;
+  --aa-primary-bg: #dbeafe;
+  --aa-success: #10b981;
+  --aa-warning: #f59e0b;
+  --aa-danger: #ef4444;
+  --aa-bg: #f0f2f5;
+  --aa-bg-light: #f5f7fa;
+  --aa-sidebar-bg: #1e1e2d;
+  --aa-sidebar-hover: #2a2a3d;
+  --aa-sidebar-active: rgba(59, 130, 246, 0.15);
+  --aa-header-bg: #ffffff;
+  --aa-card-bg: #ffffff;
+  --aa-border: #e5e7eb;
+  --aa-border-light: #f0f0f0;
+  --aa-text-primary: #1f2937;
+  --aa-text-secondary: #6b7280;
+  --aa-text-muted: #9ca3af;
+  --aa-radius: 10px;
+  --aa-radius-sm: 6px;
+  --aa-radius-lg: 16px;
+  --aa-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --aa-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --aa-shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --aa-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans SC', sans-serif;
+  --aa-font-mono: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Consolas, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   padding: 0;
   margin: 0;
   outline: none;
+  font-family: var(--aa-font);
+  color: var(--aa-text-primary);
+  background: var(--aa-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  color: var(--aa-text-primary);
+}
+
+a {
+  color: var(--aa-primary);
+  transition: color 0.2s;
+
+  &:hover {
+    color: var(--aa-primary-hover);
+  }
+}
+
+// ── Page Layout ──
+.main-page {
+  display: flex;
+  height: 100%;
+  margin: 0 auto;
+}
+
+// ── Responsive widths ──
 @media screen and (max-width: 1200px) {
   .main-page {
     width: 80%;
@@ -22,13 +85,229 @@ body {
   }
 }
 
-.main-page {
+// ── Ant Design overrides for modern look ──
+
+// Tables
+.ant-table {
+  border-radius: var(--aa-radius) !important;
+  overflow: hidden;
+}
+
+.ant-table-wrapper {
+  border-radius: var(--aa-radius);
+  overflow: hidden;
+  box-shadow: var(--aa-shadow);
+  background: var(--aa-card-bg);
+}
+
+.ant-table-thead > tr > th {
+  background: var(--aa-bg-light) !important;
+  font-weight: 600 !important;
+  color: var(--aa-text-secondary) !important;
+  font-size: 13px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--aa-border) !important;
+}
+
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--aa-border-light) !important;
+  transition: background 0.15s;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: var(--aa-primary-light) !important;
+}
+
+// Cards
+.ant-card {
+  border-radius: var(--aa-radius) !important;
+  box-shadow: var(--aa-shadow) !important;
+  border: 1px solid var(--aa-border-light) !important;
+}
+
+// Buttons
+.ant-btn {
+  border-radius: var(--aa-radius-sm) !important;
+  font-weight: 500 !important;
+  transition: all 0.2s !important;
+}
+
+.ant-btn-primary {
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.25) !important;
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.35) !important;
+  }
+}
+
+// Modal
+.ant-modal-content {
+  border-radius: var(--aa-radius-lg) !important;
+  overflow: hidden;
+}
+
+.ant-modal-header {
+  border-bottom: 1px solid var(--aa-border-light) !important;
+}
+
+// Tags
+.ant-tag {
+  border-radius: 20px !important;
+  font-size: 12px !important;
+  line-height: 20px !important;
+  padding: 0 10px !important;
+  border: none !important;
+  font-weight: 500 !important;
+}
+
+// Form
+.ant-form-item-label > label {
+  font-weight: 500 !important;
+  color: var(--aa-text-primary) !important;
+}
+
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-select-selector,
+.ant-picker {
+  border-radius: var(--aa-radius-sm) !important;
+}
+
+// Statistic
+.ant-statistic-title {
+  font-size: 13px !important;
+  color: var(--aa-text-secondary) !important;
+}
+
+.ant-statistic-content-value {
+  font-weight: 700 !important;
+}
+
+// Pagination
+.ant-pagination {
+  margin-top: 16px !important;
+}
+
+// Alert
+.ant-alert {
+  border-radius: var(--aa-radius) !important;
+}
+
+// Descriptions
+.ant-descriptions-bordered .ant-descriptions-item-label {
+  background: var(--aa-bg-light) !important;
+  font-weight: 500 !important;
+}
+
+// Popconfirm
+.ant-popconfirm .ant-popconfirm-buttons .ant-btn {
+  border-radius: var(--aa-radius-sm) !important;
+}
+
+// Switch
+.ant-switch {
+  border-radius: 20px !important;
+}
+
+// Menu (global overrides for sidebar)
+.ant-menu-inline {
+  border-right: none !important;
+}
+
+// Input search
+.ant-input-search-button {
+  border-radius: 0 var(--aa-radius-sm) var(--aa-radius-sm) 0 !important;
+}
+
+// Drawer
+.ant-drawer-content {
+  border-radius: var(--aa-radius-lg) 0 0 var(--aa-radius-lg) !important;
+  overflow: hidden;
+}
+
+// Badge
+.ant-badge-status-dot {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+// Tooltip
+.ant-tooltip-inner {
+  border-radius: var(--aa-radius-sm) !important;
+  font-size: 12px !important;
+}
+
+// ── Page pattern shared styles ──
+.page-container {
+  flex-direction: column;
+  gap: 0;
+}
+
+.page-header {
   display: flex;
-  height: 100%;
-  margin: 0 auto;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--aa-text-primary);
+  }
+}
+
+.page-subtitle {
+  margin-top: 4px;
+  color: var(--aa-text-secondary);
+  font-size: 13px;
+}
+
+// ── Metric cards ──
+.metric-card {
+  min-height: 104px;
+  background: var(--aa-card-bg) !important;
+  border: 1px solid var(--aa-border-light) !important;
+  border-radius: var(--aa-radius) !important;
+  box-shadow: var(--aa-shadow) !important;
+  transition: box-shadow 0.2s, transform 0.2s;
+
+  &:hover {
+    box-shadow: var(--aa-shadow-md) !important;
+    transform: translateY(-1px);
+  }
+}
+
+// ── Toolbar ──
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
 .banner {
   width: 150px;
   height: 150px;
+}
+
+// ── Scrollbar ──
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+
+  &:hover {
+    background: #9ca3af;
+  }
 }

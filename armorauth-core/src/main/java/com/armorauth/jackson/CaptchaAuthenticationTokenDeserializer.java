@@ -45,10 +45,11 @@ class CaptchaAuthenticationTokenDeserializer extends JsonDeserializer<CaptchaAut
         Object principal = getPrincipal(mapper, principalNode);
         JsonNode credentialsNode = readJsonNode(jsonNode, "captcha");
         String credentials = getCaptcha(credentialsNode);
+        String captchaId = getCaptcha(readJsonNode(jsonNode, "captchaId"));
         List<GrantedAuthority> authorities = mapper.readValue(readJsonNode(jsonNode, "authorities").traverse(mapper),
                 GRANTED_AUTHORITY_LIST);
         CaptchaAuthenticationToken token = (!authenticated)
-                ? new CaptchaAuthenticationToken(principal, credentials)
+                ? new CaptchaAuthenticationToken(principal, credentials, captchaId)
                 : new CaptchaAuthenticationToken(principal, credentials, authorities);
         JsonNode detailsNode = readJsonNode(jsonNode, "details");
         if (detailsNode.isNull() || detailsNode.isMissingNode()) {

@@ -15,7 +15,7 @@
  */
 package com.armorauth;
 
-public class Main {
+public class ArmorAuthAdminApplication {
     public static void main(String[] args) {
         System.out.println("Hello world!");
     }

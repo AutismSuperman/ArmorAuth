@@ -18,6 +18,7 @@ package com.armorauth.configurers.web;
 import com.armorauth.authentication.CaptchaAuthenticationFilter;
 import com.armorauth.authentication.CaptchaAuthenticationProvider;
 import com.armorauth.authentication.CaptchaVerifyService;
+import com.armorauth.captcha.GraphicCaptchaService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -34,6 +35,8 @@ public class CaptchaLoginConfigurer<H extends HttpSecurityBuilder<H>>
     private UserDetailsService userDetailsService;
 
     private CaptchaVerifyService captchaVerifyService;
+
+    private GraphicCaptchaService graphicCaptchaService;
 
     public CaptchaLoginConfigurer() {
         super(new CaptchaAuthenticationFilter(), "/login/captcha");
@@ -56,6 +59,11 @@ public class CaptchaLoginConfigurer<H extends HttpSecurityBuilder<H>>
         return this;
     }
 
+    public CaptchaLoginConfigurer<H> graphicCaptchaService(GraphicCaptchaService graphicCaptchaService) {
+        this.graphicCaptchaService = graphicCaptchaService;
+        return this;
+    }
+
     public CaptchaLoginConfigurer<H> accountParameter(String usernameParameter) {
         getAuthenticationFilter().setAccountParameter(usernameParameter);
         return this;
@@ -63,6 +71,11 @@ public class CaptchaLoginConfigurer<H extends HttpSecurityBuilder<H>>
 
     public CaptchaLoginConfigurer<H> captchaParameter(String passwordParameter) {
         getAuthenticationFilter().setCaptchaParameter(passwordParameter);
+        return this;
+    }
+
+    public CaptchaLoginConfigurer<H> captchaIdParameter(String captchaIdParameter) {
+        getAuthenticationFilter().setCaptchaIdParameter(captchaIdParameter);
         return this;
     }
 
@@ -98,7 +111,10 @@ public class CaptchaLoginConfigurer<H extends HttpSecurityBuilder<H>>
                 ? this.captchaVerifyService
                 : getBeanOrNull(applicationContext, CaptchaVerifyService.class);
         Assert.notNull(captchaService, "captchaService is required");
-        return new CaptchaAuthenticationProvider(userDetailsService, captchaService);
+        GraphicCaptchaService graphicCaptchaService = this.graphicCaptchaService != null
+                ? this.graphicCaptchaService
+                : getBeanOrNull(applicationContext, GraphicCaptchaService.class);
+        return new CaptchaAuthenticationProvider(userDetailsService, captchaService, graphicCaptchaService);
     }
 
     public final <T> T getBeanOrNull(ApplicationContext applicationContext, Class<T> beanType) {

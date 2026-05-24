@@ -2809,14 +2809,20 @@ body.identity-page[data-theme="dark"] .button.secondary:hover {
     grid-template-columns: minmax(0, 1fr) 118px;
     gap: 10px;
     position: relative;
+    align-items: start;
 }
 
 .captcha-image-row .field-affix {
-    bottom: 9px;
+    top: 23px;
+    bottom: auto;
+    width: 38px;
+    min-width: 38px;
+    transform: translateY(-50%);
+    pointer-events: none;
 }
 
-.captcha-image-row input {
-    padding-left: 54px;
+.identity-page .captcha-image-row input {
+    padding-left: 66px;
 }
 
 .captcha-image-button {
@@ -2976,6 +2982,11 @@ body.identity-page[data-theme="dark"] .provider-link:hover {
     .field-affix,
     .captcha-image-row .field-affix {
         bottom: 6px;
+    }
+
+    .captcha-image-row .field-affix {
+        top: 20px;
+        bottom: auto;
     }
 
     .captcha-image-button {

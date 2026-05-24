@@ -129,8 +129,9 @@ export const rekeySecrets = (dryRun = true) => api.post('/secret-protection/reke
 
 // JWK 密钥管理
 export const getJwkKeys = () => api.get('/jwk-keys')
-export const rotateJwkKey = () => api.post('/jwk-keys/rotate')
+export const rotateJwkKey = (algorithm) => api.post('/jwk-keys/rotate', algorithm ? { algorithm } : {})
 export const retireJwkKey = (kid) => api.post(`/jwk-keys/${encodeURIComponent(kid)}/retire`)
+export const deleteJwkKey = (kid) => api.delete(`/jwk-keys/${encodeURIComponent(kid)}`)
 
 // 会话管理
 export const getSessions = () => api.get('/sessions')

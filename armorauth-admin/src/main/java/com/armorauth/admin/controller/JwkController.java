@@ -69,12 +69,13 @@ public class JwkController {
      */
     @PostMapping("/rotate")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public ApiResponse<JwkDTO.RotateResponse> rotateKey() {
-        String newKid = persistentJwkSource.rotateKey();
+    public ApiResponse<JwkDTO.RotateResponse> rotateKey(@RequestBody(required = false) JwkDTO.RotateRequest request) {
+        String algorithm = request != null ? request.algorithm() : null;
+        String newKid = persistentJwkSource.rotateKey(algorithm);
 
         auditEventService.record("JWK_KEY_ROTATED",
                 AuditContext.getCurrentPrincipal(), "jwk_key", newKid,
-                "轮换 JWK 密钥，新 kid=" + newKid, AuditContext.getClientIp());
+                "轮换 JWK 密钥，新 kid=" + newKid + ", algorithm=" + algorithm, AuditContext.getClientIp());
 
         return ApiResponse.ok(new JwkDTO.RotateResponse(newKid, "密钥轮换成功"));
     }
@@ -90,6 +91,21 @@ public class JwkController {
         auditEventService.record("JWK_KEY_RETIRED",
                 AuditContext.getCurrentPrincipal(), "jwk_key", kid,
                 "废弃 JWK 密钥: kid=" + kid, AuditContext.getClientIp());
+
+        return ApiResponse.ok();
+    }
+
+    /**
+     * 删除非 active 密钥
+     */
+    @DeleteMapping("/{kid}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ApiResponse<Void> deleteKey(@PathVariable(name = "kid") String kid) {
+        persistentJwkSource.deleteKey(kid);
+
+        auditEventService.record("JWK_KEY_DELETED",
+                AuditContext.getCurrentPrincipal(), "jwk_key", kid,
+                "删除 JWK 密钥: kid=" + kid, AuditContext.getClientIp());
 
         return ApiResponse.ok();
     }

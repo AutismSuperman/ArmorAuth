@@ -33,6 +33,7 @@ public class CaptchaAuthenticationToken extends AbstractAuthenticationToken {
 
     private final Object principal;
     private String captcha;
+    private String captchaId;
 
     /**
      * 此构造函数用来初始化未授信凭据.
@@ -41,9 +42,21 @@ public class CaptchaAuthenticationToken extends AbstractAuthenticationToken {
      * @param captcha   the captcha
      */
     public CaptchaAuthenticationToken(Object principal, String captcha) {
+        this(principal, captcha, (String) null);
+    }
+
+    /**
+     * 此构造函数用来初始化带验证码标识的未授信凭据.
+     *
+     * @param principal the principal
+     * @param captcha   the captcha
+     * @param captchaId the captcha id
+     */
+    public CaptchaAuthenticationToken(Object principal, String captcha, String captchaId) {
         super(Collections.emptyList());
         this.principal = principal;
         this.captcha = captcha;
+        this.captchaId = captchaId;
         setAuthenticated(false);
     }
 
@@ -68,6 +81,10 @@ public class CaptchaAuthenticationToken extends AbstractAuthenticationToken {
         return this.captcha;
     }
 
+    public String getCaptchaId() {
+        return this.captchaId;
+    }
+
     @Override
     public Object getPrincipal() {
         return this.principal;
@@ -87,5 +104,6 @@ public class CaptchaAuthenticationToken extends AbstractAuthenticationToken {
     public void eraseCredentials() {
         super.eraseCredentials();
         captcha = null;
+        captchaId = null;
     }
 }

@@ -59,7 +59,7 @@ public class LoginLockoutService {
         if (user.getLockedUntil() != null && user.getLockedUntil().isBefore(Instant.now())) {
             user.setLockedUntil(null);
             user.setFailedLoginAttempts(0);
-            userInfoRepository.save(user);
+            saveLockoutState(user);
         }
         return false;
     }
@@ -80,7 +80,7 @@ public class LoginLockoutService {
             user.setLockedUntil(Instant.now().plus(LOCKOUT_DURATION));
         }
 
-        userInfoRepository.save(user);
+        saveLockoutState(user);
     }
 
     /**
@@ -94,6 +94,15 @@ public class LoginLockoutService {
         UserInfo user = userOpt.get();
         user.setFailedLoginAttempts(0);
         user.setLockedUntil(null);
+        saveLockoutState(user);
+    }
+
+    private void saveLockoutState(UserInfo user) {
+        Instant now = Instant.now();
+        if (user.getCreateTime() == null) {
+            user.setCreateTime(now);
+        }
+        user.setUpdateTime(now);
         userInfoRepository.save(user);
     }
 }
