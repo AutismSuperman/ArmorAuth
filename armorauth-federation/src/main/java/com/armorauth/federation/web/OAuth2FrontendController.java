@@ -16,7 +16,10 @@
 package com.armorauth.federation.web;
 
 import com.armorauth.authentication.CaptchaVerifyService;
+import com.armorauth.authentication.SmsOtpService;
 import com.armorauth.captcha.GraphicCaptchaService;
+import com.armorauth.data.entity.IdentityProvider;
+import com.armorauth.data.repository.IdentityProviderRepository;
 import com.armorauth.federation.config.FederationProperties;
 import com.armorauth.data.entity.OAuth2Scope;
 import com.armorauth.data.repository.OAuth2ScopeRepository;
@@ -28,6 +31,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -68,6 +72,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -77,6 +82,8 @@ public class OAuth2FrontendController {
     private final RegisteredClientRepository registeredClientRepository;
 
     private final ClientRegistrationRepository clientRegistrationRepository;
+
+    private final IdentityProviderRepository identityProviderRepository;
 
     private final RelyingPartyRegistrationRepository relyingPartyRegistrationRepository;
 
@@ -90,6 +97,10 @@ public class OAuth2FrontendController {
 
     private final GraphicCaptchaService graphicCaptchaService;
 
+    private final SmsOtpService smsOtpService;
+
+    private final boolean exposeSmsOtp;
+
     private final UserDetailsService userDetailsService;
 
     private final SecurityContextRepository securityContextRepository;
@@ -102,34 +113,35 @@ public class OAuth2FrontendController {
 
     public OAuth2FrontendController(RegisteredClientRepository registeredClientRepository,
                                     ClientRegistrationRepository clientRegistrationRepository,
+                                    ObjectProvider<IdentityProviderRepository> identityProviderRepositoryProvider,
                                     RelyingPartyRegistrationRepository relyingPartyRegistrationRepository,
                                     OAuth2AuthorizationConsentService authorizationConsentService,
                                     OAuth2ScopeRepository oAuth2ScopeRepository,
                                     AuthorizationServerSettings authorizationServerSettings,
                                     ObjectProvider<CaptchaVerifyService> captchaVerifyServiceProvider,
                                     ObjectProvider<GraphicCaptchaService> graphicCaptchaServiceProvider,
+                                    ObjectProvider<SmsOtpService> smsOtpServiceProvider,
                                     ObjectProvider<LoginRateLimiter> loginRateLimiterProvider,
                                     UserDetailsService userDetailsService,
                                     SecurityContextRepository securityContextRepository,
                                     @Qualifier("formAuthenticationSuccessHandler")
                                     AuthenticationSuccessHandler authenticationSuccessHandler,
-                                    FederationProperties federationProperties) {
+                                    FederationProperties federationProperties,
+                                    @Value("${armorauth.captcha.sms.expose-code:false}") boolean exposeSmsOtp) {
         this.registeredClientRepository = registeredClientRepository;
         this.clientRegistrationRepository = clientRegistrationRepository;
+        this.identityProviderRepository = identityProviderRepositoryProvider.getIfAvailable();
         this.relyingPartyRegistrationRepository = relyingPartyRegistrationRepository;
         this.authorizationConsentService = authorizationConsentService;
         this.oAuth2ScopeRepository = oAuth2ScopeRepository;
         this.authorizationServerSettings = authorizationServerSettings;
         this.graphicCaptchaService = graphicCaptchaServiceProvider.getIfAvailable(null);
+        this.smsOtpService = smsOtpServiceProvider.getIfAvailable(null);
+        this.exposeSmsOtp = exposeSmsOtp;
         this.loginRateLimiter = loginRateLimiterProvider.getIfAvailable(null);
 
-        // 优先使用 GraphicCaptchaService（如果存在），否则使用 CaptchaVerifyService 或 mock
-        if (this.graphicCaptchaService != null) {
-            this.captchaVerifyService = this.graphicCaptchaService;
-        } else {
-            this.captchaVerifyService = captchaVerifyServiceProvider.getIfAvailable(
-                    () -> (account, code) -> "1234".equals(code));
-        }
+        this.captchaVerifyService = captchaVerifyServiceProvider.getIfAvailable(
+                () -> (account, code) -> "1234".equals(code));
 
         this.userDetailsService = userDetailsService;
         this.securityContextRepository = securityContextRepository;
@@ -155,6 +167,7 @@ public class OAuth2FrontendController {
                         HttpServletRequest request,
                         Model model,
                         @RequestParam(name = "mode", required = false) String mode,
+                        @RequestParam(name = "tab", required = false) String tab,
                         @RequestParam(name = "error", required = false) String error,
                         @RequestParam(name = "logout", required = false) String logout) {
         if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
@@ -166,6 +179,8 @@ public class OAuth2FrontendController {
         model.addAttribute("selectedFederatedMode",
                 FederatedLoginMode.resolveForPage(mode, defaultFederatedLoginMode).getParameterValue());
         model.addAttribute("graphicCaptcha", graphicCaptchaService != null);
+        model.addAttribute("smsCaptcha", smsOtpService != null);
+        model.addAttribute("selectedLoginTab", resolveSelectedLoginTab(tab));
 
         if (error != null) {
             String errorMessage = "用户名、密码或验证码不正确。";
@@ -188,11 +203,16 @@ public class OAuth2FrontendController {
         if (!StringUtils.hasText(account)) {
             return ResponseEntity.badRequest().body(Map.of("message", "请输入手机号后再获取验证码。"));
         }
-        // 图形验证码模式下，此接口返回提示信息（验证码通过图片获取）
-        if (graphicCaptchaService != null) {
-            return ResponseEntity.ok(Map.of(
-                    "message", "请通过图片验证码登录。"
-            ));
+        String normalizedAccount = account.trim();
+        if (smsOtpService != null) {
+            String otp = smsOtpService.generateOtp(normalizedAccount);
+            if (exposeSmsOtp) {
+                return ResponseEntity.ok(Map.of(
+                        "message", "验证码已发送，Mock 验证码：" + otp + "。",
+                        "captcha", otp
+                ));
+            }
+            return ResponseEntity.ok(Map.of("message", "验证码已发送，请查看短信。"));
         }
         return ResponseEntity.ok(Map.of(
                 "message", "验证码已发送，当前演示环境固定验证码为 1234。",
@@ -217,14 +237,17 @@ public class OAuth2FrontendController {
         if (loginRateLimiter != null && account != null
                 && loginRateLimiter.isBlocked(account, clientIp)) {
             saveAuthenticationException(request, new BadCredentialsException("登录尝试次数过多，请稍后再试。"));
-            response.sendRedirect(request.getContextPath() + "/login?error");
+            response.sendRedirect(request.getContextPath() + "/login?error&tab=" + captchaFailureTab(captchaId));
             return;
         }
 
         boolean verified;
-        if (graphicCaptchaService != null && captchaId != null) {
-            // 图形验证码模式：通过 captchaId 验证
-            verified = graphicCaptchaService.verify(captchaId, captcha);
+        if (StringUtils.hasText(captchaId)) {
+            verified = graphicCaptchaService != null && graphicCaptchaService.verify(captchaId, captcha);
+        } else if (smsOtpService != null) {
+            verified = smsOtpService.verifyOtp(
+                    account != null ? account.trim() : "",
+                    captcha != null ? captcha.trim() : "");
         } else {
             // 兼容旧模式
             verified = this.captchaVerifyService.verifyCaptcha(
@@ -238,7 +261,7 @@ public class OAuth2FrontendController {
                 loginRateLimiter.recordFailure(account, clientIp);
             }
             saveAuthenticationException(request, new BadCredentialsException("验证码不正确。"));
-            response.sendRedirect(request.getContextPath() + "/login?error");
+            response.sendRedirect(request.getContextPath() + "/login?error&tab=" + captchaFailureTab(captchaId));
             return;
         }
 
@@ -250,7 +273,7 @@ public class OAuth2FrontendController {
                 loginRateLimiter.recordFailure(account, clientIp);
             }
             saveAuthenticationException(request, ex);
-            response.sendRedirect(request.getContextPath() + "/login?error");
+            response.sendRedirect(request.getContextPath() + "/login?error&tab=" + captchaFailureTab(captchaId));
             return;
         }
         Authentication authentication = UsernamePasswordAuthenticationToken.authenticated(
@@ -339,31 +362,127 @@ public class OAuth2FrontendController {
 
     private List<FederatedLoginProvider> getFederatedProviders() {
         List<FederatedLoginProvider> providers = new ArrayList<>();
+        Set<String> knownRegistrationIds = new HashSet<>();
+        if (this.identityProviderRepository != null) {
+            this.identityProviderRepository.findAll().forEach(provider ->
+                    knownRegistrationIds.add(provider.getRegistrationId()));
+            this.identityProviderRepository.findByEnabledTrueAndDisplayOnLoginTrueOrderByDisplayOrderAsc()
+                    .stream()
+                    .filter(this::isFederatedLoginProvider)
+                    .forEach(provider -> providers.add(new FederatedLoginProvider(
+                            provider.getRegistrationId(),
+                            provider.getProviderName(),
+                            authorizationUrl(provider),
+                            resolveIconKey(provider.getIconKey(), provider.getProviderType(), provider.getRegistrationId()),
+                            resolveIconText(provider.getIconKey(), provider.getProviderType(), provider.getRegistrationId()))));
+        }
         if (this.clientRegistrationRepository instanceof Iterable<?> registrations) {
             for (Object registration : registrations) {
                 if (registration instanceof ClientRegistration clientRegistration) {
+                    if (!knownRegistrationIds.add(clientRegistration.getRegistrationId())) {
+                        continue;
+                    }
+                    String iconKey = normalizeIconKey(clientRegistration.getRegistrationId());
                     providers.add(new FederatedLoginProvider(
                             clientRegistration.getRegistrationId(),
                             clientRegistration.getClientName(),
-                            "/oauth2/authorization/" + clientRegistration.getRegistrationId()));
+                            "/oauth2/authorization/" + clientRegistration.getRegistrationId(),
+                            iconKey,
+                            resolveIconText(iconKey, null, clientRegistration.getRegistrationId())));
                 }
             }
         }
         if (this.relyingPartyRegistrationRepository instanceof Iterable<?> registrations) {
             for (Object registration : registrations) {
                 if (registration instanceof RelyingPartyRegistration relyingPartyRegistration) {
+                    if (!knownRegistrationIds.add(relyingPartyRegistration.getRegistrationId())) {
+                        continue;
+                    }
                     providers.add(new FederatedLoginProvider(
                             relyingPartyRegistration.getRegistrationId(),
                             relyingPartyRegistration.getRegistrationId(),
-                            "/saml2/authorization/" + relyingPartyRegistration.getRegistrationId()));
+                            "/saml2/authorization/" + relyingPartyRegistration.getRegistrationId(),
+                            "saml",
+                            "SSO"));
                 }
             }
         }
         return providers;
     }
 
+    private boolean isFederatedLoginProvider(IdentityProvider provider) {
+        return provider.getProviderType() != IdentityProvider.ProviderType.LDAP;
+    }
+
+    private String authorizationUrl(IdentityProvider provider) {
+        if (provider.getProviderType() == IdentityProvider.ProviderType.SAML) {
+            return "/saml2/authorization/" + provider.getRegistrationId();
+        }
+        return "/oauth2/authorization/" + provider.getRegistrationId();
+    }
+
+    private String resolveIconKey(String iconKey, IdentityProvider.ProviderType providerType, String registrationId) {
+        if (StringUtils.hasText(iconKey)) {
+            return normalizeIconKey(iconKey);
+        }
+        if (providerType != null) {
+            return normalizeIconKey(providerType.name());
+        }
+        return normalizeIconKey(registrationId);
+    }
+
+    private String normalizeIconKey(String value) {
+        if (!StringUtils.hasText(value)) {
+            return "custom";
+        }
+        return value.trim().toLowerCase(Locale.ROOT).replace('_', '-');
+    }
+
+    private String resolveIconText(String iconKey, IdentityProvider.ProviderType providerType, String registrationId) {
+        String resolvedIconKey = resolveIconKey(iconKey, providerType, registrationId);
+        return switch (resolvedIconKey) {
+            case "oidc" -> "OIDC";
+            case "saml" -> "SSO";
+            case "ldap" -> "LDAP";
+            case "wechat", "weixin" -> "微";
+            case "wecom" -> "企";
+            case "dingtalk" -> "钉";
+            case "feishu" -> "飞";
+            case "alipay" -> "支";
+            case "qq" -> "QQ";
+            case "gitee" -> "G";
+            case "github" -> "GH";
+            case "google" -> "G";
+            case "microsoft" -> "MS";
+            case "custom" -> "ID";
+            default -> fallbackIconText(registrationId);
+        };
+    }
+
+    private String fallbackIconText(String value) {
+        String normalized = normalizeIconKey(value).replace("-", "");
+        if (normalized.length() <= 2) {
+            return normalized.toUpperCase(Locale.ROOT);
+        }
+        return normalized.substring(0, 2).toUpperCase(Locale.ROOT);
+    }
+
     private void saveAuthenticationException(HttpServletRequest request, Exception exception) {
         request.getSession(true).setAttribute(WebAttributes.AUTHENTICATION_EXCEPTION, exception);
+    }
+
+    private String resolveSelectedLoginTab(String tab) {
+        if ("captcha".equals(tab) || "graphic".equals(tab)) {
+            return graphicCaptchaService != null ? "graphic" : "password";
+        }
+        if ("sms".equals(tab)) {
+            return smsOtpService != null ? "sms" : "password";
+        }
+        return "password";
+    }
+
+    private String captchaFailureTab(String captchaId) {
+        return StringUtils.hasText(captchaId) ? "graphic" : "sms";
     }
 
     private String getClientIp(HttpServletRequest request) {
@@ -386,10 +505,17 @@ public class OAuth2FrontendController {
 
         private final String authorizationUrl;
 
-        public FederatedLoginProvider(String registrationId, String clientName, String authorizationUrl) {
+        private final String iconKey;
+
+        private final String iconText;
+
+        public FederatedLoginProvider(String registrationId, String clientName, String authorizationUrl,
+                                      String iconKey, String iconText) {
             this.registrationId = registrationId;
             this.clientName = StringUtils.hasText(clientName) ? clientName : registrationId;
             this.authorizationUrl = authorizationUrl;
+            this.iconKey = StringUtils.hasText(iconKey) ? iconKey : "custom";
+            this.iconText = StringUtils.hasText(iconText) ? iconText : "ID";
         }
 
         public String getRegistrationId() {
@@ -402,6 +528,14 @@ public class OAuth2FrontendController {
 
         public String getAuthorizationUrl() {
             return authorizationUrl;
+        }
+
+        public String getIconKey() {
+            return iconKey;
+        }
+
+        public String getIconText() {
+            return iconText;
         }
     }
 }

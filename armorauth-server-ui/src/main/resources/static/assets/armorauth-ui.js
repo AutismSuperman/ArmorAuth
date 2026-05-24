@@ -1,6 +1,7 @@
 (function () {
     const THEME_KEY = "armorauth-theme";
 
+    /* ===== 主题切换 ===== */
     const applyTheme = (theme) => {
         document.body.dataset.theme = theme;
         document.documentElement.style.colorScheme = theme === "light" ? "light" : "dark";
@@ -25,6 +26,33 @@
         });
     });
 
+    /* ===== 页面级提示收起 ===== */
+    const pageError = document.querySelector("[data-page-error]");
+    const dismissPageError = () => {
+        if (!pageError || pageError.hidden || pageError.classList.contains("is-dismissing")) {
+            return;
+        }
+        pageError.classList.add("is-dismissing");
+        window.setTimeout(() => {
+            pageError.hidden = true;
+        }, 180);
+    };
+
+    if (pageError) {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has("error")) {
+            url.searchParams.delete("error");
+            window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+        }
+        window.setTimeout(dismissPageError, 5000);
+        document.querySelectorAll("[data-tab-target], .auth-form input, .provider-link").forEach((element) => {
+            element.addEventListener("click", dismissPageError, { once: true });
+            element.addEventListener("input", dismissPageError, { once: true });
+            element.addEventListener("focus", dismissPageError, { once: true });
+        });
+    }
+
+    /* ===== Tab 切换 ===== */
     document.querySelectorAll("[data-tab-group]").forEach((group) => {
         const buttons = group.querySelectorAll("[data-tab-target]");
         buttons.forEach((button) => {
@@ -39,6 +67,54 @@
         });
     });
 
+    /* ===== Toast 通知 ===== */
+    let toastContainer = null;
+
+    const getOrCreateToastContainer = () => {
+        if (!toastContainer) {
+            toastContainer = document.createElement("div");
+            toastContainer.className = "toast-container";
+            document.body.appendChild(toastContainer);
+        }
+        return toastContainer;
+    };
+
+    window.showToast = (message, type, duration) => {
+        type = type || "info";
+        duration = duration || 3500;
+        const container = getOrCreateToastContainer();
+        const toast = document.createElement("div");
+        toast.className = "toast toast-" + type;
+        toast.textContent = message;
+        container.appendChild(toast);
+
+        const remove = () => {
+            toast.classList.add("is-out");
+            toast.addEventListener("animationend", () => {
+                toast.remove();
+                if (container.children.length === 0) {
+                    container.remove();
+                    toastContainer = null;
+                }
+            });
+        };
+
+        setTimeout(remove, duration);
+        toast.addEventListener("click", remove);
+    };
+
+    /* ===== 表单提交 loading 状态 ===== */
+    document.querySelectorAll("form").forEach((form) => {
+        form.addEventListener("submit", () => {
+            const primaryBtn = form.querySelector(".button.primary, button[type='submit']");
+            if (primaryBtn && !primaryBtn.disabled) {
+                primaryBtn.classList.add("is-loading");
+                primaryBtn.disabled = true;
+            }
+        });
+    });
+
+    /* ===== 验证码相关 ===== */
     const setCaptchaFeedback = (container, message, type) => {
         if (!container) {
             return;
@@ -55,29 +131,39 @@
     document.querySelectorAll("[data-captcha-refresh]").forEach((img) => {
         const form = img.closest("form");
         const captchaIdInput = form?.querySelector("input[name='captchaId']");
+        let captchaObjectUrl = null;
 
         const refreshCaptcha = async () => {
             try {
-                const response = await window.fetch("/login/captcha/info");
-                if (response.ok) {
-                    const captchaId = response.headers.get("X-Captcha-Id");
-                    if (captchaIdInput && captchaId) {
-                        captchaIdInput.value = captchaId;
-                    }
+                const response = await window.fetch("/login/captcha/image?t=" + Date.now(), {
+                    headers: {"Accept": "image/png"},
+                    cache: "no-store"
+                });
+                if (!response.ok) {
+                    throw new Error("验证码加载失败");
                 }
-                // 添加时间戳防止缓存
-                img.src = "/login/captcha/image?t=" + Date.now();
-            } catch (e) {
-                // 忽略错误，图片会通过 src 自动加载
+                const captchaId = response.headers.get("X-Captcha-Id");
+                const imageBlob = await response.blob();
+                if (captchaIdInput) {
+                    captchaIdInput.value = captchaId || "";
+                }
+                if (captchaObjectUrl) {
+                    URL.revokeObjectURL(captchaObjectUrl);
+                }
+                captchaObjectUrl = URL.createObjectURL(imageBlob);
+                img.src = captchaObjectUrl;
+                img.dataset.ready = "true";
+            } catch (error) {
+                if (captchaIdInput) {
+                    captchaIdInput.value = "";
+                }
+                window.showToast?.(error.message || "验证码加载失败，请重试。", "error");
             }
         };
 
-        // 页面加载时获取 captchaId
         refreshCaptcha();
-
-        img.addEventListener("click", () => {
-            refreshCaptcha();
-        });
+        const trigger = img.closest("[data-captcha-trigger]") || img;
+        trigger.addEventListener("click", refreshCaptcha);
     });
 
     // 短信验证码发送

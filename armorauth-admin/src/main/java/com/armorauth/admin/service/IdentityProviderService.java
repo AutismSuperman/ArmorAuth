@@ -106,6 +106,8 @@ public class IdentityProviderService {
         idp.setLdapStartTls(Boolean.TRUE.equals(request.ldapStartTls()));
         idp.setLdapPageSize(request.ldapPageSize() != null ? request.ldapPageSize() : 200);
         idp.setScopes(request.scopes());
+        idp.setIconKey(resolveIconKey(request.iconKey(), idp.getProviderType(), idp.getRegistrationId()));
+        idp.setDisplayOnLogin(request.displayOnLogin() == null || request.displayOnLogin());
         idp.setAttributeMapping(request.attributeMapping());
         idp.setLinkingStrategy(request.linkingStrategy() != null
                 ? parseLinkingStrategy(request.linkingStrategy())
@@ -161,6 +163,10 @@ public class IdentityProviderService {
         if (request.ldapStartTls() != null) idp.setLdapStartTls(request.ldapStartTls());
         if (request.ldapPageSize() != null) idp.setLdapPageSize(request.ldapPageSize());
         if (request.scopes() != null) idp.setScopes(request.scopes());
+        if (request.iconKey() != null) {
+            idp.setIconKey(resolveIconKey(request.iconKey(), idp.getProviderType(), idp.getRegistrationId()));
+        }
+        if (request.displayOnLogin() != null) idp.setDisplayOnLogin(request.displayOnLogin());
         if (request.attributeMapping() != null) idp.setAttributeMapping(request.attributeMapping());
         if (request.linkingStrategy() != null) idp.setLinkingStrategy(parseLinkingStrategy(request.linkingStrategy()));
         if (request.displayOrder() != null) idp.setDisplayOrder(request.displayOrder());
@@ -280,7 +286,9 @@ public class IdentityProviderService {
                 idp.getLdapPhoneAttribute(), idp.getLdapDisplayNameAttribute(),
                 idp.getLdapGroupAttribute(), idp.getLdapUseSsl(), idp.getLdapStartTls(),
                 idp.getLdapPageSize(),
-                idp.getScopes(), idp.getAttributeMapping(),
+                idp.getScopes(), idp.getIconKey(),
+                idp.getDisplayOnLogin() == null || idp.getDisplayOnLogin(),
+                idp.getAttributeMapping(),
                 idp.getLinkingStrategy() != null ? idp.getLinkingStrategy().name() : null,
                 idp.getDisplayOrder(), idp.getEnabled(),
                 idp.getCreatedAt(), idp.getUpdatedAt()
@@ -327,6 +335,23 @@ public class IdentityProviderService {
         } catch (IllegalArgumentException ex) {
             throw new ValidationException("不支持的链接策略: " + linkingStrategy);
         }
+    }
+
+    private String resolveIconKey(String iconKey, IdentityProvider.ProviderType providerType, String registrationId) {
+        if (iconKey != null && !iconKey.isBlank()) {
+            return normalizeIconKey(iconKey);
+        }
+        if (providerType != null) {
+            return normalizeIconKey(providerType.name());
+        }
+        if (registrationId != null && !registrationId.isBlank()) {
+            return normalizeIconKey(registrationId);
+        }
+        return "custom";
+    }
+
+    private String normalizeIconKey(String value) {
+        return value.trim().toLowerCase(Locale.ROOT).replace('_', '-');
     }
 
     private boolean checkUrl(Map<String, Object> checks, String name, String value) {

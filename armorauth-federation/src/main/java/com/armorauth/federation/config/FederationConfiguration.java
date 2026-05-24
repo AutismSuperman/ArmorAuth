@@ -50,6 +50,7 @@ import org.springframework.security.web.savedrequest.RequestCache;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -96,15 +97,7 @@ public class FederationConfiguration {
         // 从数据库加载动态身份源配置
         IdentityProviderRepository idpRepository = idpRepositoryProvider.getIfAvailable();
         if (idpRepository != null) {
-            List<ClientRegistration> dbRegistrations = idpRepository.findByEnabledTrueOrderByDisplayOrderAsc().stream()
-                    .filter(this::isOAuthClientProvider)
-                    .map(idp -> toClientRegistration(idp, secretCryptoService))
-                    .toList();
-            // 数据库配置优先，同 registrationId 覆盖配置文件
-            for (ClientRegistration dbReg : dbRegistrations) {
-                registrations.removeIf(r -> r.getRegistrationId().equals(dbReg.getRegistrationId()));
-                registrations.add(dbReg);
-            }
+            return new DbBackedClientRegistrationRepository(registrations, idpRepository, secretCryptoService);
         }
 
         if (registrations.isEmpty()) {
@@ -123,12 +116,12 @@ public class FederationConfiguration {
         return new DynamicRelyingPartyRegistrationRepository(idpRepository);
     }
 
-    private boolean isOAuthClientProvider(IdentityProvider idp) {
+    private static boolean isOAuthClientProvider(IdentityProvider idp) {
         return idp.getProviderType() != IdentityProvider.ProviderType.SAML
                 && idp.getProviderType() != IdentityProvider.ProviderType.LDAP;
     }
 
-    private ClientRegistration toClientRegistration(IdentityProvider idp, SecretCryptoService secretCryptoService) {
+    private static ClientRegistration toClientRegistration(IdentityProvider idp, SecretCryptoService secretCryptoService) {
         ClientRegistration.Builder builder = ClientRegistration.withRegistrationId(idp.getRegistrationId())
                 .clientId(idp.getClientId())
                 .clientSecret(secretCryptoService.reveal(idp.getClientSecret()))
@@ -207,6 +200,53 @@ public class FederationConfiguration {
         @Override
         public Iterator<ClientRegistration> iterator() {
             return Collections.emptyIterator();
+        }
+    }
+
+    private static final class DbBackedClientRegistrationRepository
+            implements ClientRegistrationRepository, Iterable<ClientRegistration> {
+
+        private final Map<String, ClientRegistration> configuredRegistrations;
+
+        private final IdentityProviderRepository idpRepository;
+
+        private final SecretCryptoService secretCryptoService;
+
+        private DbBackedClientRegistrationRepository(List<ClientRegistration> configuredRegistrations,
+                                                     IdentityProviderRepository idpRepository,
+                                                     SecretCryptoService secretCryptoService) {
+            this.configuredRegistrations = new LinkedHashMap<>();
+            for (ClientRegistration registration : configuredRegistrations) {
+                this.configuredRegistrations.put(registration.getRegistrationId(), registration);
+            }
+            this.idpRepository = idpRepository;
+            this.secretCryptoService = secretCryptoService;
+        }
+
+        @Override
+        public ClientRegistration findByRegistrationId(String registrationId) {
+            if (registrationId == null || registrationId.isBlank()) {
+                return null;
+            }
+            ClientRegistration dbRegistration = this.idpRepository.findByRegistrationId(registrationId)
+                    .filter(idp -> Boolean.TRUE.equals(idp.getEnabled()))
+                    .filter(FederationConfiguration::isOAuthClientProvider)
+                    .map(idp -> toClientRegistration(idp, this.secretCryptoService))
+                    .orElse(null);
+            if (dbRegistration != null) {
+                return dbRegistration;
+            }
+            return this.configuredRegistrations.get(registrationId);
+        }
+
+        @Override
+        public Iterator<ClientRegistration> iterator() {
+            Map<String, ClientRegistration> merged = new LinkedHashMap<>(this.configuredRegistrations);
+            this.idpRepository.findByEnabledTrueOrderByDisplayOrderAsc().stream()
+                    .filter(FederationConfiguration::isOAuthClientProvider)
+                    .map(idp -> toClientRegistration(idp, this.secretCryptoService))
+                    .forEach(registration -> merged.put(registration.getRegistrationId(), registration));
+            return merged.values().iterator();
         }
     }
 

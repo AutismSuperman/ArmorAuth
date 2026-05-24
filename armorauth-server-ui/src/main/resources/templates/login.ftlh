@@ -6,85 +6,62 @@
     <title>欢迎登录 - ArmorAuth</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
-    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=20260429">
+    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026052403">
     <script src="/assets/iconfont.js"></script>
 </head>
-<body class="authing-login-page">
+<body class="authing-login-page identity-page">
 <div class="page-shell">
     <main class="login-product-shell">
         <section class="login-visual-panel">
-            <!-- 装饰性背景元素 -->
-            <div class="login-visual-decor" aria-hidden="true">
-                <div class="login-decor-circle login-decor-circle-1"></div>
-                <div class="login-decor-circle login-decor-circle-2"></div>
-                <div class="login-decor-circle login-decor-circle-3"></div>
-                <div class="login-decor-glow"></div>
-            </div>
-
             <div class="login-brand">
                 <img class="login-brand-mark" src="/brand/icon.svg" alt="ArmorAuth logo">
                 <span>
                     <strong>ArmorAuth</strong>
-                    <small>Identity Platform</small>
+                    <small>身份云控制台</small>
                 </span>
             </div>
 
             <div class="login-visual-copy">
-                <span class="login-kicker">统一认证入口</span>
-                <h1>统一登录与授权入口</h1>
-                <p>面向应用接入的身份平台登录页，支持账号密码、短信验证码和联合身份源。</p>
+                <span class="login-kicker">用户池 / 默认租户</span>
+                <h1>进入统一身份工作台</h1>
+                <p>集中处理账号认证、应用授权、MFA 与联合身份登录。</p>
             </div>
 
-            <!-- 特性亮点 -->
-            <div class="login-features" aria-hidden="true">
-                <div class="login-feature-item">
-                    <div class="login-feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                        </svg>
-                    </div>
-                    <div class="login-feature-text">
-                        <strong>安全可靠</strong>
-                        <span>企业级安全保障</span>
-                    </div>
+            <div class="identity-menu" aria-label="身份能力">
+                <div class="identity-menu-item is-active">
+                    <span class="identity-menu-icon">01</span>
+                    <span>
+                        <strong>认证体验</strong>
+                        <small>Password / Captcha / Passkey</small>
+                    </span>
                 </div>
-                <div class="login-feature-item">
-                    <div class="login-feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
-                        </svg>
-                    </div>
-                    <div class="login-feature-text">
-                        <strong>快速接入</strong>
-                        <span>分钟级集成部署</span>
-                    </div>
+                <div class="identity-menu-item">
+                    <span class="identity-menu-icon">02</span>
+                    <span>
+                        <strong>授权协议</strong>
+                        <small>OAuth2 / OIDC / Device Flow</small>
+                    </span>
                 </div>
-                <div class="login-feature-item">
-                    <div class="login-feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                            <line x1="8" y1="21" x2="16" y2="21"></line>
-                            <line x1="12" y1="17" x2="12" y2="21"></line>
-                        </svg>
-                    </div>
-                    <div class="login-feature-text">
-                        <strong>多端适配</strong>
-                        <span>全平台无缝体验</span>
-                    </div>
+                <div class="identity-menu-item">
+                    <span class="identity-menu-icon">03</span>
+                    <span>
+                        <strong>身份源</strong>
+                        <small>Social / SAML / Enterprise IdP</small>
+                    </span>
                 </div>
             </div>
 
             <div class="login-visual-stack" aria-hidden="true">
-                <div class="login-preview-card is-primary">
-                    <span>SSO</span>
-                    <strong>Single Sign-On</strong>
-                    <small>统一登录会话</small>
+                <div class="login-preview-card is-primary identity-status-card">
+                    <span>当前入口</span>
+                    <strong>Hosted Login</strong>
+                    <small>统一登录页</small>
                 </div>
                 <div class="login-preview-grid">
-                    <span>OAuth2</span>
                     <span>OIDC</span>
+                    <span>SSO</span>
                     <span>MFA</span>
-                    <span>Device</span>
+                    <span>RBAC</span>
                 </div>
             </div>
         </section>
@@ -94,7 +71,7 @@
                 <div class="login-card-toolbar">
                     <div class="login-card-logo">
                         <img src="/brand/icon.svg" alt="ArmorAuth logo">
-                        <span>ArmorAuth</span>
+                        <span>默认用户池</span>
                     </div>
                     <button class="theme-toggle" type="button" data-theme-toggle>
                         <span class="theme-toggle-icon" data-theme-icon>
@@ -118,72 +95,111 @@
                 </div>
 
                 <div class="login-card-title">
-                    <h1>登录账号</h1>
-                    <p>继续访问已授权的应用和服务。</p>
+                    <span class="login-card-kicker">Sign in</span>
+                    <h1>登录 ArmorAuth</h1>
+                    <p>选择一种认证方式继续访问应用。</p>
                 </div>
 
                 <#if errorMessage??>
-                    <div class="notice error">${errorMessage}</div>
+                    <div class="notice error" role="alert" data-page-error>${errorMessage}</div>
                 </#if>
                 <#if loggedOut?? && loggedOut>
                     <div class="notice success">您已成功退出当前会话。</div>
                 </#if>
 
                 <div class="login-methods" data-tab-group>
+                    <#assign activeLoginTab = selectedLoginTab!'password'>
                     <div class="switcher" aria-label="登录模式">
-                        <button type="button" class="is-active" data-tab-target="password-login">账号密码</button>
-                        <button type="button" data-tab-target="captcha-login"><#if graphicCaptcha?? && graphicCaptcha>验证码<#else>短信验证码</#if></button>
+                        <button type="button" class="<#if activeLoginTab == 'password'>is-active</#if>" data-tab-target="password-login">账号密码</button>
+                        <#if graphicCaptcha?? && graphicCaptcha>
+                            <button type="button" class="<#if activeLoginTab == 'graphic'>is-active</#if>" data-tab-target="graphic-login">图形验证码</button>
+                        </#if>
+                        <#if smsCaptcha?? && smsCaptcha>
+                            <button type="button" class="<#if activeLoginTab == 'sms'>is-active</#if>" data-tab-target="sms-login">短信验证码</button>
+                        </#if>
                     </div>
 
-                    <form id="password-login" class="auth-form" action="/login" method="post" data-tab-panel>
-                        <div class="field-group">
+                    <form id="password-login" class="auth-form" action="/login" method="post" <#if activeLoginTab != 'password'>hidden</#if> data-tab-panel>
+                        <div class="field-group field-with-affix">
                             <label for="username">用户名</label>
-                            <input id="username" name="username" type="text" autocomplete="username" placeholder="请输入用户名" value="admin">
+                            <span class="field-affix">ID</span>
+                            <input id="username" name="username" type="text" autocomplete="username" placeholder="请输入用户名">
                         </div>
-                        <div class="field-group">
+                        <div class="field-group field-with-affix">
                             <label for="password">密码</label>
-                            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="请输入密码" value="123456">
+                            <span class="field-affix">PW</span>
+                            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="请输入密码">
                         </div>
-                        <label class="checkbox-row" for="remember-me-password">
-                            <input id="remember-me-password" name="remember-me" type="checkbox" value="true">
-                            <span>记住我</span>
-                        </label>
+                        <div class="form-meta-row">
+                            <label class="checkbox-row" for="remember-me-password">
+                                <input id="remember-me-password" name="remember-me" type="checkbox" value="true">
+                                <span>记住我</span>
+                            </label>
+                            <span class="form-meta-note">安全会话</span>
+                        </div>
                         <div class="action-row action-row-stacked">
                             <button class="button primary" type="submit">登录</button>
                             <button class="button secondary" type="button" data-passkey-login>使用 Passkey 登录</button>
                         </div>
                     </form>
 
-                    <form id="captcha-login" class="auth-form" action="/login/captcha" method="post" hidden data-tab-panel>
-                        <div class="notice success" hidden data-captcha-feedback></div>
-                        <div class="field-group">
-                            <label for="account">手机号</label>
-                            <input id="account" name="account" type="text" autocomplete="tel" placeholder="请输入手机号">
+                    <#if graphicCaptcha?? && graphicCaptcha>
+                    <form id="graphic-login" class="auth-form" action="/login/captcha" method="post" <#if activeLoginTab != 'graphic'>hidden</#if> data-tab-panel>
+                        <div class="field-group field-with-affix">
+                            <label for="graphic-account">手机号</label>
+                            <span class="field-affix">TEL</span>
+                            <input id="graphic-account" name="account" type="text" autocomplete="tel" placeholder="请输入手机号">
                         </div>
-                        <#if graphicCaptcha?? && graphicCaptcha>
-                        <input type="hidden" name="captchaId" id="captchaId" value="">
-                        <div class="field-group">
-                            <label for="captcha">验证码</label>
+                        <input type="hidden" name="captchaId" id="graphic-captchaId" value="">
+                        <div class="field-group field-with-affix">
+                            <label for="graphic-captcha">图形验证码</label>
                             <div class="captcha-image-row">
-                                <input id="captcha" name="captcha" type="text" autocomplete="one-time-code" placeholder="请输入验证码" maxlength="4">
-                                <img id="captchaImage" class="captcha-image" src="/login/captcha/image" alt="验证码" title="点击刷新验证码" data-captcha-refresh style="cursor:pointer;height:40px;border-radius:4px;">
+                                <span class="field-affix">CAP</span>
+                                <input id="graphic-captcha" name="captcha" type="text" autocomplete="one-time-code" placeholder="请输入验证码" maxlength="4">
+                                <button class="captcha-image-button" type="button" title="刷新验证码" data-captcha-trigger>
+                                    <img id="graphicCaptchaImage" class="captcha-image" src="/login/captcha/image" alt="验证码" data-captcha-refresh>
+                                </button>
                             </div>
                         </div>
-                        <#else>
-                        <div class="field-group field-inline">
-                            <label for="captcha">验证码</label>
-                            <input id="captcha" name="captcha" type="text" autocomplete="one-time-code" placeholder="请输入验证码" value="1234">
-                            <button class="button secondary inline-button" type="button" data-captcha-send>获取验证码</button>
+                        <div class="form-meta-row">
+                            <label class="checkbox-row" for="remember-me-graphic">
+                                <input id="remember-me-graphic" name="remember-me" type="checkbox" value="true">
+                                <span>记住我</span>
+                            </label>
+                            <span class="form-meta-note">图片校验</span>
                         </div>
-                        </#if>
-                        <label class="checkbox-row" for="remember-me-captcha">
-                            <input id="remember-me-captcha" name="remember-me" type="checkbox" value="true">
-                            <span>记住我</span>
-                        </label>
                         <div class="action-row action-row-stacked">
                             <button class="button primary" type="submit">验证并登录</button>
                         </div>
                     </form>
+                    </#if>
+
+                    <#if smsCaptcha?? && smsCaptcha>
+                    <form id="sms-login" class="auth-form" action="/login/captcha" method="post" <#if activeLoginTab != 'sms'>hidden</#if> data-tab-panel>
+                        <div class="notice success" hidden data-captcha-feedback></div>
+                        <div class="field-group field-with-affix">
+                            <label for="sms-account">手机号</label>
+                            <span class="field-affix">TEL</span>
+                            <input id="sms-account" name="account" type="text" autocomplete="tel" placeholder="请输入手机号">
+                        </div>
+                        <div class="field-group field-inline field-with-affix">
+                            <label for="sms-captcha">短信验证码</label>
+                            <span class="field-affix">SMS</span>
+                            <input id="sms-captcha" name="captcha" type="text" autocomplete="one-time-code" placeholder="请输入验证码">
+                            <button class="button secondary inline-button" type="button" data-captcha-send>获取验证码</button>
+                        </div>
+                        <div class="form-meta-row">
+                            <label class="checkbox-row" for="remember-me-sms">
+                                <input id="remember-me-sms" name="remember-me" type="checkbox" value="true">
+                                <span>记住我</span>
+                            </label>
+                            <span class="form-meta-note">一次性短信</span>
+                        </div>
+                        <div class="action-row action-row-stacked">
+                            <button class="button primary" type="submit">验证并登录</button>
+                        </div>
+                    </form>
+                    </#if>
                 </div>
 
             <#if federatedProviders?has_content>
@@ -195,63 +211,70 @@
                     <div class="provider-list" data-provider-list>
                         <#list federatedProviders as provider>
                             <#assign providerId = provider.registrationId?lower_case>
-                            <a class="provider-link provider-${providerId}" href="${provider.authorizationUrl}?mode=${selectedFederatedMode}" aria-label="使用 ${provider.clientName!provider.registrationId} 登录" <#if provider_index gte 8>data-provider-extra</#if>>
+                            <#assign providerIcon = (provider.iconKey!providerId)?lower_case>
+                            <a class="provider-link provider-${providerId} provider-icon-${providerIcon}" href="${provider.authorizationUrl}?mode=${selectedFederatedMode}" aria-label="使用 ${provider.clientName!provider.registrationId} 登录" title="${provider.clientName!provider.registrationId}" <#if provider_index gte 8>data-provider-extra</#if>>
                                 <span class="provider-icon" aria-hidden="true">
-                                    <#if providerId == 'gitee'>
+                                    <#if providerIcon == 'gitee'>
                                         <svg class="provider-symbol" viewBox="0 0 1024 1024" focusable="false">
                                             <use href="#icon-gitee"></use>
                                         </svg>
-                                    <#elseif providerId == 'qq'>
+                                    <#elseif providerIcon == 'qq'>
                                         <svg class="provider-symbol" viewBox="0 0 1024 1024" focusable="false">
                                             <use href="#icon-QQ1"></use>
                                         </svg>
-                                    <#elseif providerId == 'wechat' || providerId == 'weixin'>
+                                    <#elseif providerIcon == 'wechat' || providerIcon == 'weixin'>
                                         <svg class="provider-symbol" viewBox="0 0 1024 1024" focusable="false">
                                             <use href="#icon-weixin"></use>
                                         </svg>
-                                    <#elseif providerId == 'github'>
+                                    <#elseif providerIcon == 'github'>
                                         <svg class="provider-symbol" viewBox="0 0 1049 1024" focusable="false">
                                             <use href="#icon-GitHub"></use>
                                         </svg>
-                                    <#elseif providerId == 'google'>
+                                    <#elseif providerIcon == 'google'>
                                         <span class="provider-mark provider-mark-google">G</span>
-                                    <#elseif providerId == 'facebook'>
+                                    <#elseif providerIcon == 'facebook'>
                                         <span class="provider-mark provider-mark-facebook">f</span>
-                                    <#elseif providerId == 'microsoft'>
+                                    <#elseif providerIcon == 'microsoft'>
                                         <span class="provider-mark provider-mark-microsoft">
                                             <span></span><span></span><span></span><span></span>
                                         </span>
-                                    <#elseif providerId == 'gitlab'>
+                                    <#elseif providerIcon == 'gitlab'>
                                         <span class="provider-mark provider-mark-gitlab">GL</span>
-                                    <#elseif providerId == 'discord'>
+                                    <#elseif providerIcon == 'discord'>
                                         <span class="provider-mark provider-mark-discord">D</span>
-                                    <#elseif providerId == 'slack'>
+                                    <#elseif providerIcon == 'slack'>
                                         <span class="provider-mark provider-mark-slack">S</span>
-                                    <#elseif providerId == 'linkedin'>
+                                    <#elseif providerIcon == 'linkedin'>
                                         <span class="provider-mark provider-mark-linkedin">in</span>
-                                    <#elseif providerId == 'apple'>
+                                    <#elseif providerIcon == 'apple'>
                                         <span class="provider-mark provider-mark-apple">A</span>
-                                    <#elseif providerId == 'weibo'>
+                                    <#elseif providerIcon == 'weibo'>
                                         <span class="provider-mark provider-mark-weibo">WB</span>
-                                    <#elseif providerId == 'baidu'>
+                                    <#elseif providerIcon == 'baidu'>
                                         <span class="provider-mark provider-mark-baidu">du</span>
-                                    <#elseif providerId == 'oschina'>
+                                    <#elseif providerIcon == 'oschina'>
                                         <span class="provider-mark provider-mark-oschina">OS</span>
-                                    <#elseif providerId == 'douyin'>
+                                    <#elseif providerIcon == 'douyin'>
                                         <span class="provider-mark provider-mark-douyin">dy</span>
-                                    <#elseif providerId == 'alipay'>
+                                    <#elseif providerIcon == 'alipay'>
                                         <span class="provider-mark provider-mark-alipay">支</span>
-                                    <#elseif providerId == 'dingtalk'>
+                                    <#elseif providerIcon == 'dingtalk'>
                                         <span class="provider-mark provider-mark-dingtalk">钉</span>
-                                    <#elseif providerId == 'wecom'>
+                                    <#elseif providerIcon == 'wecom'>
                                         <span class="provider-mark provider-mark-wecom">企</span>
-                                    <#elseif providerId == 'feishu'>
+                                    <#elseif providerIcon == 'feishu'>
                                         <span class="provider-mark provider-mark-feishu">飞</span>
+                                    <#elseif providerIcon == 'oidc' || providerIcon == 'oauth'>
+                                        <span class="provider-mark provider-mark-oidc">OIDC</span>
+                                    <#elseif providerIcon == 'saml'>
+                                        <span class="provider-mark provider-mark-saml">SSO</span>
+                                    <#elseif providerIcon == 'custom'>
+                                        <span class="provider-mark provider-mark-custom">ID</span>
                                     <#else>
-                                        <span class="provider-fallback">${providerId?upper_case?substring(0, 2)}</span>
+                                        <span class="provider-fallback">${provider.iconText!'ID'}</span>
                                     </#if>
                                 </span>
-                                <span class="provider-label">${provider.clientName!provider.registrationId}</span>
+                                <span class="provider-tooltip" role="tooltip">${provider.clientName!provider.registrationId}</span>
                             </a>
                         </#list>
                     </div>
@@ -279,7 +302,7 @@
         </div>
     </footer>
 </div>
-<script src="/assets/armorauth-ui.js?v=20260429"></script>
+<script src="/assets/armorauth-ui.js?v=20260524"></script>
 <script>
 (() => {
     const passkeyButton = document.querySelector('[data-passkey-login]');
@@ -327,6 +350,7 @@
     passkeyButton.addEventListener('click', async () => {
         try {
             passkeyButton.disabled = true;
+            passkeyButton.classList.add('is-loading');
             const username = usernameInput && usernameInput.value ? usernameInput.value.trim() : '';
             const options = await postJson('/login/passkey/options', username ? {username} : {});
             const publicKey = {
@@ -356,6 +380,7 @@
             window.location.assign('/login?error');
         } finally {
             passkeyButton.disabled = false;
+            passkeyButton.classList.remove('is-loading');
         }
     });
 })();

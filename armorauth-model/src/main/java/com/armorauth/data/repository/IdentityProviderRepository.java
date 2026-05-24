@@ -27,5 +27,7 @@ public interface IdentityProviderRepository extends JpaRepository<IdentityProvid
 
     List<IdentityProvider> findByEnabledTrueOrderByDisplayOrderAsc();
 
+    List<IdentityProvider> findByEnabledTrueAndDisplayOnLoginTrueOrderByDisplayOrderAsc();
+
     boolean existsByRegistrationId(String registrationId);
 }

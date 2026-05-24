@@ -53,6 +53,8 @@ public class IdentityProviderDTO {
             Boolean ldapStartTls,
             Integer ldapPageSize,
             String scopes,
+            String iconKey,
+            Boolean displayOnLogin,
             String attributeMapping,
             String linkingStrategy,
             Integer displayOrder
@@ -89,6 +91,8 @@ public class IdentityProviderDTO {
             Boolean ldapStartTls,
             Integer ldapPageSize,
             String scopes,
+            String iconKey,
+            Boolean displayOnLogin,
             String attributeMapping,
             String linkingStrategy,
             Integer displayOrder
@@ -127,6 +131,8 @@ public class IdentityProviderDTO {
             Boolean ldapStartTls,
             Integer ldapPageSize,
             String scopes,
+            String iconKey,
+            Boolean displayOnLogin,
             String attributeMapping,
             String linkingStrategy,
             Integer displayOrder,

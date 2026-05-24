@@ -145,6 +145,12 @@ public class IdentityProvider implements Serializable {
     @Column(name = "scopes", length = 500)
     private String scopes;
 
+    @Column(name = "icon_key", length = 80)
+    private String iconKey;
+
+    @Column(name = "display_on_login", nullable = false)
+    private Boolean displayOnLogin = true;
+
     @Column(name = "attribute_mapping", columnDefinition = "text")
     private String attributeMapping;
 
