@@ -17,14 +17,22 @@
 </template>
 
 <script setup>
-import {ref, reactive, h} from 'vue'
-import {HomeFilled, AppstoreFilled, GoldenFilled, SettingFilled, BarChartOutlined, UserOutlined} from '@ant-design/icons-vue'
+import {ref, reactive, h, watch} from 'vue'
+import {HomeFilled, AppstoreFilled, SettingFilled, BarChartOutlined, UserOutlined, TeamOutlined, FileTextOutlined, ApiOutlined, CloudOutlined, TagsOutlined, SafetyCertificateOutlined, LinkOutlined, KeyOutlined, DatabaseOutlined, LogoutOutlined, BankOutlined} from '@ant-design/icons-vue'
 import {useRoute, useRouter} from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
 
 const selectedKeys2 = ref(['/main/home'])
+
+watch(
+  () => route.path,
+  (path) => {
+    selectedKeys2.value = [path.startsWith('/main/') ? path : '/main/home']
+  },
+  { immediate: true }
+)
 
 const menuArray = reactive([
   {
@@ -38,9 +46,29 @@ const menuArray = reactive([
     label: '应用管理'
   },
   {
-    key: '/main/monitor',
-    icon: () => h(BarChartOutlined),
-    label: '监控管理'
+    key: '/main/scopes',
+    icon: () => h(TagsOutlined),
+    label: 'Scope 管理'
+  },
+  {
+    key: '/main/loginPolicies',
+    icon: () => h(SafetyCertificateOutlined),
+    label: '登录策略'
+  },
+  {
+    key: '/main/secretProtection',
+    icon: () => h(KeyOutlined),
+    label: 'Secret 保护'
+  },
+  {
+    key: '/main/jwkKeys',
+    icon: () => h(DatabaseOutlined),
+    label: 'JWK 密钥'
+  },
+  {
+    key: '/main/sessions',
+    icon: () => h(LogoutOutlined),
+    label: '会话管理'
   },
   {
     key: '/main/users',
@@ -48,9 +76,39 @@ const menuArray = reactive([
     label: '用户管理'
   },
   {
-    key: '/main/thirdPartLogin',
-    icon: () => h(GoldenFilled),
-    label: '第三方登陆'
+    key: '/main/tenants',
+    icon: () => h(BankOutlined),
+    label: '租户管理'
+  },
+  {
+    key: '/main/organizations',
+    icon: () => h(TeamOutlined),
+    label: '组织管理'
+  },
+  {
+    key: '/main/identityProviders',
+    icon: () => h(CloudOutlined),
+    label: '身份源管理'
+  },
+  {
+    key: '/main/federatedBindings',
+    icon: () => h(LinkOutlined),
+    label: '外部账号绑定'
+  },
+  {
+    key: '/main/monitor',
+    icon: () => h(BarChartOutlined),
+    label: '监控管理'
+  },
+  {
+    key: '/main/audit',
+    icon: () => h(FileTextOutlined),
+    label: '审计日志'
+  },
+  {
+    key: '/main/webhooks',
+    icon: () => h(ApiOutlined),
+    label: 'Webhook'
   },
   {
     key: '/main/settings',
@@ -60,7 +118,6 @@ const menuArray = reactive([
 ])
 
 const menuClick = data => {
-  console.log(data.key)
   if (route.path !== data.key) {
     router.push(data.key)
   }
@@ -100,7 +157,8 @@ const menuClick = data => {
   border-bottom: 0;
   border-top: 0;
   height: calc(100% - 100px);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   box-sizing: border-box;
   position: relative;
   transition: all .2s cubic-bezier(.2, 0, 0, 1);

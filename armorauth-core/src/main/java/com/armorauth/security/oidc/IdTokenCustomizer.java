@@ -16,13 +16,17 @@
 package com.armorauth.security.oidc;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
@@ -61,6 +65,19 @@ public final class IdTokenCustomizer implements OAuth2TokenCustomizer<JwtEncodin
                 // Add all other claims directly to id_token
                 existingClaims.putAll(thirdPartyClaims);
             });
+
+            // Add roles claim to ID Token
+            Collection<? extends GrantedAuthority> authorities = context.getPrincipal().getAuthorities();
+            if (authorities != null && !authorities.isEmpty()) {
+                List<String> roles = authorities.stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .filter(auth -> auth.startsWith("ROLE_"))
+                        .map(auth -> auth.substring(5)) // Remove "ROLE_" prefix
+                        .collect(Collectors.toList());
+                if (!roles.isEmpty()) {
+                    context.getClaims().claim("roles", roles);
+                }
+            }
         }
     }
 

@@ -6,51 +6,58 @@
 
 > Shield-first identity infrastructure for modern Spring Security workflows.
 
-ArmorAuth 是一个基于 Spring Security 和 Spring Authorization Server 的认证授权实验项目。当前仓库已经切到 `Spring Boot 4.0.5`、`Spring Security 7.0.4`、`Spring Authorization Server 7.0.4`，并完成了一轮联合登录相关代码的 Maven 模块拆分。
+ArmorAuth 是一个基于 Spring Security 和 Spring Authorization Server 的认证授权项目。当前仓库已经切到 `Java 21`、`Spring Boot 4.0.5`、`Spring Security 7.0.4`、`Spring Authorization Server 7.0.4`，并围绕“可私有化部署、可管理、可验证”的方向补齐了管理 API、管理台前端、Flyway 迁移、OAuth/OIDC 回归测试、密钥持久化、敏感字段加密、MFA/Passkey、联合身份源、SCIM、Webhook、Actions 和高级授权闭环。
 
-目前仓库已统一使用新的品牌识别：logo 采用“盾牌 + 橡果”组合，强调安全防护、身份认证和项目名里“坚果认证”的主题语义。
-
-项目现在更接近“可演示、可继续开发的认证框架原型”而不是已经封装完成的成品。核心认证授权、JPA 持久化、设备授权、验证码登录、联合登录扩展和服务端页面都在，但管理端、starter 抽象和部分运行时适配仍在收敛中。
+项目仍在快速迭代，但现在已经不是单纯 demo：本地可以用 MySQL 跑完整 server + admin UI，可以通过管理 API 配应用、用户、角色、权限、组织、身份源、Webhook、审计、登录策略、JWK 元数据和授权检查，也可以用内置 seed client 做 OAuth/OIDC smoke。`docs/ROADMAP.md` 当前产品范围已完成到 100%，最终实现记录见 `docs/IMPLEMENTATION_STATUS.md` 的 Step 20。
 
 ## 最近更新
 
-- 已升级到 `Spring Boot 4.0.5`
-- 已统一到 `Java 21`
-- 已将联合登录模块收敛为 `armorauth-federation` + `armorauth-federation-providers`
-- 已理顺 `armorauth-core -> federation` 的反向依赖
-- 已为 `armorauth-server` 补充本地 `local` profile，用于无 MySQL 时的 H2 调试
-- 已统一服务端与管理端品牌资源，采用最终版橡果盾牌 logo
+- ROADMAP 当前产品范围完成到 100%：Passkey/WebAuthn、SAML SP、LDAP/AD、SCIM、Webhook、Actions Java SPI、FGA 风格授权检查均已落地。
+- Passkey/WebAuthn 已支持注册 `attestationObject` 验证、MFA assertion、passwordless 登录，并完成本地运行时烟测。
+- 联合身份能力补齐：SAML SP 发起登录、LDAP/AD 同步、LDAP bind 实时登录、外部账号绑定和组到角色映射。
+- 扩展与授权补齐：Webhook 签名/重试、Actions Java SPI、`POST /api/admin/v1/authorization/check` 授权检查接口。
+- 运行基线统一到 `Java 21`、`Spring Boot 4.0.5`、`Spring Security 7.0.4`。
+- `armorauth-server` 默认使用 MySQL profile，并通过 Flyway 管理 schema 和 seed data。
+- `armorauth-admin` 已提供 `/api/admin/v1/**` 管理 API。
+- `armorauth-admin-ui` 已接入真实管理 API，默认 Vite 端口 `1080`。
+- OAuth/OIDC discovery、JWKS、authorization code + PKCE、client credentials、refresh、revocation、introspection、device flow 已有端到端测试覆盖。
+- JWK 私钥持久化到数据库，并使用可逆 secret protection 加密保存。
+- IdP client secret、Webhook secret、TOTP secret、JWK private key 已支持 `{enc}<keyId>:` 加密格式和 key-ring 轮换。
 
 ## 模块结构
 
 | 模块 | 说明 |
 | --- | --- |
-| `armorauth-common` | 通用基础能力 |
+| `armorauth-common` | 通用响应、异常、审计上下文、校验等基础能力 |
 | `armorauth-model` | JPA 实体与 Repository |
-| `armorauth-core` | 认证授权核心能力、本地登录、设备授权、JPA 持久化适配 |
-| `armorauth-federation` | 联合登录编排、确认页、配置器、安全处理器、provider SPI |
-| `armorauth-federation-providers` | QQ / 微信 / Gitee provider 实现与默认元数据 |
-| `armorauth` | 对核心模块的聚合封装 |
+| `armorauth-core` | OAuth2/OIDC 授权服务器、本地登录、验证码登录、MFA、JWK、密钥保护、JPA 持久化适配 |
+| `armorauth-federation` | 联合登录编排、确认页、动态 ClientRegistration、安全处理器、provider SPI |
+| `armorauth-federation-providers` | QQ / 微信 / Gitee 等 provider 实现与默认元数据 |
+| `armorauth` | 对核心模块的聚合封装和自动配置 |
+| `armorauth-admin` | 管理后端，提供 `/api/admin/v1/**` |
+| `armorauth-admin-ui` | Vue 3 + Ant Design Vue 管理控制台 |
 | `armorauth-server` | 可独立启动的认证服务端 |
-| `armorauth-server-ui` | 服务端模板和静态资源 |
+| `armorauth-server-ui` | 服务端登录、授权、MFA、设备授权页面模板和静态资源 |
 | `armorauth-spring-boot` | Spring Boot 聚合模块 |
 | `armorauth-spring-boot/armorauth-spring-boot-starter` | 预留 starter 模块 |
 | `armorauth-samples` | OIDC、PKCE、`client_credentials` 等样例 |
-| `armorauth-admin` | 管理端后端，占位中 |
-| `armorauth-admin-ui` | 管理端前端原型，不在 Maven Reactor 中 |
 
 ## 当前能力
 
-- OAuth2 Authorization Server / OIDC 基础能力
-- JPA 版 `RegisteredClientRepository`
-- JPA 版 `OAuth2AuthorizationService`
-- JPA 版 `OAuth2AuthorizationConsentService`
-- 自定义登录页 `/login`
-- 自定义授权确认页 `/consent`
-- Device Authorization Flow 页面 `/activate`、`/activated`
-- 验证码登录扩展
-- 联合登录自动注册 / 中间页确认双策略
-- 第三方账号绑定表 `user_federated_binding`
+- Spring Authorization Server / OIDC 基础能力。
+- JPA 版 `RegisteredClientRepository`、`OAuth2AuthorizationService`、`OAuth2AuthorizationConsentService`。
+- Discovery、JWKS、revocation、introspection、logout、device authorization 等标准端点。
+- 自定义登录页 `/login`、授权确认页 `/consent`、设备授权页 `/activate`、MFA 页。
+- 管理 API：应用、scope、用户、角色、权限、组织、租户、身份源、联合绑定、登录策略、审计、Webhook、token 统计、JWK 元数据。
+- 管理台前端：应用、用户、组织、身份源、scope、登录策略、联合绑定、Webhook、审计、监控等页面。
+- RBAC、密码策略、账号锁定、登录限流、MFA/TOTP 基础能力。
+- Passkey/WebAuthn：注册 attestation 验证、MFA assertion 验证、passwordless 登录。
+- SAML SP、LDAP/AD、SCIM 2.0 用户/组 provisioning。
+- 联合登录自动注册 / 中间页确认双策略。
+- Webhook 签名、投递记录和基础重试。
+- Actions Java SPI 和 FGA 风格授权检查。
+- JWK 私钥数据库持久化和敏感字段加密 at rest。
+- Secret key-ring 轮换：旧 `{enc}v1:` 可读，新写入可切到 `v2` 等 active key。
 
 ## 技术栈
 
@@ -59,170 +66,134 @@ ArmorAuth 是一个基于 Spring Security 和 Spring Authorization Server 的认
 - Spring Security 7.0.4
 - Spring Authorization Server 7.0.4
 - Spring Data JPA
-- MySQL
+- Flyway
+- MySQL 8.0+
 - H2（仅本地 `local` profile 调试）
 - FreeMarker
-- Ant Design Vue
+- Vue 3 / Vite / Ant Design Vue
 
-## 构建
+## 快速开始
 
-环境要求：
+详细步骤见 [docs/quick-start.md](docs/quick-start.md)。
 
-- JDK 21
-- Maven 3.9+ 优先
-- Node.js 18+ 仅在开发 `armorauth-admin-ui` 时需要
+本地默认路径：
 
-根目录编译：
+1. 准备 MySQL 数据库 `identity_server`。
+2. 打包 server。
+3. 启动 `armorauth-server`，默认端口 `9000`。
+4. 启动 `armorauth-admin-ui`，默认端口 `1080`。
+5. 使用 `admin / admin123` 登录管理台。
 
-```bash
-mvn -DskipTests compile
-```
-
-如果你的系统 Maven 太旧，至少需要切到支持 Java 21 和 Spring Boot 4 的 Maven 版本。
-
-## 启动服务端
-
-### MySQL 模式
-
-默认配置文件：
-
-```text
-armorauth-server/src/main/resources/application.yml
-armorauth-server/src/main/resources/application-mysql.yml
-```
-
-默认行为：
-
-- 服务端端口 `9000`
-- 默认激活 `mysql` profile
-- 数据源指向本地 MySQL
-
-数据库脚本：
-
-```text
-armorauth-server/src/main/resources/sql/sas-schema.sql
-armorauth-server/src/main/resources/sql/sas-data.sql
-```
-
-启动前请先确认：
-
-- 数据库地址、用户名、密码
-- 第三方 OAuth 客户端配置
-- JDK 版本为 21
-
-启动示例：
-
-```bash
-mvn -pl armorauth-server -am -DskipTests spring-boot:run
-```
-
-### 本地 `local` profile
-
-仓库额外提供了：
-
-```text
-armorauth-server/src/main/resources/application-local.yml
-```
-
-用途：
-
-- 使用 H2 文件数据库替代 MySQL
-- 仅用于本地调试和兼容验证
-- 当前配置里默认关闭了联合登录编排链：
+默认本地 MySQL 配置在 [application-mysql.yml](armorauth-server/src/main/resources/application-mysql.yml)：
 
 ```yaml
-armorauth:
-  federation:
-    enabled: false
-    default-login-mode: auto
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/identity_server?zeroDateTimeBehavior=convertToNull
+    username: root
+    password: wangle
 ```
 
-原因：
+生产或共享环境必须覆盖数据库密码、issuer、cookie secure 和 crypto key 配置。
 
-- 当前桌面环境里 JDK / Windows socket 栈异常时，联合登录默认 token client 会在初始化阶段失败
-- `local` profile 的目标是先让服务端基础页面和主流程能单机调试
+## 常用命令
+
+根目录打包：
+
+```bash
+mvn -DskipTests -Dspotless.apply.skip=true -Dspotless.check.skip=true -pl armorauth-server -am package
+```
+
+启动 server：
+
+```bash
+java -jar armorauth-server/target/armorauth-server-0.0.1.jar
+```
+
+启动 admin UI：
+
+```bash
+cd armorauth-admin-ui
+npm install
+npm run dev
+```
+
+健康检查：
+
+```bash
+curl http://localhost:9000/actuator/health
+curl http://localhost:9000/.well-known/openid-configuration
+curl http://localhost:9000/oauth2/jwks
+curl -u admin:admin123 "http://localhost:9000/api/admin/v1/applications?page=0&size=1"
+curl -u admin:admin123 -H "Content-Type: application/json" \
+  -d '{"username":"admin","permissionCode":"roadmap:any"}' \
+  http://localhost:9000/api/admin/v1/authorization/check
+```
+
+## Secret 加密与 key-ring
+
+以下数据会以 `{enc}<keyId>:` 格式加密保存：
+
+- Identity Provider `clientSecret`
+- Webhook `secret`
+- TOTP secret / recovery data 中的可逆 secret
+- `jwk_key.private_key`
+
+本地开发未配置时会使用默认开发 key。生产环境必须显式配置：
+
+```bash
+ARMORAUTH_CRYPTO_SECRET=old-or-v1-production-secret
+ARMORAUTH_CRYPTO_KEYS=v2=new-production-secret
+ARMORAUTH_CRYPTO_ACTIVE_KEY_ID=v2
+```
+
+说明：
+
+- `ARMORAUTH_CRYPTO_SECRET` 会作为 `v1` fallback，用来读取已有 `{enc}v1:` 数据。
+- `ARMORAUTH_CRYPTO_KEYS` 用逗号分隔 `keyId=secret`，当前 parser 不支持 secret 内含逗号。
+- `ARMORAUTH_CRYPTO_ACTIVE_KEY_ID` 控制新写入值使用哪个 key id。
+- 轮换期间要保留旧 key，先用 `POST /api/admin/v1/secret-protection/rekey` dry-run，再执行存量重加密，确认不再有旧 key 数据后再移除旧 key。
 
 ## 样例工程
 
-可运行样例：
+默认 seed client：
 
-- `armorauth-samples/armorauth-samples-oidc-login`
-- `armorauth-samples/armorauth-samples-client`
-- `armorauth-samples/armorauth-samples-pkce`
+| 用途 | Client ID | Secret / Auth |
+| --- | --- | --- |
+| Confidential OIDC / client credentials | `f62ac251-36d7-42c8-9f75-c31c90111bd4` | `secret` |
+| React SPA PKCE | `react-spa-pkce` | `none` |
+| Device flow | `8ee3a98e-89a8-438d-a314-1ef9df815279` | `none` |
 
-默认端口：
-
-- `armorauth-server`: `9000`
-- `armorauth-samples-oidc-login`: `8083`
-- `armorauth-samples-client`: `8084`
-- `armorauth-samples-pkce`: `8085`
-
-样例访问与回调 host 需要保持一致：
-
-- 如果通过 `http://armorauth-demo:8083` 或 `http://armorauth-demo:8085` 访问 sample
-- 那么 `redirect_uri` 也必须使用 `armorauth-demo`
-- 不要混用 `armorauth-demo` 和 `127.0.0.1`，否则 OAuth2 `state` 对应的 session cookie 会丢失，回调阶段会失败
-
-样例域名仍建议通过 hosts 绑定：
+样例 host 建议绑定：
 
 ```text
 127.0.0.1 armorauth-demo
 127.0.0.1 armorauth-server
 ```
 
-参考文件：
-
-```text
-armorauth-samples/hosts/armorauth-hosts
-```
+不要混用 `armorauth-demo` 和 `127.0.0.1`，否则 OAuth2 `state` 对应的 session cookie 可能丢失。
 
 ## 当前注意事项
 
-### 1. 项目仍偏 demo / prototype
-
-以下模块仍处于占位或未收敛状态：
-
-- `armorauth-admin`
-- `armorauth-spring-boot-starter`
-
-### 2. 验证码校验仍是 mock
-
-当前仓库仍提供显式 mock 验证码 Bean，值为：
-
-```text
-1234
-```
-
-### 3. JWK 仍为运行时动态生成
-
-当前 `AuthorizationServerConfig` 启动时会生成 RSA Key，更适合本地演示，不适合生产直接使用。
-
-### 4. `local` profile 不是生产配置
-
-`application-local.yml` 的目标是便于本地调试，不用于生产环境：
-
-- 使用 H2
-- 为了本地兼容验证关闭了 federated login 编排链
-- 只适合作为临时调试入口
-
-### 5. 当前机器可能存在系统级网络栈问题
-
-在本次适配过程中，服务端最终启动受过一次环境级阻塞：
-
-- Windows socket 错误 `10106`
-- JDK `HttpClient` loopback / Tomcat 端口绑定均可能受影响
-
-如果你在本机遇到这类错误，优先检查系统网络栈，而不是继续怀疑业务代码。
+- `armorauth-spring-boot-starter` 已保留接入入口，后续仍可继续打磨 starter DX、示例和发布流程。
+- `local` profile 使用 H2，只适合本地调试；默认生产式路径应使用 MySQL。
+- 默认管理员 `admin / admin123` 只适合本地开发，生产必须修改。
+- 内置第三方 OAuth provider 默认值仅用于开发示例，真实环境应使用环境变量覆盖。
+- JWK 私钥已持久化且加密保存，数据库备份必须包含 `jwk_key` 表。
+- SAML IdP 模式、SLO 编排、脚本沙箱 Actions、外部 OpenFGA adapter 和企业级 attestation trust store 已作为后续增强项记录，不阻塞当前 100% 产品范围。
 
 ## 推荐阅读顺序
 
-1. `armorauth-core/src/main/java/com/armorauth/config/AuthorizationServerConfig.java`
-2. `armorauth-core/src/main/java/com/armorauth/config/DefaultSecurityConfig.java`
-3. `armorauth-federation/src/main/java/com/armorauth/federation/config/`
-4. `armorauth-federation/src/main/java/com/armorauth/federation/configurer/`
-5. `armorauth-federation-providers/src/main/java/com/armorauth/federation/provider/`
-6. `armorauth-model/src/main/java/com/armorauth/data/`
-7. `armorauth-server/src/main/resources/application*.yml`
+1. [docs/ROADMAP.md](docs/ROADMAP.md)
+2. [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md)
+3. [docs/quick-start.md](docs/quick-start.md)
+4. [docs/api-reference.md](docs/api-reference.md)
+5. [docs/deployment-guide.md](docs/deployment-guide.md)
+6. [armorauth-core/src/main/java/com/armorauth/config/AuthorizationServerConfig.java](armorauth-core/src/main/java/com/armorauth/config/AuthorizationServerConfig.java)
+7. [armorauth-core/src/main/java/com/armorauth/config/DefaultSecurityConfig.java](armorauth-core/src/main/java/com/armorauth/config/DefaultSecurityConfig.java)
+8. [armorauth-admin/src/main/java/com/armorauth/admin/config/AdminSecurityConfig.java](armorauth-admin/src/main/java/com/armorauth/admin/config/AdminSecurityConfig.java)
+9. [armorauth-server/src/main/resources/application.yml](armorauth-server/src/main/resources/application.yml)
+10. [armorauth-server/src/main/resources/db](armorauth-server/src/main/resources/db)
 
 ## License
 

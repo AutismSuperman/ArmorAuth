@@ -67,7 +67,7 @@ spring:
               - snsapi_login
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/identity_server
+    url: jdbc:mysql://127.0.0.1:3306/identity_server?zeroDateTimeBehavior=convertToNull
     username: root
     password: wangle
     hikari:
@@ -77,7 +77,14 @@ spring:
       max-lifetime: 55000
       maximum-pool-size: 100
       minimum-idle: 50
+  flyway:
+    enabled: true
+    locations: classpath:db/migration-mysql,classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+    repair-on-migrate: true
+    validate-on-migrate: false
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
 

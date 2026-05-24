@@ -24,6 +24,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -43,7 +44,7 @@ public class UserFederatedBindingService {
     }
 
     @Transactional
-    public UserFederatedBinding createOrUpdateBinding(UserInfo userInfo, FederatedUserProfile federatedUserProfile, String now) {
+    public UserFederatedBinding createOrUpdateBinding(UserInfo userInfo, FederatedUserProfile federatedUserProfile, Instant now) {
         Optional<UserFederatedBinding> existingBinding = findBinding(
                 federatedUserProfile.registrationId(),
                 federatedUserProfile.providerUserId()
@@ -89,7 +90,7 @@ public class UserFederatedBindingService {
     }
 
     @Transactional
-    public UserFederatedBinding touchLastLogin(UserFederatedBinding binding, String now) {
+    public UserFederatedBinding touchLastLogin(UserFederatedBinding binding, Instant now) {
         binding.setLastLoginTime(now);
         log.debug("Refreshing federated binding lastLogin registrationId={} userId={}", binding.getRegistrationId(), binding.getUserId());
         return this.userFederatedBindingRepository.save(binding);
@@ -98,7 +99,7 @@ public class UserFederatedBindingService {
     private UserFederatedBinding updateExistingBinding(UserFederatedBinding binding,
                                                        UserInfo userInfo,
                                                        FederatedUserProfile federatedUserProfile,
-                                                       String now) {
+                                                       Instant now) {
         if (!userInfo.getId().equals(binding.getUserId())) {
             throw new IllegalStateException("该第三方账号已绑定其他本地账号。");
         }

@@ -16,10 +16,12 @@
 package com.armorauth.federation.web;
 
 import com.armorauth.authentication.CaptchaVerifyService;
+import com.armorauth.captcha.GraphicCaptchaService;
 import com.armorauth.federation.config.FederationProperties;
 import com.armorauth.data.entity.OAuth2Scope;
 import com.armorauth.data.repository.OAuth2ScopeRepository;
 import com.armorauth.federation.FederatedLoginMode;
+import com.armorauth.security.LoginRateLimiter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -47,6 +49,8 @@ import org.springframework.security.oauth2.server.authorization.OAuth2Authorizat
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
+import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
+import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrationRepository;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.WebAttributes;
@@ -74,6 +78,8 @@ public class OAuth2FrontendController {
 
     private final ClientRegistrationRepository clientRegistrationRepository;
 
+    private final RelyingPartyRegistrationRepository relyingPartyRegistrationRepository;
+
     private final OAuth2AuthorizationConsentService authorizationConsentService;
 
     private final OAuth2ScopeRepository oAuth2ScopeRepository;
@@ -81,6 +87,8 @@ public class OAuth2FrontendController {
     private final AuthorizationServerSettings authorizationServerSettings;
 
     private final CaptchaVerifyService captchaVerifyService;
+
+    private final GraphicCaptchaService graphicCaptchaService;
 
     private final UserDetailsService userDetailsService;
 
@@ -90,12 +98,17 @@ public class OAuth2FrontendController {
 
     private final FederatedLoginMode defaultFederatedLoginMode;
 
+    private final LoginRateLimiter loginRateLimiter;
+
     public OAuth2FrontendController(RegisteredClientRepository registeredClientRepository,
                                     ClientRegistrationRepository clientRegistrationRepository,
+                                    RelyingPartyRegistrationRepository relyingPartyRegistrationRepository,
                                     OAuth2AuthorizationConsentService authorizationConsentService,
                                     OAuth2ScopeRepository oAuth2ScopeRepository,
                                     AuthorizationServerSettings authorizationServerSettings,
                                     ObjectProvider<CaptchaVerifyService> captchaVerifyServiceProvider,
+                                    ObjectProvider<GraphicCaptchaService> graphicCaptchaServiceProvider,
+                                    ObjectProvider<LoginRateLimiter> loginRateLimiterProvider,
                                     UserDetailsService userDetailsService,
                                     SecurityContextRepository securityContextRepository,
                                     @Qualifier("formAuthenticationSuccessHandler")
@@ -103,11 +116,21 @@ public class OAuth2FrontendController {
                                     FederationProperties federationProperties) {
         this.registeredClientRepository = registeredClientRepository;
         this.clientRegistrationRepository = clientRegistrationRepository;
+        this.relyingPartyRegistrationRepository = relyingPartyRegistrationRepository;
         this.authorizationConsentService = authorizationConsentService;
         this.oAuth2ScopeRepository = oAuth2ScopeRepository;
         this.authorizationServerSettings = authorizationServerSettings;
-        this.captchaVerifyService = captchaVerifyServiceProvider.getIfAvailable(
-                () -> (account, code) -> "1234".equals(code));
+        this.graphicCaptchaService = graphicCaptchaServiceProvider.getIfAvailable(null);
+        this.loginRateLimiter = loginRateLimiterProvider.getIfAvailable(null);
+
+        // 优先使用 GraphicCaptchaService（如果存在），否则使用 CaptchaVerifyService 或 mock
+        if (this.graphicCaptchaService != null) {
+            this.captchaVerifyService = this.graphicCaptchaService;
+        } else {
+            this.captchaVerifyService = captchaVerifyServiceProvider.getIfAvailable(
+                    () -> (account, code) -> "1234".equals(code));
+        }
+
         this.userDetailsService = userDetailsService;
         this.securityContextRepository = securityContextRepository;
         this.authenticationSuccessHandler = authenticationSuccessHandler;
@@ -142,6 +165,7 @@ public class OAuth2FrontendController {
         model.addAttribute("loggedOut", logout != null);
         model.addAttribute("selectedFederatedMode",
                 FederatedLoginMode.resolveForPage(mode, defaultFederatedLoginMode).getParameterValue());
+        model.addAttribute("graphicCaptcha", graphicCaptchaService != null);
 
         if (error != null) {
             String errorMessage = "用户名、密码或验证码不正确。";
@@ -164,6 +188,12 @@ public class OAuth2FrontendController {
         if (!StringUtils.hasText(account)) {
             return ResponseEntity.badRequest().body(Map.of("message", "请输入手机号后再获取验证码。"));
         }
+        // 图形验证码模式下，此接口返回提示信息（验证码通过图片获取）
+        if (graphicCaptchaService != null) {
+            return ResponseEntity.ok(Map.of(
+                    "message", "请通过图片验证码登录。"
+            ));
+        }
         return ResponseEntity.ok(Map.of(
                 "message", "验证码已发送，当前演示环境固定验证码为 1234。",
                 "captcha", "1234"
@@ -178,10 +208,35 @@ public class OAuth2FrontendController {
     @PostMapping(path = "/login/captcha", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public void captchaLogin(@RequestParam(name = "account", required = false) String account,
                              @RequestParam(name = "captcha", required = false) String captcha,
+                             @RequestParam(name = "captchaId", required = false) String captchaId,
                              HttpServletRequest request,
                              HttpServletResponse response) throws IOException, ServletException {
-        if (!StringUtils.hasText(account) || !StringUtils.hasText(captcha)
-                || !this.captchaVerifyService.verifyCaptcha(account.trim(), captcha.trim())) {
+        String clientIp = getClientIp(request);
+
+        // 检查限流
+        if (loginRateLimiter != null && account != null
+                && loginRateLimiter.isBlocked(account, clientIp)) {
+            saveAuthenticationException(request, new BadCredentialsException("登录尝试次数过多，请稍后再试。"));
+            response.sendRedirect(request.getContextPath() + "/login?error");
+            return;
+        }
+
+        boolean verified;
+        if (graphicCaptchaService != null && captchaId != null) {
+            // 图形验证码模式：通过 captchaId 验证
+            verified = graphicCaptchaService.verify(captchaId, captcha);
+        } else {
+            // 兼容旧模式
+            verified = this.captchaVerifyService.verifyCaptcha(
+                    account != null ? account.trim() : "",
+                    captcha != null ? captcha.trim() : "");
+        }
+
+        if (!verified || !StringUtils.hasText(account)) {
+            // 记录失败
+            if (loginRateLimiter != null) {
+                loginRateLimiter.recordFailure(account, clientIp);
+            }
             saveAuthenticationException(request, new BadCredentialsException("验证码不正确。"));
             response.sendRedirect(request.getContextPath() + "/login?error");
             return;
@@ -191,6 +246,9 @@ public class OAuth2FrontendController {
         try {
             userDetails = this.userDetailsService.loadUserByUsername(account.trim());
         } catch (AuthenticationException ex) {
+            if (loginRateLimiter != null) {
+                loginRateLimiter.recordFailure(account, clientIp);
+            }
             saveAuthenticationException(request, ex);
             response.sendRedirect(request.getContextPath() + "/login?error");
             return;
@@ -201,7 +259,40 @@ public class OAuth2FrontendController {
         securityContext.setAuthentication(authentication);
         SecurityContextHolder.setContext(securityContext);
         this.securityContextRepository.saveContext(securityContext, request, response);
+
+        // 登录成功，清除失败记录
+        if (loginRateLimiter != null) {
+            loginRateLimiter.clearFailures(account);
+            loginRateLimiter.clearFailures(clientIp);
+        }
+
         this.authenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
+    }
+
+    @GetMapping(path = "/login/mfa", produces = MediaType.TEXT_HTML_VALUE)
+    public String mfaChallenge(HttpServletRequest request, Model model,
+                               @RequestParam(name = "error", required = false) String error) {
+        String principal = (String) request.getSession().getAttribute("PENDING_MFA_PRINCIPAL");
+        if (principal == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("principal", principal);
+        if (error != null) {
+            String errorMessage = "验证码不正确，请重试。";
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                Object authenticationException = session.getAttribute(
+                        org.springframework.security.web.WebAttributes.AUTHENTICATION_EXCEPTION);
+                if (authenticationException instanceof Exception exception
+                        && StringUtils.hasText(exception.getMessage())) {
+                    errorMessage = exception.getMessage();
+                }
+                session.removeAttribute(
+                        org.springframework.security.web.WebAttributes.AUTHENTICATION_EXCEPTION);
+            }
+            model.addAttribute("errorMessage", errorMessage);
+        }
+        return "mfa";
     }
 
     @GetMapping(path = "/consent", produces = MediaType.TEXT_HTML_VALUE)
@@ -246,21 +337,71 @@ public class OAuth2FrontendController {
         return "consent";
     }
 
-    private List<ClientRegistration> getFederatedProviders() {
+    private List<FederatedLoginProvider> getFederatedProviders() {
+        List<FederatedLoginProvider> providers = new ArrayList<>();
         if (this.clientRegistrationRepository instanceof Iterable<?> registrations) {
-            List<ClientRegistration> providers = new ArrayList<>();
             for (Object registration : registrations) {
                 if (registration instanceof ClientRegistration clientRegistration) {
-                    providers.add(clientRegistration);
+                    providers.add(new FederatedLoginProvider(
+                            clientRegistration.getRegistrationId(),
+                            clientRegistration.getClientName(),
+                            "/oauth2/authorization/" + clientRegistration.getRegistrationId()));
                 }
             }
-            return providers;
         }
-        return Collections.emptyList();
+        if (this.relyingPartyRegistrationRepository instanceof Iterable<?> registrations) {
+            for (Object registration : registrations) {
+                if (registration instanceof RelyingPartyRegistration relyingPartyRegistration) {
+                    providers.add(new FederatedLoginProvider(
+                            relyingPartyRegistration.getRegistrationId(),
+                            relyingPartyRegistration.getRegistrationId(),
+                            "/saml2/authorization/" + relyingPartyRegistration.getRegistrationId()));
+                }
+            }
+        }
+        return providers;
     }
 
     private void saveAuthenticationException(HttpServletRequest request, Exception exception) {
         request.getSession(true).setAttribute(WebAttributes.AUTHENTICATION_EXCEPTION, exception);
     }
 
+    private String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip != null && !ip.isEmpty()) {
+            return ip.split(",")[0].trim();
+        }
+        ip = request.getHeader("X-Real-IP");
+        if (ip != null && !ip.isEmpty()) {
+            return ip;
+        }
+        return request.getRemoteAddr();
+    }
+
+    public static final class FederatedLoginProvider {
+
+        private final String registrationId;
+
+        private final String clientName;
+
+        private final String authorizationUrl;
+
+        public FederatedLoginProvider(String registrationId, String clientName, String authorizationUrl) {
+            this.registrationId = registrationId;
+            this.clientName = StringUtils.hasText(clientName) ? clientName : registrationId;
+            this.authorizationUrl = authorizationUrl;
+        }
+
+        public String getRegistrationId() {
+            return registrationId;
+        }
+
+        public String getClientName() {
+            return clientName;
+        }
+
+        public String getAuthorizationUrl() {
+            return authorizationUrl;
+        }
+    }
 }

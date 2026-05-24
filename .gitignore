@@ -5,6 +5,13 @@ target/
 !**/src/test/**/target/
 .flattened-pom.xml
 
+### Local runtime / Codex artifacts ###
+.codex-temp/
+logs/
+output/
+*.log
+armorauth-server/.runtime/
+
 ### IntelliJ IDEA ###
 .idea/
 *.iws
@@ -39,6 +46,7 @@ build/
 ### UI ###
 node_modules/
 node/
+armorauth-admin-ui/dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

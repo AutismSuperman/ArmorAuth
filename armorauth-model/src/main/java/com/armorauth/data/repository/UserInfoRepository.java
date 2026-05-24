@@ -16,6 +16,8 @@
 package com.armorauth.data.repository;
 
 import com.armorauth.data.entity.UserInfo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -34,6 +36,16 @@ public interface UserInfoRepository extends JpaRepository<UserInfo, String> {
 
     Optional<UserInfo> findByUsername(String username);
 
+    Optional<UserInfo> findByUsernameIgnoreCase(String username);
+
+    Optional<UserInfo> findByEmail(String email);
+
+    Optional<UserInfo> findByEmailIgnoreCase(String email);
+
     boolean existsByUsername(String username);
+
+    boolean existsByEmail(String email);
+
+    Page<UserInfo> findByUsernameContainingIgnoreCase(String username, Pageable pageable);
 
 }

@@ -10,11 +10,25 @@ spring:
     name: armorauth-server
   jpa:
     show-sql: true
-    generate-ddl: true
+    generate-ddl: false
     open-in-view: false
     database: mysql
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
+  flyway:
+    enabled: true
+    locations: classpath:db/migration-mysql,classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,info
+  endpoint:
+    health:
+      show-details: when-authorized
 
 armorauth:
   federation:

@@ -18,6 +18,7 @@ package com.armorauth.federation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -43,12 +44,15 @@ class FederatedLoginOrchestratorTest {
         UserFederatedBindingService userFederatedBindingService = mock(UserFederatedBindingService.class);
         FederatedSessionContextRepository federatedSessionContextRepository = mock(FederatedSessionContextRepository.class);
         FederatedLoginCompletionService federatedLoginCompletionService = mock(FederatedLoginCompletionService.class);
+        ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
         FederatedLoginOrchestrator orchestrator = new FederatedLoginOrchestrator(
                 new ObjectMapper(),
                 federatedAccountService,
                 userFederatedBindingService,
                 federatedSessionContextRepository,
-                federatedLoginCompletionService
+                federatedLoginCompletionService,
+                eventPublisher,
+                null
         );
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -61,7 +65,7 @@ class FederatedLoginOrchestratorTest {
                 AuthorityUtils.createAuthorityList("ROLE_USER"),
                 "gitee"
         );
-        when(federatedAccountService.currentTimestamp()).thenReturn("2026-04-17 10:00:00");
+        when(federatedAccountService.currentTimestamp()).thenReturn(java.time.Instant.parse("2026-04-17T10:00:00Z"));
         when(userFederatedBindingService.findBinding("gitee", "abc12345")).thenReturn(Optional.empty());
         when(federatedSessionContextRepository.loadAuthorizationContext(request)).thenReturn(
                 Optional.of(new FederatedAuthorizationContext(

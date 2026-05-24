@@ -8,6 +8,8 @@
   "dependencies": {
     "@ant-design/icons-vue": "^6.1.0",
     "ant-design-vue": "4.x",
+    "axios": "^1.7.0",
+    "dayjs": "^1.11.10",
     "vue": "^3.3.4",
     "vue-router": "4.2.4",
     "vuex": "4.1.0",

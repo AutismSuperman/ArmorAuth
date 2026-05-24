@@ -52,6 +52,7 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
         Optional<OAuth2Client> oAuth2ClientById =
                 oAuth2ClientRepository.findOAuth2ClientById(id);
         return oAuth2ClientById
+                .filter(client -> !Boolean.FALSE.equals(client.getEnabled()))
                 .map(this::toObject)
                 .orElse(null);
     }
@@ -62,6 +63,7 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
         Optional<OAuth2Client> oAuth2ClientByClientId =
                 oAuth2ClientRepository.findOAuth2ClientByClientId(clientId);
         return oAuth2ClientByClientId
+                .filter(client -> !Boolean.FALSE.equals(client.getEnabled()))
                 .map(this::toObject)
                 .orElse(null);
     }

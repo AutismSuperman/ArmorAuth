@@ -16,6 +16,9 @@
 package com.armorauth.details;
 
 import com.armorauth.data.repository.UserInfoRepository;
+import com.armorauth.data.repository.UserRoleRepository;
+import com.armorauth.security.LoginLockoutService;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,17 +30,26 @@ import java.util.List;
 public class DelegateUserDetailsService implements UserDetailsService {
 
     private List<UserDetailsService> userDetailsServices;
+    private LoginLockoutService loginLockoutService;
 
-    public DelegateUserDetailsService(UserInfoRepository userInfoRepository) {
+    public DelegateUserDetailsService(UserInfoRepository userInfoRepository,
+                                       UserRoleRepository userRoleRepository) {
         this.userDetailsServices = new LinkedList<>();
-        userDetailsServices.add(new JdbcCaptchaUserDetailsManager(userInfoRepository)::loadUserByAccount);
-        userDetailsServices.add(new JdbcOAuth2UserDetailsManager(userInfoRepository)::loadOAuth2UserByUsername);
+        userDetailsServices.add(new JdbcCaptchaUserDetailsManager(userInfoRepository, userRoleRepository)::loadUserByAccount);
+        userDetailsServices.add(new JdbcOAuth2UserDetailsManager(userInfoRepository, userRoleRepository)::loadOAuth2UserByUsername);
+    }
+
+    public void setLoginLockoutService(LoginLockoutService loginLockoutService) {
+        this.loginLockoutService = loginLockoutService;
     }
 
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Assert.notNull(username, "username cannot be null");
+        if (loginLockoutService != null && loginLockoutService.isLocked(username)) {
+            throw new LockedException("账号已被锁定，请30分钟后重试");
+        }
         for (UserDetailsService delegate : this.userDetailsServices) {
             UserDetails userDetails = delegate.loadUserByUsername(username);
             if (userDetails != null) {

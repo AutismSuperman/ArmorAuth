@@ -16,19 +16,26 @@
 package com.armorauth.details;
 
 import com.armorauth.data.entity.UserInfo;
+import com.armorauth.data.entity.UserRole;
 import com.armorauth.data.repository.UserInfoRepository;
+import com.armorauth.data.repository.UserRoleRepository;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.ObjectUtils;
 
+import java.util.List;
+
 
 public class JdbcCaptchaUserDetailsManager implements CaptchaUserDetailsService {
 
     private final UserInfoRepository userInfoRepository;
+    private final UserRoleRepository userRoleRepository;
 
-    public JdbcCaptchaUserDetailsManager(UserInfoRepository userInfoRepository) {
+    public JdbcCaptchaUserDetailsManager(UserInfoRepository userInfoRepository,
+                                          UserRoleRepository userRoleRepository) {
         this.userInfoRepository = userInfoRepository;
+        this.userRoleRepository = userRoleRepository;
     }
 
 
@@ -38,10 +45,20 @@ public class JdbcCaptchaUserDetailsManager implements CaptchaUserDetailsService 
         if (ObjectUtils.isEmpty(userByPhone)) {
             return null;
         }
+        List<String> roles = loadRoles(userByPhone.getId());
         return User.builder()
                 .username(userByPhone.getUsername())
                 .password(userByPhone.getPassword())
-                .roles("USER")
+                .roles(roles.toArray(new String[0]))
+                .disabled(userByPhone.getStatus() != null && userByPhone.getStatus() == 2)
                 .build();
+    }
+
+    private List<String> loadRoles(String userId) {
+        return userRoleRepository.findByUserId(userId).stream()
+                .map(UserRole::getRole)
+                .filter(role -> role != null)
+                .map(role -> role.getRoleCode())
+                .toList();
     }
 }

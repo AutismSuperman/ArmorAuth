@@ -733,6 +733,24 @@ body[data-theme="dark"] .theme-toggle-icon .icon-moon {
     margin-left: auto;
 }
 
+.auth-divider {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 0.84rem;
+    margin: 14px 0 4px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+    background: var(--line);
+}
+
 .action-row-between {
     justify-content: space-between;
     align-items: center;

@@ -132,7 +132,7 @@
                 <div class="login-methods" data-tab-group>
                     <div class="switcher" aria-label="登录模式">
                         <button type="button" class="is-active" data-tab-target="password-login">账号密码</button>
-                        <button type="button" data-tab-target="captcha-login">短信验证码</button>
+                        <button type="button" data-tab-target="captcha-login"><#if graphicCaptcha?? && graphicCaptcha>验证码<#else>短信验证码</#if></button>
                     </div>
 
                     <form id="password-login" class="auth-form" action="/login" method="post" data-tab-panel>
@@ -150,6 +150,7 @@
                         </label>
                         <div class="action-row action-row-stacked">
                             <button class="button primary" type="submit">登录</button>
+                            <button class="button secondary" type="button" data-passkey-login>使用 Passkey 登录</button>
                         </div>
                     </form>
 
@@ -157,13 +158,24 @@
                         <div class="notice success" hidden data-captcha-feedback></div>
                         <div class="field-group">
                             <label for="account">手机号</label>
-                            <input id="account" name="account" type="text" autocomplete="tel" placeholder="请输入手机号" value="13103777777">
+                            <input id="account" name="account" type="text" autocomplete="tel" placeholder="请输入手机号">
                         </div>
+                        <#if graphicCaptcha?? && graphicCaptcha>
+                        <input type="hidden" name="captchaId" id="captchaId" value="">
+                        <div class="field-group">
+                            <label for="captcha">验证码</label>
+                            <div class="captcha-image-row">
+                                <input id="captcha" name="captcha" type="text" autocomplete="one-time-code" placeholder="请输入验证码" maxlength="4">
+                                <img id="captchaImage" class="captcha-image" src="/login/captcha/image" alt="验证码" title="点击刷新验证码" data-captcha-refresh style="cursor:pointer;height:40px;border-radius:4px;">
+                            </div>
+                        </div>
+                        <#else>
                         <div class="field-group field-inline">
                             <label for="captcha">验证码</label>
                             <input id="captcha" name="captcha" type="text" autocomplete="one-time-code" placeholder="请输入验证码" value="1234">
                             <button class="button secondary inline-button" type="button" data-captcha-send>获取验证码</button>
                         </div>
+                        </#if>
                         <label class="checkbox-row" for="remember-me-captcha">
                             <input id="remember-me-captcha" name="remember-me" type="checkbox" value="true">
                             <span>记住我</span>
@@ -183,7 +195,7 @@
                     <div class="provider-list" data-provider-list>
                         <#list federatedProviders as provider>
                             <#assign providerId = provider.registrationId?lower_case>
-                            <a class="provider-link provider-${providerId}" href="/oauth2/authorization/${provider.registrationId}?mode=${selectedFederatedMode}" aria-label="使用 ${provider.clientName!provider.registrationId} 登录" <#if provider_index gte 8>data-provider-extra</#if>>
+                            <a class="provider-link provider-${providerId}" href="${provider.authorizationUrl}?mode=${selectedFederatedMode}" aria-label="使用 ${provider.clientName!provider.registrationId} 登录" <#if provider_index gte 8>data-provider-extra</#if>>
                                 <span class="provider-icon" aria-hidden="true">
                                     <#if providerId == 'gitee'>
                                         <svg class="provider-symbol" viewBox="0 0 1024 1024" focusable="false">
@@ -268,5 +280,85 @@
     </footer>
 </div>
 <script src="/assets/armorauth-ui.js?v=20260429"></script>
+<script>
+(() => {
+    const passkeyButton = document.querySelector('[data-passkey-login]');
+    const usernameInput = document.querySelector('#username');
+    if (!passkeyButton || !window.PublicKeyCredential) {
+        return;
+    }
+
+    const decodeBase64Url = (value) => {
+        const base64 = String(value || '').replace(/-/g, '+').replace(/_/g, '/');
+        const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+        const binary = atob(padded);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i += 1) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes.buffer;
+    };
+
+    const encodeBase64Url = (buffer) => {
+        if (!buffer) {
+            return null;
+        }
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i += 1) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    };
+
+    const postJson = async (url, body) => {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body || {})
+        });
+        const payload = await response.json();
+        if (!response.ok || payload.code !== 200) {
+            throw new Error(payload.message || 'Passkey 登录失败');
+        }
+        return payload.data;
+    };
+
+    passkeyButton.addEventListener('click', async () => {
+        try {
+            passkeyButton.disabled = true;
+            const username = usernameInput && usernameInput.value ? usernameInput.value.trim() : '';
+            const options = await postJson('/login/passkey/options', username ? {username} : {});
+            const publicKey = {
+                challenge: decodeBase64Url(options.challenge),
+                rpId: options.rpId,
+                timeout: options.timeoutMillis,
+                userVerification: options.userVerification || 'preferred'
+            };
+            if (options.allowCredentials && options.allowCredentials.length) {
+                publicKey.allowCredentials = options.allowCredentials.map((credential) => ({
+                    type: credential.type || 'public-key',
+                    id: decodeBase64Url(credential.id),
+                    transports: credential.transports || undefined
+                }));
+            }
+
+            const credential = await navigator.credentials.get({publicKey});
+            const result = await postJson('/login/passkey/finish', {
+                credentialId: credential.id,
+                clientDataJSON: encodeBase64Url(credential.response.clientDataJSON),
+                authenticatorData: encodeBase64Url(credential.response.authenticatorData),
+                signature: encodeBase64Url(credential.response.signature),
+                userHandle: encodeBase64Url(credential.response.userHandle)
+            });
+            window.location.assign(result.redirectUrl || '/');
+        } catch (error) {
+            window.location.assign('/login?error');
+        } finally {
+            passkeyButton.disabled = false;
+        }
+    });
+})();
+</script>
 </body>
 </html>

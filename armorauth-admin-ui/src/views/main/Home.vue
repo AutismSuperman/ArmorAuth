@@ -1,7 +1,7 @@
 <template>
   <div class="main-page this-page">
     <div class="top-tips">
-      欢迎使用ArmorAuth
+      欢迎使用 ArmorAuth
     </div>
 
     <div class="summary-container">
@@ -9,23 +9,23 @@
         <template #cover>
           <img alt="example" :src="img01"/>
         </template>
-        <a-card-meta title="5个" style="text-align: center">
-          <template #description>已添加应用池数量</template>
+        <a-card-meta :title="stats.applications + '个'" style="text-align: center">
+          <template #description>已添加应用数量</template>
         </a-card-meta>
       </a-card>
       <a-card :bordered="false">
         <template #cover>
           <img alt="example" :src="img04"/>
         </template>
-        <a-card-meta title="5个" style="text-align: center">
-          <template #description>已添加第三方登陆数量</template>
+        <a-card-meta :title="stats.providers + '个'" style="text-align: center">
+          <template #description>已配置身份源数量</template>
         </a-card-meta>
       </a-card>
       <a-card :bordered="false">
         <template #cover>
           <img alt="example" :src="img03"/>
         </template>
-        <a-card-meta title="5个" style="text-align: center">
+        <a-card-meta :title="stats.users + '个'" style="text-align: center">
           <template #description>平台用户总数</template>
         </a-card-meta>
       </a-card>
@@ -33,8 +33,8 @@
         <template #cover>
           <img alt="example" :src="img02"/>
         </template>
-        <a-card-meta title="5个" style="text-align: center">
-          <template #description>今日授权登录次数</template>
+        <a-card-meta :title="stats.orgs + '个'" style="text-align: center">
+          <template #description>组织数量</template>
         </a-card-meta>
       </a-card>
     </div>
@@ -43,8 +43,8 @@
       <span class="line"></span>快捷导航
     </h1>
     <div class="router-container">
-      <div class="gutter-row" v-for="item in routers" :key="item.title">
-        <icon-font :type="item.icon" style="font-size: 24px"/>
+      <div class="gutter-row" v-for="item in routers" :key="item.title" @click="$router.push(item.path)">
+        <component :is="item.icon" style="font-size: 28px; color: #1890ff" />
         <span>{{ item.title }}</span>
       </div>
     </div>
@@ -56,44 +56,29 @@ import img01 from '../../assets/01.svg'
 import img02 from '../../assets/02.svg'
 import img03 from '../../assets/03.svg'
 import img04 from '../../assets/04.svg'
-import {createFromIconfontCN} from '@ant-design/icons-vue';
+import { reactive, onMounted } from 'vue'
+import { AppstoreFilled, UserOutlined, TeamOutlined, CloudOutlined, FileTextOutlined, BarChartOutlined } from '@ant-design/icons-vue'
+import { getApplications, getUsers, getOrganizations, getIdentityProviders } from '../../api'
 
-const IconFont = createFromIconfontCN({
-  scriptUrl: 'https://at.alicdn.com/t/c/font_4201298_575fj6emtmp.js?spm=a313x.manage_type_myprojects.1998910419.54.27bf3a81dFngLa&file=font_4201298_575fj6emtmp.js',
-});
+const stats = reactive({ applications: 0, providers: 0, users: 0, orgs: 0 })
 
 const routers = [
-  {
-    title: '官方文档',
-    icon: 'icon-document',
-    target: ''
-  },
-  {
-    title: 'Spring技术支持',
-    icon: 'icon-spring',
-    target: ''
-  },
-  {
-    title: '官方Github仓库',
-    icon: 'icon-github',
-    target: ''
-  },
-  {
-    title: '官方码云仓库',
-    icon: 'icon-gitee',
-    target: ''
-  }, {
-    title: '开源中国主页',
-    icon: 'icon-oschina',
-    target: ''
-  },
-  {
-    title: '官方技术博客',
-    icon: 'icon-csdn',
-    target: ''
-  }
+  { title: '应用管理', icon: AppstoreFilled, path: '/main/applications' },
+  { title: '用户管理', icon: UserOutlined, path: '/main/users' },
+  { title: '组织管理', icon: TeamOutlined, path: '/main/organizations' },
+  { title: '身份源管理', icon: CloudOutlined, path: '/main/identityProviders' },
+  { title: '审计日志', icon: FileTextOutlined, path: '/main/audit' },
+  { title: '监控管理', icon: BarChartOutlined, path: '/main/monitor' }
 ]
 
+onMounted(async () => {
+  try {
+    stats.applications = (await getApplications(0, 1)).data?.totalElements || 0
+    stats.users = (await getUsers(0, 1)).data?.totalElements || 0
+    stats.orgs = (await getOrganizations(0, 1)).data?.totalElements || 0
+    stats.providers = (await getIdentityProviders(0, 1)).data?.totalElements || 0
+  } catch (e) { /* ignore */ }
+})
 </script>
 
 <style scoped lang="scss">
@@ -144,7 +129,7 @@ const routers = [
 
 .router-container {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
   grid-gap: 20px;
   align-items: center;
   width: calc(100% - 40px);
@@ -164,11 +149,12 @@ const routers = [
 
   &:hover {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
   }
 
   span {
     margin-top: 20px;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
   }
 }

@@ -15,6 +15,7 @@
  */
 package com.armorauth.federation.web;
 
+import com.armorauth.common.audit.UserRegistrationEvent;
 import com.armorauth.data.entity.UserInfo;
 import com.armorauth.federation.FederatedAccountService;
 import com.armorauth.federation.FederatedLoginCompletionService;
@@ -25,6 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.web.WebAttributes;
@@ -56,17 +58,21 @@ public class FederatedConfirmController {
 
     private final FederatedLoginCompletionService federatedLoginCompletionService;
 
+    private final ApplicationEventPublisher eventPublisher;
+
     private final List<ViewResolver> viewResolvers;
 
     public FederatedConfirmController(FederatedSessionContextRepository federatedSessionContextRepository,
                                       FederatedAccountService federatedAccountService,
                                       UserFederatedBindingService userFederatedBindingService,
                                       FederatedLoginCompletionService federatedLoginCompletionService,
+                                      ApplicationEventPublisher eventPublisher,
                                       List<ViewResolver> viewResolvers) {
         this.federatedSessionContextRepository = federatedSessionContextRepository;
         this.federatedAccountService = federatedAccountService;
         this.userFederatedBindingService = userFederatedBindingService;
         this.federatedLoginCompletionService = federatedLoginCompletionService;
+        this.eventPublisher = eventPublisher;
         this.viewResolvers = viewResolvers;
     }
 
@@ -116,7 +122,7 @@ public class FederatedConfirmController {
                     pendingContext.registrationId(),
                     normalizedUsername
             );
-            String now = this.federatedAccountService.currentTimestamp();
+            java.time.Instant now = this.federatedAccountService.currentTimestamp();
             UserInfo userInfo = this.federatedAccountService.createLocalUser(
                     normalizedUsername,
                     password,
@@ -125,6 +131,8 @@ public class FederatedConfirmController {
             );
             this.userFederatedBindingService.createOrUpdateBinding(userInfo, pendingContext.toProfile(), now);
             this.federatedSessionContextRepository.clearAll(request);
+            eventPublisher.publishEvent(new UserRegistrationEvent(
+                    this, userInfo.getId(), userInfo.getUsername(), "federated"));
             this.federatedLoginCompletionService.complete(request, response, userInfo);
         } catch (IllegalArgumentException | IllegalStateException ex) {
             log.warn(
@@ -175,7 +183,7 @@ public class FederatedConfirmController {
                     normalizedUsername,
                     userInfo.getId()
             );
-            String now = this.federatedAccountService.currentTimestamp();
+            java.time.Instant now = this.federatedAccountService.currentTimestamp();
             this.userFederatedBindingService.createOrUpdateBinding(userInfo, pendingContext.toProfile(), now);
             this.federatedSessionContextRepository.clearAll(request);
             this.federatedLoginCompletionService.complete(request, response, userInfo);

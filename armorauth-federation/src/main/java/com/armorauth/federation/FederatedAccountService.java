@@ -25,8 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.text.Normalizer;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,9 +35,6 @@ public class FederatedAccountService {
     private static final Logger log = LoggerFactory.getLogger(FederatedAccountService.class);
 
     private static final int MAX_USERNAME_LENGTH = 32;
-
-    private static final DateTimeFormatter DATE_TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final UserInfoRepository userInfoRepository;
 
@@ -67,7 +63,7 @@ public class FederatedAccountService {
     }
 
     @Transactional
-    public UserInfo createLocalUser(String username, String rawPassword, String displayName, String now) {
+    public UserInfo createLocalUser(String username, String rawPassword, String displayName, Instant now) {
         String normalizedUsername = username == null ? null : username.trim();
         if (!StringUtils.hasText(normalizedUsername)) {
             throw new IllegalArgumentException("用户名不能为空。");
@@ -88,7 +84,7 @@ public class FederatedAccountService {
     }
 
     @Transactional
-    public UserInfo createAutoRegisteredUser(FederatedUserProfile federatedUserProfile, String now) {
+    public UserInfo createAutoRegisteredUser(FederatedUserProfile federatedUserProfile, Instant now) {
         String username = generateAvailableUsername(
                 federatedUserProfile.registrationId(),
                 federatedUserProfile.providerUserId(),
@@ -122,8 +118,8 @@ public class FederatedAccountService {
         return candidate;
     }
 
-    public String currentTimestamp() {
-        return DATE_TIME_FORMATTER.format(LocalDateTime.now());
+    public Instant currentTimestamp() {
+        return Instant.now();
     }
 
     private String normalizeUsername(String rawCandidate) {

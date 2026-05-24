@@ -24,6 +24,7 @@ import com.armorauth.federation.config.FederationProperties;
 import com.armorauth.federation.provider.FederatedOAuth2ProviderRegistry;
 import com.armorauth.federation.security.FederatedAuthenticationEntryPoint;
 import com.armorauth.federation.security.FederatedAuthenticationSuccessHandler;
+import com.armorauth.federation.security.FederatedSamlAuthenticationSuccessHandler;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.ObjectPostProcessor;
@@ -34,6 +35,7 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrationRepository;
 import org.springframework.util.Assert;
 
 import java.util.function.Consumer;
@@ -133,8 +135,18 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
                     .authorizationEndpoint(authorization ->
                             authorization.authorizationRequestResolver(requestResolver))
                     .userInfoEndpoint(userInfo -> userInfo.userService(userService)));
+            RelyingPartyRegistrationRepository relyingPartyRegistrationRepository =
+                    applicationContext.getBean(RelyingPartyRegistrationRepository.class);
+            FederatedSamlAuthenticationSuccessHandler samlAuthenticationSuccessHandler =
+                    applicationContext.getBean(FederatedSamlAuthenticationSuccessHandler.class);
+            httpSecurity.saml2Login(saml2Login -> saml2Login
+                    .loginPage(this.loginPageUrl)
+                    .relyingPartyRegistrationRepository(relyingPartyRegistrationRepository)
+                    .successHandler(samlAuthenticationSuccessHandler));
+            httpSecurity.saml2Metadata(metadata ->
+                    metadata.metadataUrl("/saml2/service-provider-metadata/{registrationId}"));
         } catch (Exception ex) {
-            throw new IllegalStateException("Failed to configure federated oauth2 login", ex);
+            throw new IllegalStateException("Failed to configure federated login", ex);
         }
     }
 

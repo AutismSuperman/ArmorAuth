@@ -16,19 +16,26 @@
 package com.armorauth.details;
 
 import com.armorauth.data.entity.UserInfo;
+import com.armorauth.data.entity.UserRole;
 import com.armorauth.data.repository.UserInfoRepository;
+import com.armorauth.data.repository.UserRoleRepository;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.ObjectUtils;
 
+import java.util.List;
+
 
 public class JdbcOAuth2UserDetailsManager implements OAuth2UserDetailsService {
 
     private final UserInfoRepository userInfoRepository;
+    private final UserRoleRepository userRoleRepository;
 
-    public JdbcOAuth2UserDetailsManager(UserInfoRepository userInfoRepository) {
+    public JdbcOAuth2UserDetailsManager(UserInfoRepository userInfoRepository,
+                                         UserRoleRepository userRoleRepository) {
         this.userInfoRepository = userInfoRepository;
+        this.userRoleRepository = userRoleRepository;
     }
 
     @Override
@@ -37,10 +44,20 @@ public class JdbcOAuth2UserDetailsManager implements OAuth2UserDetailsService {
         if (ObjectUtils.isEmpty(userByUsername)) {
             return null;
         }
+        List<String> roles = loadRoles(userByUsername.getId());
         return User.builder()
                 .username(userByUsername.getUsername())
                 .password(userByUsername.getPassword())
-                .roles("USER")
+                .roles(roles.toArray(new String[0]))
+                .disabled(userByUsername.getStatus() != null && userByUsername.getStatus() == 2)
                 .build();
+    }
+
+    private List<String> loadRoles(String userId) {
+        return userRoleRepository.findByUserId(userId).stream()
+                .map(UserRole::getRole)
+                .filter(role -> role != null)
+                .map(role -> role.getRoleCode())
+                .toList();
     }
 }

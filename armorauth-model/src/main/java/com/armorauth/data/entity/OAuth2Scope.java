@@ -40,7 +40,7 @@ public class OAuth2Scope implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @Column(name = "client_id", insertable = false, updatable = false)
+    @Column(name = "client_id")
     private String clientId;
 
     @Id

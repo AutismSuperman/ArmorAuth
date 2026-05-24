@@ -110,6 +110,17 @@ public class OAuth2Client implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Instant clientSecretExpiresAt;
 
+    /**
+     * 是否启用
+     */
+    private Boolean enabled = true;
+
+    /**
+     * 是否强制 MFA
+     */
+    @Column(name = "mfa_required")
+    private Boolean mfaRequired = false;
+
 
     @Override
     public boolean equals(Object o) {

@@ -16,19 +16,30 @@
 package com.armorauth.data.repository;
 
 import com.armorauth.data.entity.OAuth2Scope;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author fulin
  * @since 2022-08-31
  */
 @Repository
-public interface OAuth2ScopeRepository extends JpaRepository<OAuth2Scope, String> {
+public interface OAuth2ScopeRepository extends JpaRepository<OAuth2Scope, OAuth2Scope.OAuth2ScopeId> {
 
     List<OAuth2Scope> findAllByClientIdAndScopeIn(String clientId, Collection<String> scopes);
+
+    Page<OAuth2Scope> findByClientId(String clientId, Pageable pageable);
+
+    Optional<OAuth2Scope> findByClientIdAndScope(String clientId, String scope);
+
+    boolean existsByClientIdAndScope(String clientId, String scope);
+
+    void deleteByClientIdAndScope(String clientId, String scope);
 
 }

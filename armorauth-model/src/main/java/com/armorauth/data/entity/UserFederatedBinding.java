@@ -16,6 +16,7 @@
 package com.armorauth.data.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import jakarta.persistence.Column;
@@ -27,6 +28,7 @@ import jakarta.persistence.Table;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
 
 /**
  * 用户联合登录绑定表
@@ -63,10 +65,12 @@ public class UserFederatedBinding implements Serializable {
     @Column(name = "provider_attributes", columnDefinition = "text")
     private String providerAttributes;
 
-    @Column(name = "create_time", nullable = false, columnDefinition = "datetime")
-    private String createTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @Column(name = "create_time", nullable = false)
+    private Instant createTime;
 
-    @Column(name = "last_login_time", nullable = false, columnDefinition = "datetime")
-    private String lastLoginTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @Column(name = "last_login_time", nullable = false)
+    private Instant lastLoginTime;
 
 }

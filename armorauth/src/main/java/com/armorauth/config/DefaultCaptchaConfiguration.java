@@ -16,14 +16,36 @@
 package com.armorauth.config;
 
 import com.armorauth.authentication.CaptchaVerifyService;
+import com.armorauth.captcha.GraphicCaptchaService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration(proxyBeanMethods = false)
 public class DefaultCaptchaConfiguration {
 
+    /**
+     * 默认图形验证码服务
+     * <p>
+     * 可通过设置 armorauth.captcha.type=mock 切换回演示模式的固定验证码 "1234"
+     */
     @Bean
-    public CaptchaVerifyService captchaVerifyService() {
+    @ConditionalOnMissingBean(CaptchaVerifyService.class)
+    @ConditionalOnProperty(name = "armorauth.captcha.type", havingValue = "graphic", matchIfMissing = true)
+    public GraphicCaptchaService graphicCaptchaService() {
+        return new GraphicCaptchaService();
+    }
+
+    /**
+     * 演示模式验证码（固定 1234）
+     * <p>
+     * 设置 armorauth.captcha.type=mock 启用
+     */
+    @Bean
+    @ConditionalOnMissingBean(CaptchaVerifyService.class)
+    @ConditionalOnProperty(name = "armorauth.captcha.type", havingValue = "mock")
+    public CaptchaVerifyService mockCaptchaVerifyService() {
         return (account, captcha) -> "1234".equals(captcha);
     }
 

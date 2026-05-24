@@ -15,6 +15,7 @@
  */
 package com.armorauth.federation;
 
+import com.armorauth.common.audit.UserRegistrationEvent;
 import com.armorauth.data.entity.UserFederatedBinding;
 import com.armorauth.data.entity.UserInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -24,6 +25,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -51,16 +53,24 @@ public class FederatedLoginOrchestrator {
 
     private final FederatedLoginCompletionService federatedLoginCompletionService;
 
+    private final ApplicationEventPublisher eventPublisher;
+
+    private final IdpAttributeMappingService idpAttributeMappingService;
+
     public FederatedLoginOrchestrator(ObjectMapper objectMapper,
                                       FederatedAccountService federatedAccountService,
                                       UserFederatedBindingService userFederatedBindingService,
                                       FederatedSessionContextRepository federatedSessionContextRepository,
-                                      FederatedLoginCompletionService federatedLoginCompletionService) {
+                                      FederatedLoginCompletionService federatedLoginCompletionService,
+                                      ApplicationEventPublisher eventPublisher,
+                                      IdpAttributeMappingService idpAttributeMappingService) {
         this.objectMapper = objectMapper;
         this.federatedAccountService = federatedAccountService;
         this.userFederatedBindingService = userFederatedBindingService;
         this.federatedSessionContextRepository = federatedSessionContextRepository;
         this.federatedLoginCompletionService = federatedLoginCompletionService;
+        this.eventPublisher = eventPublisher;
+        this.idpAttributeMappingService = idpAttributeMappingService;
     }
 
     public boolean handleSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
@@ -69,7 +79,14 @@ public class FederatedLoginOrchestrator {
             return false;
         }
         FederatedUserProfile federatedUserProfile = extractProfile(oauth2AuthenticationToken);
-        String now = this.federatedAccountService.currentTimestamp();
+        return handleProfile(request, response, federatedUserProfile);
+    }
+
+    public boolean handleProfile(HttpServletRequest request,
+                                 HttpServletResponse response,
+                                 FederatedUserProfile federatedUserProfile)
+            throws IOException, ServletException {
+        java.time.Instant now = this.federatedAccountService.currentTimestamp();
         log.info(
                 "Handling federated login success registrationId={} providerUserId={}",
                 federatedUserProfile.registrationId(),
@@ -135,6 +152,16 @@ public class FederatedLoginOrchestrator {
                 UserInfo userInfo = this.federatedAccountService.createAutoRegisteredUser(federatedUserProfile, now);
                 this.userFederatedBindingService.createOrUpdateBinding(userInfo, federatedUserProfile, now);
                 this.federatedSessionContextRepository.clearPendingContext(request);
+                // 应用身份源属性映射（组织和角色）
+                try {
+                    idpAttributeMappingService.applyAttributeMapping(
+                            userInfo.getId(), federatedUserProfile.registrationId(),
+                            federatedUserProfile.providerAttributes());
+                } catch (Exception e) {
+                    log.warn("IdP attribute mapping failed for userId={}: {}", userInfo.getId(), e.getMessage());
+                }
+                eventPublisher.publishEvent(new UserRegistrationEvent(
+                        this, userInfo.getId(), userInfo.getUsername(), "federated"));
                 this.federatedLoginCompletionService.complete(request, response, userInfo);
                 return true;
             } catch (IllegalArgumentException | IllegalStateException ex) {

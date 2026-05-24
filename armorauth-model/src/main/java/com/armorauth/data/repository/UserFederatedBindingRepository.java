@@ -16,6 +16,8 @@
 package com.armorauth.data.repository;
 
 import com.armorauth.data.entity.UserFederatedBinding;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -29,5 +31,11 @@ import java.util.Optional;
 public interface UserFederatedBindingRepository extends JpaRepository<UserFederatedBinding, String> {
 
     Optional<UserFederatedBinding> findByRegistrationIdAndProviderUserId(String registrationId, String providerUserId);
+
+    Page<UserFederatedBinding> findByUserId(String userId, Pageable pageable);
+
+    Page<UserFederatedBinding> findByRegistrationId(String registrationId, Pageable pageable);
+
+    Page<UserFederatedBinding> findByUserIdAndRegistrationId(String userId, String registrationId, Pageable pageable);
 
 }

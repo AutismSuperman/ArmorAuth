@@ -19,9 +19,18 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import com.armorauth.authentication.CaptchaVerifyService;
+import com.armorauth.authentication.MfaAuthenticationSuccessHandler;
+import com.armorauth.authentication.MfaPolicyService;
 import com.armorauth.configurers.web.CaptchaLoginConfigurer;
+import com.armorauth.configurers.web.MfaLoginConfigurer;
+import com.armorauth.crypto.SecretCryptoService;
+import com.armorauth.data.repository.AuthFactorRepository;
 import com.armorauth.data.repository.UserInfoRepository;
+import com.armorauth.data.repository.UserRoleRepository;
 import com.armorauth.details.DelegateUserDetailsService;
+import com.armorauth.mfa.TotpService;
+import com.armorauth.security.AuditEventPublisher;
+import com.armorauth.security.LoginLockoutService;
 import com.armorauth.security.SecurityAuditUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -43,6 +52,7 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
@@ -52,6 +62,7 @@ import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.context.ApplicationEventPublisher;
 
 @EnableWebSecurity
 @Configuration(proxyBeanMethods = false)
@@ -71,33 +82,84 @@ public class DefaultSecurityConfig {
             @Qualifier("formAuthenticationSuccessHandler") AuthenticationSuccessHandler authenticationSuccessHandler,
             SecurityContextRepository securityContextRepository,
             ObjectProvider<CaptchaVerifyService> captchaVerifyServiceProvider,
+            ObjectProvider<AuthFactorRepository> authFactorRepositoryProvider,
+            ObjectProvider<UserInfoRepository> userInfoRepositoryProvider,
+            ObjectProvider<TotpService> totpServiceProvider,
+            ObjectProvider<SecretCryptoService> secretCryptoServiceProvider,
+            ObjectProvider<MfaPolicyService> mfaPolicyServiceProvider,
             RequestCache requestCache,
+            AuditEventPublisher auditEventPublisher,
+            LoginLockoutService loginLockoutService,
             ObjectProvider<ArmorAuthSecurityCustomizer> securityCustomizers) throws Exception {
-        SimpleUrlAuthenticationFailureHandler authenticationFailureHandler =
+        SimpleUrlAuthenticationFailureHandler delegateFailureHandler =
                 new SimpleUrlAuthenticationFailureHandler(CUSTOM_LOGIN_PAGE + "?error");
+        AuthenticationFailureHandler authenticationFailureHandler = (request, response, exception) -> {
+            String username = request.getParameter("username");
+            if (username != null && !username.isBlank()) {
+                loginLockoutService.recordFailure(username);
+            }
+            auditEventPublisher.publishLoginFailure(
+                    username != null ? username : "unknown",
+                    SecurityAuditUtils.getRemoteAddress(request),
+                    "认证失败: " + exception.getMessage());
+            delegateFailureHandler.onAuthenticationFailure(request, response, exception);
+        };
 
-        http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
+        // 如果配置了 MFA，使用 MFA 感知的成功处理器
+        final AuthFactorRepository authFactorRepository = authFactorRepositoryProvider.getIfAvailable();
+        final UserInfoRepository userInfoRepository = userInfoRepositoryProvider.getIfAvailable();
+        final MfaPolicyService mfaPolicyService = mfaPolicyServiceProvider.getIfAvailable();
+        final AuthenticationSuccessHandler effectiveSuccessHandler =
+                authFactorRepository != null
+                        ? new MfaAuthenticationSuccessHandler(authFactorRepository, authenticationSuccessHandler,
+                                mfaPolicyService, userInfoRepository)
+                        : authenticationSuccessHandler;
+
+        http.securityMatchers(securityMatchers -> securityMatchers
+                        .requestMatchers(request -> !request.getRequestURI().startsWith("/api/admin")
+                                && !request.getRequestURI().startsWith("/scim/v2")))
+                .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers("/login").permitAll()
+                        .requestMatchers("/login/mfa").permitAll()
+                        .requestMatchers("/login/passkey/options").permitAll()
+                        .requestMatchers("/login/passkey/finish").permitAll()
+                        .requestMatchers("/login/passkey/assertion/options").permitAll()
+                        .requestMatchers("/login/passkey/assertion/finish").permitAll()
                         .requestMatchers("/login/captcha").permitAll()
                         .requestMatchers("/login/captcha/send").permitAll()
+                        .requestMatchers("/login/captcha/image").permitAll()
+                        .requestMatchers("/login/captcha/info").permitAll()
                         .requestMatchers("/federated/confirm").permitAll()
                         .requestMatchers("/federated/confirm/create").permitAll()
                         .requestMatchers("/federated/confirm/bind").permitAll()
+                        .requestMatchers("/saml2/authorization/**").permitAll()
+                        .requestMatchers("/saml2/authenticate/**").permitAll()
+                        .requestMatchers("/login/saml2/sso/**").permitAll()
+                        .requestMatchers("/saml2/service-provider-metadata/**").permitAll()
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
                 .requestCache(requestCacheConfigurer -> requestCacheConfigurer.requestCache(requestCache))
-                .logout(logout -> logout.logoutSuccessHandler((request, response, authentication) -> {
-                    log.info("Logout succeeded username={} remoteAddress={} uri={}",
-                            SecurityAuditUtils.getAuthenticationName(authentication),
-                            SecurityAuditUtils.getRemoteAddress(request), request.getRequestURI());
-                    response.sendRedirect(request.getContextPath() + CUSTOM_LOGIN_PAGE + "?logout");
-                }))
+                .logout(logout -> logout
+                    .addLogoutHandler((request, response, authentication) -> {
+                        if (authentication != null) {
+                            auditEventPublisher.publishLogout(
+                                    authentication.getName(),
+                                    SecurityAuditUtils.getRemoteAddress(request),
+                                    "用户登出: " + authentication.getName());
+                        }
+                    })
+                    .logoutSuccessHandler((request, response, authentication) -> {
+                        log.info("Logout succeeded username={} remoteAddress={} uri={}",
+                                SecurityAuditUtils.getAuthenticationName(authentication),
+                                SecurityAuditUtils.getRemoteAddress(request), request.getRequestURI());
+                        response.sendRedirect(request.getContextPath() + CUSTOM_LOGIN_PAGE + "?logout");
+                    }))
                 .securityContext(securityContext -> securityContext.securityContextRepository(securityContextRepository))
                 .userDetailsService(delegateUserDetailsService);
 
         http.formLogin(formLogin -> formLogin
                         .loginPage(CUSTOM_LOGIN_PAGE)
-                        .successHandler(authenticationSuccessHandler)
+                        .successHandler(effectiveSuccessHandler)
                         .failureHandler(authenticationFailureHandler)
                         .permitAll())
                 .rememberMe(rememberMe -> rememberMe
@@ -111,8 +173,23 @@ public class DefaultSecurityConfig {
                     .captchaVerifyService(captchaVerifyService)
                     .userDetailsService(delegateUserDetailsService)
                     .securityContextRepository(securityContextRepository)
-                    .successHandler(authenticationSuccessHandler)
+                    .successHandler(effectiveSuccessHandler)
                     .failureHandler(authenticationFailureHandler));
+        }
+
+        // MFA 认证链
+        TotpService totpService = totpServiceProvider.getIfAvailable();
+        SecretCryptoService secretCryptoService = secretCryptoServiceProvider.getIfAvailable();
+        if (authFactorRepository != null && totpService != null) {
+            http.with(new MfaLoginConfigurer<>(), mfaLogin -> mfaLogin
+                    .userDetailsService(delegateUserDetailsService)
+                    .authFactorRepository(authFactorRepository)
+                    .userInfoRepository(userInfoRepository)
+                    .totpService(totpService)
+                    .secretCryptoService(secretCryptoService)
+                    .securityContextRepository(securityContextRepository)
+                    .successHandler(authenticationSuccessHandler)
+                    .failureHandler(new SimpleUrlAuthenticationFailureHandler("/login/mfa?error")));
         }
 
         for (ArmorAuthSecurityCustomizer securityCustomizer : securityCustomizers.orderedStream().toList()) {
@@ -123,8 +200,12 @@ public class DefaultSecurityConfig {
     }
 
     @Bean
-    public DelegateUserDetailsService delegateUserDetailsService(UserInfoRepository userInfoRepository) {
-        return new DelegateUserDetailsService(userInfoRepository);
+    public DelegateUserDetailsService delegateUserDetailsService(UserInfoRepository userInfoRepository,
+                                                                  UserRoleRepository userRoleRepository,
+                                                                  LoginLockoutService loginLockoutService) {
+        DelegateUserDetailsService service = new DelegateUserDetailsService(userInfoRepository, userRoleRepository);
+        service.setLoginLockoutService(loginLockoutService);
+        return service;
     }
 
     @Bean
@@ -146,7 +227,9 @@ public class DefaultSecurityConfig {
     }
 
     @Bean
-    public AuthenticationSuccessHandler formAuthenticationSuccessHandler(RequestCache requestCache) {
+    public AuthenticationSuccessHandler formAuthenticationSuccessHandler(RequestCache requestCache,
+                                                                          AuditEventPublisher auditEventPublisher,
+                                                                          LoginLockoutService loginLockoutService) {
         SavedRequestAwareAuthenticationSuccessHandler successHandler =
                 new SavedRequestAwareAuthenticationSuccessHandler();
         successHandler.setDefaultTargetUrl("/");
@@ -164,6 +247,11 @@ public class DefaultSecurityConfig {
             log.info("Login succeeded username={} remoteAddress={} uri={} target={}",
                     SecurityAuditUtils.getAuthenticationName(authentication),
                     SecurityAuditUtils.getRemoteAddress(request), request.getRequestURI(), targetUrl);
+            loginLockoutService.recordSuccess(authentication.getName());
+            auditEventPublisher.publishLoginSuccess(
+                    authentication.getName(),
+                    SecurityAuditUtils.getRemoteAddress(request),
+                    "认证成功: " + authentication.getName());
             successHandler.onAuthenticationSuccess(request, response, authentication);
         };
     }
@@ -184,10 +272,14 @@ public class DefaultSecurityConfig {
     }
 
     @Bean
+    public AuditEventPublisher auditEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        return new AuditEventPublisher(applicationEventPublisher);
+    }
+
+    @Bean
     WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring()
                 .requestMatchers("/error")
-                .requestMatchers("/.well-known/**")
                 .requestMatchers("/favicon.ico")
                 .requestMatchers("/favicon.svg")
                 .requestMatchers("/static/**")

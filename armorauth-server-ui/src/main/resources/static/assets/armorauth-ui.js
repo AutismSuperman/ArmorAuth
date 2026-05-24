@@ -51,6 +51,36 @@
         }
     };
 
+    // 图形验证码刷新
+    document.querySelectorAll("[data-captcha-refresh]").forEach((img) => {
+        const form = img.closest("form");
+        const captchaIdInput = form?.querySelector("input[name='captchaId']");
+
+        const refreshCaptcha = async () => {
+            try {
+                const response = await window.fetch("/login/captcha/info");
+                if (response.ok) {
+                    const captchaId = response.headers.get("X-Captcha-Id");
+                    if (captchaIdInput && captchaId) {
+                        captchaIdInput.value = captchaId;
+                    }
+                }
+                // 添加时间戳防止缓存
+                img.src = "/login/captcha/image?t=" + Date.now();
+            } catch (e) {
+                // 忽略错误，图片会通过 src 自动加载
+            }
+        };
+
+        // 页面加载时获取 captchaId
+        refreshCaptcha();
+
+        img.addEventListener("click", () => {
+            refreshCaptcha();
+        });
+    });
+
+    // 短信验证码发送
     document.querySelectorAll("[data-captcha-send]").forEach((button) => {
         const form = button.closest("form");
         const accountInput = form?.querySelector("input[name='account']");

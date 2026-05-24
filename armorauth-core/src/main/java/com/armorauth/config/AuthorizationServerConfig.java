@@ -19,14 +19,14 @@ import com.armorauth.authentication.DeviceClientAuthenticationProvider;
 import com.armorauth.authorization.JpaOAuth2AuthorizationConsentService;
 import com.armorauth.authorization.JpaOAuth2AuthorizationService;
 import com.armorauth.authorization.client.JpaRegisteredClientRepository;
+import com.armorauth.crypto.SecretCryptoService;
 import com.armorauth.data.repository.AuthorizationConsentRepository;
 import com.armorauth.data.repository.AuthorizationRepository;
+import com.armorauth.data.repository.JwkKeyRepository;
 import com.armorauth.data.repository.OAuth2ClientRepository;
-import com.armorauth.jose.Jwks;
+import com.armorauth.jose.PersistentJwkSource;
 import com.armorauth.security.DeviceVerificationResponseHandler;
 import com.armorauth.web.authentication.DeviceClientAuthenticationConverter;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.context.annotation.Bean;
@@ -140,10 +140,9 @@ public class AuthorizationServerConfig {
     }
 
     @Bean
-    public JWKSource<SecurityContext> jwkSource() {
-        RSAKey rsaKey = Jwks.generateRsa();
-        JWKSet jwkSet = new JWKSet(rsaKey);
-        return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+    public PersistentJwkSource jwkSource(JwkKeyRepository jwkKeyRepository,
+                                         SecretCryptoService secretCryptoService) {
+        return new PersistentJwkSource(jwkKeyRepository, secretCryptoService);
     }
 
     @Bean

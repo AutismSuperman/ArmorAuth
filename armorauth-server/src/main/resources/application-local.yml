@@ -78,16 +78,22 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  flyway:
+    enabled: true
+    locations: classpath:db/migration-h2,classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+    repair-on-migrate: true
   jpa:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
     show-sql: true
-    generate-ddl: true
+    generate-ddl: false
     open-in-view: false
     database: h2
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
 armorauth:
   federation:
     enabled: false
