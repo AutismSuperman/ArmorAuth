@@ -27,6 +27,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -73,15 +74,15 @@ public class SecurityConfiguration {
                     authenticationToken.getName()
             );
 
-            String redirectUri = resolvePostLogoutRedirectUri(request);
-            if (!(authenticationToken.getPrincipal() instanceof OidcUser oidcUser)) {
+            ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(
+                    authenticationToken.getAuthorizedClientRegistrationId()
+            );
+            String redirectUri = resolvePostLogoutRedirectUri(request, clientRegistration);
+            if (clientRegistration == null || !(authenticationToken.getPrincipal() instanceof OidcUser oidcUser)) {
                 response.sendRedirect(redirectUri);
                 return;
             }
 
-            ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(
-                    authenticationToken.getAuthorizedClientRegistrationId()
-            );
             response.sendRedirect(buildEndSessionEndpoint(clientRegistration, oidcUser, redirectUri));
         };
     }
@@ -91,11 +92,24 @@ public class SecurityConfiguration {
             OidcUser oidcUser,
             String postLogoutRedirectUri
     ) {
-        return UriComponentsBuilder.fromUriString(resolveAuthorizationServerBaseUri(clientRegistration))
-                .path("/connect/logout")
+        return UriComponentsBuilder.fromUriString(resolveEndSessionEndpoint(clientRegistration))
                 .queryParam("id_token_hint", oidcUser.getIdToken().getTokenValue())
                 .queryParam("post_logout_redirect_uri", postLogoutRedirectUri)
-                .build(true)
+                .build()
+                .encode()
+                .toUriString();
+    }
+
+    private String resolveEndSessionEndpoint(ClientRegistration clientRegistration) {
+        Object endSessionEndpoint = clientRegistration.getProviderDetails()
+                .getConfigurationMetadata()
+                .get("end_session_endpoint");
+        if (endSessionEndpoint instanceof String endpoint && StringUtils.hasText(endpoint)) {
+            return endpoint;
+        }
+        return UriComponentsBuilder.fromUriString(resolveAuthorizationServerBaseUri(clientRegistration))
+                .path("/connect/logout")
+                .build()
                 .toUriString();
     }
 
@@ -114,6 +128,21 @@ public class SecurityConfiguration {
                 .scheme(request.getScheme())
                 .host(request.getServerName())
                 .port(request.getServerPort())
+                .path(request.getContextPath())
+                .path("/")
+                .build()
+                .toUriString();
+    }
+
+    private String resolvePostLogoutRedirectUri(HttpServletRequest request, ClientRegistration clientRegistration) {
+        if (clientRegistration == null || !StringUtils.hasText(clientRegistration.getRedirectUri())) {
+            return resolvePostLogoutRedirectUri(request);
+        }
+        URI redirectUri = URI.create(clientRegistration.getRedirectUri());
+        return UriComponentsBuilder.newInstance()
+                .scheme(redirectUri.getScheme())
+                .host(redirectUri.getHost())
+                .port(redirectUri.getPort())
                 .path(request.getContextPath())
                 .path("/")
                 .build()

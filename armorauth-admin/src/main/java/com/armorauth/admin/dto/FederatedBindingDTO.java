@@ -22,6 +22,9 @@ public class FederatedBindingDTO {
     public record Response(
             String id,
             String userId,
+            String username,
+            String displayName,
+            String email,
             String registrationId,
             String providerUserId,
             String providerUsername,

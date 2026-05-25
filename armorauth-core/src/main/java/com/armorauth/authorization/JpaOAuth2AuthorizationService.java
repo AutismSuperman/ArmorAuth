@@ -19,9 +19,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.armorauth.authorization.client.ClientTransformUtil;
+import com.armorauth.common.audit.SecurityAuditEvent;
 import com.armorauth.data.entity.Authorization;
 import com.armorauth.data.repository.AuthorizationRepository;
 import com.armorauth.jackson.ArmorAuthJackson2Module;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.security.jackson2.SecurityJackson2Modules;
 import org.springframework.security.oauth2.core.*;
@@ -42,6 +44,7 @@ import org.springframework.util.StringUtils;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -50,16 +53,24 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
 
     private final AuthorizationRepository authorizationRepository;
     private final RegisteredClientRepository registeredClientRepository;
+    private final ApplicationEventPublisher eventPublisher;
     /**
      * 处理 metadata
      */
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public JpaOAuth2AuthorizationService(AuthorizationRepository authorizationRepository, RegisteredClientRepository registeredClientRepository) {
+        this(authorizationRepository, registeredClientRepository, null);
+    }
+
+    public JpaOAuth2AuthorizationService(AuthorizationRepository authorizationRepository,
+                                         RegisteredClientRepository registeredClientRepository,
+                                         ApplicationEventPublisher eventPublisher) {
         Assert.notNull(authorizationRepository, "authorizationRepository cannot be null");
         Assert.notNull(registeredClientRepository, "registeredClientRepository cannot be null");
         this.authorizationRepository = authorizationRepository;
         this.registeredClientRepository = registeredClientRepository;
+        this.eventPublisher = eventPublisher;
         ClassLoader classLoader = JpaOAuth2AuthorizationService.class.getClassLoader();
         List<Module> securityModules = SecurityJackson2Modules.getModules(classLoader);
         this.objectMapper.registerModules(securityModules);
@@ -71,7 +82,10 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
     @Override
     public void save(OAuth2Authorization authorization) {
         Assert.notNull(authorization, "authorization cannot be null");
-        authorizationRepository.save(toEntity(authorization));
+        Authorization previous = authorizationRepository.findById(authorization.getId()).orElse(null);
+        Authorization current = toEntity(authorization);
+        authorizationRepository.save(current);
+        publishTokenIssuedIfNecessary(previous, current);
     }
 
     @Override
@@ -301,6 +315,33 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
             expiresAtConsumer.accept(oAuth2Token.getExpiresAt());
             metadataConsumer.accept(writeMap(token.getMetadata()));
         }
+    }
+
+    private void publishTokenIssuedIfNecessary(Authorization previous, Authorization current) {
+        if (eventPublisher == null || !StringUtils.hasText(current.getAccessTokenValue())) {
+            return;
+        }
+        String previousAccessToken = previous != null ? previous.getAccessTokenValue() : null;
+        if (Objects.equals(previousAccessToken, current.getAccessTokenValue())) {
+            return;
+        }
+
+        String grantType = current.getAuthorizationGrantType();
+        String detail = "grant_type=" + grantType + ", token_type=ACCESS_TOKEN";
+        eventPublisher.publishEvent(new SecurityAuditEvent(
+                this,
+                "TOKEN_ISSUED",
+                current.getPrincipalName(),
+                "oauth2_token",
+                resolveClientId(current.getRegisteredClientId()),
+                detail,
+                null
+        ));
+    }
+
+    private String resolveClientId(String registeredClientId) {
+        RegisteredClient registeredClient = this.registeredClientRepository.findById(registeredClientId);
+        return registeredClient != null ? registeredClient.getClientId() : registeredClientId;
     }
 
 

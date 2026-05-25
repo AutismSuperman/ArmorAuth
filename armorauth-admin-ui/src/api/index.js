@@ -49,7 +49,11 @@ export const getLoginPolicy = (id) => api.get(`/login-policies/${id}`)
 export const updateLoginPolicy = (id, data) => api.put(`/login-policies/${id}`, data)
 
 // 用户管理
-export const getUsers = (page = 0, size = 20) => api.get('/users', { params: { page, size } })
+export const getUsers = (page = 0, size = 20, keyword) => {
+  const params = { page, size }
+  if (keyword) params.keyword = keyword
+  return api.get('/users', { params })
+}
 export const getUser = (id) => api.get(`/users/${id}`)
 export const createUser = (data) => api.post('/users', data)
 export const updateUser = (id, data) => api.put(`/users/${id}`, data)
@@ -84,12 +88,18 @@ export const deleteOrganization = (id) => api.delete(`/organizations/${id}`)
 export const getOrgMembers = (orgId, page = 0, size = 20) => api.get(`/organizations/${orgId}/members`, { params: { page, size } })
 
 // 身份源管理
-export const getIdentityProviders = (page = 0, size = 20) => api.get('/identity-providers', { params: { page, size } })
+export const getIdentityProviders = (page = 0, size = 20, source) => {
+  const params = { page, size }
+  if (source && source !== 'ALL') params.source = source
+  return api.get('/identity-providers', { params })
+}
 export const getIdentityProvider = (id) => api.get(`/identity-providers/${id}`)
 export const createIdentityProvider = (data) => api.post('/identity-providers', data)
 export const updateIdentityProvider = (id, data) => api.put(`/identity-providers/${id}`, data)
 export const deleteIdentityProvider = (id) => api.delete(`/identity-providers/${id}`)
 export const updateIdpStatus = (id, enabled) => api.patch(`/identity-providers/${id}/status`, null, { params: { enabled } })
+export const updateIdpLoginDisplay = (id, displayOnLogin) =>
+  api.patch(`/identity-providers/${encodeURIComponent(id)}/login-display`, { displayOnLogin })
 export const testIdentityProvider = (id, probeRemote = false) =>
   api.post(`/identity-providers/${id}:test`, null, { params: { probeRemote } })
 export const syncIdentityProviderUsers = (id, data = { dryRun: true, maxResults: 200 }) =>

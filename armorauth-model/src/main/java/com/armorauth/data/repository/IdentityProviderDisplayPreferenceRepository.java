@@ -13,24 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.armorauth.admin.dto;
+package com.armorauth.data.repository;
 
-import java.time.Instant;
-import java.util.List;
+import com.armorauth.data.entity.IdentityProviderDisplayPreference;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public class LoginPolicyDTO {
-
-    public record UpdateRequest(
-            Boolean mfaRequired,
-            List<String> roleMfaRequired
-    ) {}
-
-    public record Response(
-            String id,
-            String clientId,
-            String clientName,
-            Boolean mfaRequired,
-            List<String> roleMfaRequired,
-            Instant updatedAt
-    ) {}
+public interface IdentityProviderDisplayPreferenceRepository
+        extends JpaRepository<IdentityProviderDisplayPreference, String> {
 }

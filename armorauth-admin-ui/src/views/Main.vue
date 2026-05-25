@@ -46,7 +46,7 @@
           <a-sub-menu key="user-management">
             <template #icon><UserOutlined /></template>
             <template #title>用户与组织</template>
-            <a-menu-item key="/main/users">用户管理</a-menu-item>
+            <a-menu-item key="/main/users">OAuth 用户</a-menu-item>
             <a-menu-item key="/main/organizations">组织管理</a-menu-item>
             <a-menu-item key="/main/tenants">租户管理</a-menu-item>
           </a-sub-menu>
@@ -173,7 +173,7 @@ const pageTitleMap = {
   '/main/home': '首页',
   '/main/applications': '应用管理',
   '/main/scopes': 'Scope 管理',
-  '/main/users': '用户管理',
+  '/main/users': 'OAuth 用户',
   '/main/organizations': '组织管理',
   '/main/tenants': '租户管理',
   '/main/loginPolicies': '登录策略',

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 280" role="img" aria-label="Multi-factor verification">
+  <defs>
+    <linearGradient id="a" x1="118" x2="246" y1="42" y2="230" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#eff6ff"/><stop offset="1" stop-color="#bfdbfe"/>
+    </linearGradient>
+  </defs>
+  <path fill="#93c5fd" fill-opacity=".18" d="M69 204c-20-31-12-88 25-121 46-42 124-50 177-18 48 29 60 85 31 124-29 40-88 48-140 48-41 0-76-7-93-33Z"/>
+  <rect x="126" y="38" width="110" height="196" rx="28" fill="url(#a)"/>
+  <rect x="145" y="62" width="72" height="132" rx="16" fill="#fff"/>
+  <circle cx="181" cy="212" r="9" fill="#2563eb"/>
+  <rect x="157" y="86" width="48" height="10" rx="5" fill="#bfdbfe"/>
+  <g fill="#2563eb">
+    <rect x="156" y="118" width="22" height="22" rx="7"/><rect x="184" y="118" width="22" height="22" rx="7"/>
+    <rect x="156" y="147" width="22" height="22" rx="7"/><rect x="184" y="147" width="22" height="22" rx="7"/>
+  </g>
+  <path fill="#22c55e" d="M250 109 282 122v23c0 29-21 49-32 53-11-4-32-24-32-53v-23l32-13Z"/>
+  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="6" d="m236 146 9 9 19-24"/>
+  <circle cx="91" cy="112" r="24" fill="#fff"/>
+  <path fill="#60a5fa" d="M91 94a18 18 0 0 1 18 18h-18V94Z"/>
+  <path fill="#dbeafe" d="M91 112h18a18 18 0 1 1-18-18v18Z"/>
+</svg>

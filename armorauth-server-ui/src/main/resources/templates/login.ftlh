@@ -6,13 +6,13 @@
     <title>欢迎登录 - ArmorAuth</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
-    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026052404">
-    <script src="/assets/iconfont.js"></script>
+    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026052408">
+    <script src="/assets/provider-icons.js?v=2026052501"></script>
 </head>
-<body class="authing-login-page identity-page">
+<body class="authing-login-page identity-page" data-page-title-key="page.login.title">
 <div class="page-shell">
     <main class="login-product-shell">
-        <section class="login-visual-panel">
+        <section class="login-visual-panel" data-visual="login">
             <div class="login-brand">
                 <img class="login-brand-mark" src="/brand/icon.svg" alt="ArmorAuth logo">
                 <span>
@@ -73,25 +73,30 @@
                         <img src="/brand/icon.svg" alt="ArmorAuth logo">
                         <span>默认用户池</span>
                     </div>
-                    <button class="theme-toggle" type="button" data-theme-toggle>
-                        <span class="theme-toggle-icon" data-theme-icon>
-                            <svg class="icon-sun" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="5"></circle>
-                                <line x1="12" y1="1" x2="12" y2="3"></line>
-                                <line x1="12" y1="21" x2="12" y2="23"></line>
-                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                                <line x1="1" y1="12" x2="3" y2="12"></line>
-                                <line x1="21" y1="12" x2="23" y2="12"></line>
-                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                            </svg>
-                            <svg class="icon-moon" viewBox="0 0 24 24">
-                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                            </svg>
-                        </span>
-                        <span data-theme-text>深色</span>
-                    </button>
+                    <div class="top-actions">
+                        <button class="locale-toggle" type="button" data-locale-toggle>
+                            <span data-locale-text>EN</span>
+                        </button>
+                        <button class="theme-toggle" type="button" data-theme-toggle>
+                            <span class="theme-toggle-icon" data-theme-icon>
+                                <svg class="icon-sun" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="5"></circle>
+                                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                                </svg>
+                                <svg class="icon-moon" viewBox="0 0 24 24">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                </svg>
+                            </span>
+                            <span data-theme-text>深色</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="login-card-title">
@@ -101,10 +106,26 @@
                 </div>
 
                 <#if errorMessage??>
-                    <div class="notice error" role="alert" data-page-error>${errorMessage}</div>
+                    <div class="notice error is-dismissible" role="alert" data-page-notice data-page-error data-dismiss-after="5000">
+                        <span class="notice-message">${errorMessage}</span>
+                        <button class="notice-close" type="button" aria-label="关闭提示" data-notice-close>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
                 </#if>
                 <#if loggedOut?? && loggedOut>
-                    <div class="notice success">您已成功退出当前会话。</div>
+                    <div class="notice success is-dismissible" role="status" data-page-notice data-dismiss-after="5000">
+                        <span class="notice-message">您已成功退出当前会话。</span>
+                        <button class="notice-close" type="button" aria-label="关闭提示" data-notice-close>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
                 </#if>
 
                 <div class="login-methods" data-tab-group>
@@ -212,65 +233,15 @@
                         <#list federatedProviders as provider>
                             <#assign providerId = provider.registrationId?lower_case>
                             <#assign providerIcon = (provider.iconKey!providerId)?lower_case>
+                            <#assign providerIconUrl = provider.iconUrl!''>
                             <a class="provider-link provider-${providerId} provider-icon-${providerIcon}" href="${provider.authorizationUrl}?mode=${selectedFederatedMode}" aria-label="使用 ${provider.clientName!provider.registrationId} 登录" title="${provider.clientName!provider.registrationId}" <#if provider_index gte 8>data-provider-extra</#if>>
-                                <span class="provider-icon" aria-hidden="true">
-                                    <#if providerIcon == 'gitee'>
-                                        <svg class="provider-symbol" viewBox="0 0 1024 1024" focusable="false">
-                                            <use href="#icon-gitee"></use>
-                                        </svg>
-                                    <#elseif providerIcon == 'qq'>
-                                        <svg class="provider-symbol" viewBox="0 0 1024 1024" focusable="false">
-                                            <use href="#icon-QQ1"></use>
-                                        </svg>
-                                    <#elseif providerIcon == 'wechat' || providerIcon == 'weixin'>
-                                        <svg class="provider-symbol" viewBox="0 0 1024 1024" focusable="false">
-                                            <use href="#icon-weixin"></use>
-                                        </svg>
-                                    <#elseif providerIcon == 'github'>
-                                        <svg class="provider-symbol" viewBox="0 0 1049 1024" focusable="false">
-                                            <use href="#icon-GitHub"></use>
-                                        </svg>
-                                    <#elseif providerIcon == 'google'>
-                                        <span class="provider-mark provider-mark-google">G</span>
-                                    <#elseif providerIcon == 'facebook'>
-                                        <span class="provider-mark provider-mark-facebook">f</span>
-                                    <#elseif providerIcon == 'microsoft'>
-                                        <span class="provider-mark provider-mark-microsoft">
-                                            <span></span><span></span><span></span><span></span>
-                                        </span>
-                                    <#elseif providerIcon == 'gitlab'>
-                                        <span class="provider-mark provider-mark-gitlab">GL</span>
-                                    <#elseif providerIcon == 'discord'>
-                                        <span class="provider-mark provider-mark-discord">D</span>
-                                    <#elseif providerIcon == 'slack'>
-                                        <span class="provider-mark provider-mark-slack">S</span>
-                                    <#elseif providerIcon == 'linkedin'>
-                                        <span class="provider-mark provider-mark-linkedin">in</span>
-                                    <#elseif providerIcon == 'apple'>
-                                        <span class="provider-mark provider-mark-apple">A</span>
-                                    <#elseif providerIcon == 'weibo'>
-                                        <span class="provider-mark provider-mark-weibo">WB</span>
-                                    <#elseif providerIcon == 'baidu'>
-                                        <span class="provider-mark provider-mark-baidu">du</span>
-                                    <#elseif providerIcon == 'oschina'>
-                                        <span class="provider-mark provider-mark-oschina">OS</span>
-                                    <#elseif providerIcon == 'douyin'>
-                                        <span class="provider-mark provider-mark-douyin">dy</span>
-                                    <#elseif providerIcon == 'alipay'>
-                                        <span class="provider-mark provider-mark-alipay">支</span>
-                                    <#elseif providerIcon == 'dingtalk'>
-                                        <span class="provider-mark provider-mark-dingtalk">钉</span>
-                                    <#elseif providerIcon == 'wecom'>
-                                        <span class="provider-mark provider-mark-wecom">企</span>
-                                    <#elseif providerIcon == 'feishu'>
-                                        <span class="provider-mark provider-mark-feishu">飞</span>
-                                    <#elseif providerIcon == 'oidc' || providerIcon == 'oauth'>
-                                        <span class="provider-mark provider-mark-oidc">OIDC</span>
-                                    <#elseif providerIcon == 'saml'>
-                                        <span class="provider-mark provider-mark-saml">SSO</span>
-                                    <#elseif providerIcon == 'custom'>
-                                        <span class="provider-mark provider-mark-custom">ID</span>
+                                <span class="provider-icon" data-provider-icon="${providerIcon}" aria-hidden="true">
+                                    <#if providerIconUrl?has_content>
+                                        <img class="provider-custom-image" src="${providerIconUrl}" alt="">
                                     <#else>
+                                        <svg class="provider-symbol provider-brand-symbol" focusable="false">
+                                            <use href="#provider-icon-${providerIcon}"></use>
+                                        </svg>
                                         <span class="provider-fallback">${provider.iconText!'ID'}</span>
                                     </#if>
                                 </span>
@@ -302,7 +273,7 @@
         </div>
     </footer>
 </div>
-<script src="/assets/armorauth-ui.js?v=20260524"></script>
+<script src="/assets/armorauth-ui.js?v=2026052404"></script>
 <script>
 (() => {
     const passkeyButton = document.querySelector('[data-passkey-login]');
@@ -342,7 +313,7 @@
         });
         const payload = await response.json();
         if (!response.ok || payload.code !== 200) {
-            throw new Error(payload.message || 'Passkey 登录失败');
+            throw new Error(payload.message || window.ArmorAuthI18n?.t('passkey.loginFailed') || 'Passkey 登录失败');
         }
         return payload.data;
     };

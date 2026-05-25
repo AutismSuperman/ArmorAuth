@@ -6,12 +6,12 @@
     <title>二次验证 - ArmorAuth</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
-    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026052402">
+    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026052408">
 </head>
-<body class="authing-login-page identity-page">
+<body class="authing-login-page identity-page" data-page-title-key="page.mfa.title">
 <div class="page-shell">
     <main class="login-product-shell">
-        <section class="login-visual-panel">
+        <section class="login-visual-panel" data-visual="mfa">
             <div class="login-brand">
                 <img class="login-brand-mark" src="/brand/icon.svg" alt="ArmorAuth logo">
                 <span>
@@ -48,6 +48,30 @@
                     <div class="login-card-logo">
                         <img src="/brand/icon.svg" alt="ArmorAuth logo">
                         <span>安全验证</span>
+                    </div>
+                    <div class="top-actions">
+                        <button class="locale-toggle" type="button" data-locale-toggle>
+                            <span data-locale-text>EN</span>
+                        </button>
+                        <button class="theme-toggle" type="button" data-theme-toggle>
+                            <span class="theme-toggle-icon" data-theme-icon>
+                                <svg class="icon-sun" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="5"></circle>
+                                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                                </svg>
+                                <svg class="icon-moon" viewBox="0 0 24 24">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                </svg>
+                            </span>
+                            <span data-theme-text>深色</span>
+                        </button>
                     </div>
                 </div>
 
@@ -90,13 +114,13 @@
         </section>
     </main>
 </div>
-<script src="/assets/armorauth-ui.js?v=20260524"></script>
+<script src="/assets/armorauth-ui.js?v=2026052404"></script>
 <script>
     const passkeyButton = document.getElementById('passkeyButton');
     const passkeyNotice = document.getElementById('passkeyNotice');
 
     function showPasskeyError(message) {
-        passkeyNotice.textContent = message || 'Passkey 验证失败';
+        passkeyNotice.textContent = message || window.ArmorAuthI18n?.t('passkey.verifyFailed') || 'Passkey 验证失败';
         passkeyNotice.style.display = 'block';
     }
 
@@ -128,7 +152,7 @@
         });
         const payload = await response.json();
         if (!response.ok || payload.code !== 200) {
-            throw new Error(payload.message || '请求失败');
+            throw new Error(payload.message || window.ArmorAuthI18n?.t('passkey.requestFailed') || '请求失败');
         }
         return payload.data;
     }
@@ -139,7 +163,7 @@
         passkeyButton.classList.add('is-loading');
         try {
             if (!window.PublicKeyCredential || !navigator.credentials?.get) {
-                throw new Error('当前浏览器不支持 Passkey');
+                throw new Error(window.ArmorAuthI18n?.t('passkey.unsupported') || '当前浏览器不支持 Passkey');
             }
             const options = await postJson('/login/passkey/assertion/options');
             const publicKey = {
@@ -155,7 +179,7 @@
             };
             const credential = await navigator.credentials.get({ publicKey });
             if (!credential) {
-                throw new Error('未选择 Passkey');
+                throw new Error(window.ArmorAuthI18n?.t('passkey.notSelected') || '未选择 Passkey');
             }
             const result = await postJson('/login/passkey/assertion/finish', {
                 credentialId: bufferToBase64url(credential.rawId),

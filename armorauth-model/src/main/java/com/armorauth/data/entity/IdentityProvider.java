@@ -148,6 +148,9 @@ public class IdentityProvider implements Serializable {
     @Column(name = "icon_key", length = 80)
     private String iconKey;
 
+    @Column(name = "icon_url", columnDefinition = "text")
+    private String iconUrl;
+
     @Column(name = "display_on_login", nullable = false)
     private Boolean displayOnLogin = true;
 

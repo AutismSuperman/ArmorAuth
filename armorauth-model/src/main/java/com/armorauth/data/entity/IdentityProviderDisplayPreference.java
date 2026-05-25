@@ -13,24 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.armorauth.admin.dto;
+package com.armorauth.data.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Data;
 
 import java.time.Instant;
-import java.util.List;
 
-public class LoginPolicyDTO {
+/**
+ * 登录页身份源展示偏好。
+ */
+@Data
+@Entity
+@Table(name = "identity_provider_display_preference")
+public class IdentityProviderDisplayPreference {
 
-    public record UpdateRequest(
-            Boolean mfaRequired,
-            List<String> roleMfaRequired
-    ) {}
+    @Id
+    @Column(name = "registration_id", nullable = false, length = 100)
+    private String registrationId;
 
-    public record Response(
-            String id,
-            String clientId,
-            String clientName,
-            Boolean mfaRequired,
-            List<String> roleMfaRequired,
-            Instant updatedAt
-    ) {}
+    @Column(name = "display_on_login", nullable = false)
+    private Boolean displayOnLogin = true;
+
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
 }

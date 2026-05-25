@@ -22,6 +22,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
+import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -50,6 +54,7 @@ public class MfaAuthenticationSuccessHandler implements AuthenticationSuccessHan
     private final AuthenticationSuccessHandler delegate;
     private final MfaPolicyService mfaPolicyService;
     private final UserInfoRepository userInfoRepository;
+    private final RequestCache requestCache;
 
     public MfaAuthenticationSuccessHandler(AuthFactorRepository authFactorRepository,
                                            AuthenticationSuccessHandler delegate) {
@@ -66,20 +71,30 @@ public class MfaAuthenticationSuccessHandler implements AuthenticationSuccessHan
                                            AuthenticationSuccessHandler delegate,
                                            MfaPolicyService mfaPolicyService,
                                            UserInfoRepository userInfoRepository) {
+        this(authFactorRepository, delegate, mfaPolicyService, userInfoRepository, null);
+    }
+
+    public MfaAuthenticationSuccessHandler(AuthFactorRepository authFactorRepository,
+                                           AuthenticationSuccessHandler delegate,
+                                           MfaPolicyService mfaPolicyService,
+                                           UserInfoRepository userInfoRepository,
+                                           RequestCache requestCache) {
         this.authFactorRepository = authFactorRepository;
         this.delegate = delegate;
         this.mfaPolicyService = mfaPolicyService;
         this.userInfoRepository = userInfoRepository;
+        this.requestCache = requestCache;
     }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
         String username = authentication.getName();
+        Optional<String> userId = resolveUserId(username);
 
         // 检查用户是否配置了已验证且启用的 MFA 因子
-        boolean hasUserMfa = resolveUserId(username)
-                .map(userId -> authFactorRepository.findByUserIdAndEnabledTrue(userId).stream()
+        boolean hasUserMfa = userId
+                .map(id -> authFactorRepository.findByUserIdAndEnabledTrue(id).stream()
                         .anyMatch(f -> Boolean.TRUE.equals(f.getVerified())
                                 && RUNTIME_MFA_FACTOR_TYPES.contains(f.getFactorType())))
                 .orElse(false);
@@ -87,8 +102,10 @@ public class MfaAuthenticationSuccessHandler implements AuthenticationSuccessHan
         // 检查策略级 MFA 要求（应用级别或角色级别）
         boolean policyRequiresMfa = false;
         if (mfaPolicyService != null) {
-            String clientId = request.getParameter("client_id");
-            policyRequiresMfa = mfaPolicyService.requiresMfa(username, clientId);
+            String clientId = resolveClientId(request, response);
+            policyRequiresMfa = userId
+                    .map(id -> mfaPolicyService.requiresMfa(id, clientId))
+                    .orElse(false);
         }
 
         if (hasUserMfa || policyRequiresMfa) {
@@ -117,5 +134,27 @@ public class MfaAuthenticationSuccessHandler implements AuthenticationSuccessHan
         return userInfoRepository.findByUsername(username)
                 .map(user -> Optional.of(user.getId()))
                 .orElseGet(() -> Optional.of(username));
+    }
+
+    private String resolveClientId(HttpServletRequest request, HttpServletResponse response) {
+        String clientId = request.getParameter("client_id");
+        if (StringUtils.hasText(clientId)) {
+            return clientId;
+        }
+        if (requestCache == null) {
+            return null;
+        }
+        SavedRequest savedRequest = requestCache.getRequest(request, response);
+        if (savedRequest == null || !StringUtils.hasText(savedRequest.getRedirectUrl())) {
+            return null;
+        }
+        try {
+            return UriComponentsBuilder.fromUriString(savedRequest.getRedirectUrl())
+                    .build()
+                    .getQueryParams()
+                    .getFirst("client_id");
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 }

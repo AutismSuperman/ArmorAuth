@@ -46,9 +46,10 @@ public class UserController {
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size,
             @RequestParam(name = "sort", defaultValue = "createTime") String sort,
-            @RequestParam(name = "direction", defaultValue = "DESC") String direction) {
+            @RequestParam(name = "direction", defaultValue = "DESC") String direction,
+            @RequestParam(name = "keyword", required = false) String keyword) {
         Sort sortObj = Sort.by(Sort.Direction.fromString(direction), sort);
-        Page<UserDTO.Response> result = userService.listUsers(PageRequest.of(page, size, sortObj));
+        Page<UserDTO.Response> result = userService.listUsers(PageRequest.of(page, size, sortObj), keyword);
         PageResponse<UserDTO.Response> pageResponse = new PageResponse<>(
                 result.getContent(),
                 result.getTotalElements(),

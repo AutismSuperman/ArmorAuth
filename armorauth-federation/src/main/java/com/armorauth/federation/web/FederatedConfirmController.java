@@ -78,8 +78,8 @@ public class FederatedConfirmController {
 
     @GetMapping(path = "/federated/confirm", produces = MediaType.TEXT_HTML_VALUE)
     public String confirmPage(HttpServletRequest request,
-                              Model model,
-                              @RequestParam(name = "tab", required = false, defaultValue = "create") String tab) {
+                               Model model,
+                               @RequestParam(name = "tab", required = false, defaultValue = "create") String tab) {
         PendingFederatedContext pendingContext = loadPendingContext(request);
         if (pendingContext == null) {
             return redirectToLoginError(request, "联合登录确认信息不存在或已过期，请重新发起授权。");
@@ -93,10 +93,17 @@ public class FederatedConfirmController {
         return "federated-confirm";
     }
 
+    @GetMapping(path = "/federated/confirm/cancel")
+    public String cancel(HttpServletRequest request) {
+        log.info("Federated confirm canceled uri={}", request.getRequestURI());
+        this.federatedSessionContextRepository.clearAll(request);
+        return "redirect:/login";
+    }
+
     @PostMapping(path = "/federated/confirm/create", produces = MediaType.TEXT_HTML_VALUE)
     public void confirmCreate(HttpServletRequest request,
-                              HttpServletResponse response,
-                              @RequestParam("username") String username,
+                               HttpServletResponse response,
+                               @RequestParam("username") String username,
                               @RequestParam("password") String password,
                               @RequestParam("confirmPassword") String confirmPassword) throws Exception {
         PendingFederatedContext pendingContext = loadPendingContext(request);

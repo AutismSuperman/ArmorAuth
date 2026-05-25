@@ -54,6 +54,7 @@ public class IdentityProviderDTO {
             Integer ldapPageSize,
             String scopes,
             String iconKey,
+            String iconUrl,
             Boolean displayOnLogin,
             String attributeMapping,
             String linkingStrategy,
@@ -92,6 +93,7 @@ public class IdentityProviderDTO {
             Integer ldapPageSize,
             String scopes,
             String iconKey,
+            String iconUrl,
             Boolean displayOnLogin,
             String attributeMapping,
             String linkingStrategy,
@@ -104,6 +106,10 @@ public class IdentityProviderDTO {
             String providerType,
             String registrationId,
             String clientId,
+            String redirectUri,
+            String authorizationGrantType,
+            String clientAuthenticationMethod,
+            String userNameAttributeName,
             String authorizationUri,
             String tokenUri,
             String userinfoUri,
@@ -132,13 +138,20 @@ public class IdentityProviderDTO {
             Integer ldapPageSize,
             String scopes,
             String iconKey,
+            String iconUrl,
             Boolean displayOnLogin,
             String attributeMapping,
             String linkingStrategy,
             Integer displayOrder,
             Boolean enabled,
             Instant createdAt,
-            Instant updatedAt
+            Instant updatedAt,
+            String source,
+            Boolean readOnly
+    ) {}
+
+    public record LoginDisplayRequest(
+            Boolean displayOnLogin
     ) {}
 
     public record TestResponse(

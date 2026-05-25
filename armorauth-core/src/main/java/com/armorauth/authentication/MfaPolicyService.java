@@ -21,6 +21,7 @@ import com.armorauth.data.repository.OAuth2ClientRepository;
 import com.armorauth.data.repository.UserRoleRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,10 +38,6 @@ import java.util.stream.Collectors;
  */
 @Service
 public class MfaPolicyService {
-
-    private static final Set<String> MFA_REQUIRED_ROLES = Set.of(
-            "SUPER_ADMIN", "TENANT_ADMIN"
-    );
 
     private final OAuth2ClientRepository clientRepository;
     private final UserRoleRepository userRoleRepository;
@@ -63,21 +60,37 @@ public class MfaPolicyService {
     /**
      * 判断用户是否有要求 MFA 的角色
      */
-    public boolean isUserMfaRequired(String userId) {
+    public boolean isUserMfaRequired(String userId, Set<String> requiredRoleCodes) {
+        if (userId == null || userId.isBlank() || requiredRoleCodes == null || requiredRoleCodes.isEmpty()) {
+            return false;
+        }
         List<UserRole> roles = userRoleRepository.findByUserId(userId);
         return roles.stream()
                 .map(UserRole::getRole)
                 .filter(r -> r != null)
-                .anyMatch(r -> MFA_REQUIRED_ROLES.contains(r.getRoleCode()));
+                .anyMatch(r -> requiredRoleCodes.contains(r.getRoleCode()));
     }
 
     /**
      * 综合判断：应用要求 MFA 或用户角色要求 MFA
      */
     public boolean requiresMfa(String userId, String clientId) {
-        if (clientId != null && isAppMfaRequired(clientId)) {
-            return true;
+        if (clientId == null || clientId.isBlank()) {
+            return false;
         }
-        return isUserMfaRequired(userId);
+        return clientRepository.findOAuth2ClientByClientId(clientId)
+                .map(client -> Boolean.TRUE.equals(client.getMfaRequired())
+                        || isUserMfaRequired(userId, parseRoleCodes(client.getRoleMfaRequired())))
+                .orElse(false);
+    }
+
+    private Set<String> parseRoleCodes(String roleCodes) {
+        if (roleCodes == null || roleCodes.isBlank()) {
+            return Set.of();
+        }
+        return Arrays.stream(roleCodes.split(","))
+                .map(String::trim)
+                .filter(role -> !role.isBlank())
+                .collect(Collectors.toSet());
     }
 }

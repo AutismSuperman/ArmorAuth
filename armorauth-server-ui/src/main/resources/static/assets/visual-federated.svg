@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 280" role="img" aria-label="Federated account binding">
+  <path fill="#93c5fd" fill-opacity=".18" d="M55 207c-21-36 4-96 51-127 56-36 136-31 188 8 45 34 51 89 18 124-34 37-97 34-150 29-44-4-89-5-107-34Z"/>
+  <circle cx="121" cy="124" r="48" fill="#eff6ff"/>
+  <circle cx="239" cy="124" r="48" fill="#dbeafe"/>
+  <path fill="none" stroke="#2563eb" stroke-linecap="round" stroke-width="8" d="M164 124h32"/>
+  <path fill="#2563eb" d="m193 111 17 13-17 13v-26Z"/>
+  <circle cx="121" cy="109" r="18" fill="#f9b4a8"/>
+  <path fill="#1e293b" d="M100 109c4-18 17-25 33-18 8 4 13 10 15 18-17 3-30-1-39-11-2 6-5 9-9 11Z"/>
+  <path fill="#60a5fa" d="M91 158c7-20 17-30 30-30s24 10 31 30H91Z"/>
+  <rect x="219" y="88" width="40" height="40" rx="12" fill="#fff"/>
+  <path fill="#2563eb" d="M239 98 256 105v12c0 16-12 27-17 29-5-2-17-13-17-29v-12l17-7Z"/>
+  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="m230 119 6 6 13-16"/>
+  <rect x="203" y="152" width="72" height="12" rx="6" fill="#93c5fd"/>
+  <rect x="213" y="174" width="52" height="10" rx="5" fill="#bfdbfe"/>
+  <circle cx="75" cy="78" r="8" fill="#22c55e"/>
+  <circle cx="292" cy="202" r="7" fill="#60a5fa"/>
+</svg>

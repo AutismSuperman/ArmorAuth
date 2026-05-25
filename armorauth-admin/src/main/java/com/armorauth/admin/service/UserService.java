@@ -27,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -66,6 +67,14 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public Page<UserDTO.Response> listUsers(Pageable pageable, String keyword) {
+        if (!StringUtils.hasText(keyword)) {
+            return listUsers(pageable);
+        }
+        return userRepository.search(keyword.trim(), pageable).map(this::toResponse);
+    }
+
+    @Transactional(readOnly = true)
     public UserDTO.Response getUser(String id) {
         UserInfo user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("用户", id));
@@ -92,8 +101,8 @@ public class UserService {
         user.setAvatar(request.avatar());
         user.setProfile(request.profile());
         user.setStatus(0);
-        user.setEmailVerified(false);
-        user.setPhoneVerified(false);
+        user.setEmailVerified(Boolean.TRUE.equals(request.emailVerified()));
+        user.setPhoneVerified(Boolean.TRUE.equals(request.phoneVerified()));
         user.setCreateTime(Instant.now());
         user = userRepository.save(user);
 
@@ -120,6 +129,12 @@ public class UserService {
         }
         if (request.avatar() != null) {
             user.setAvatar(request.avatar());
+        }
+        if (request.emailVerified() != null) {
+            user.setEmailVerified(request.emailVerified());
+        }
+        if (request.phoneVerified() != null) {
+            user.setPhoneVerified(request.phoneVerified());
         }
         if (request.profile() != null) {
             user.setProfile(request.profile());

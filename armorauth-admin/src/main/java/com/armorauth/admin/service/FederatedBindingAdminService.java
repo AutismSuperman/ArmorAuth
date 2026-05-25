@@ -18,7 +18,9 @@ package com.armorauth.admin.service;
 import com.armorauth.admin.dto.FederatedBindingDTO;
 import com.armorauth.common.audit.AuditContext;
 import com.armorauth.common.exception.ResourceNotFoundException;
+import com.armorauth.data.entity.UserInfo;
 import com.armorauth.data.entity.UserFederatedBinding;
+import com.armorauth.data.repository.UserInfoRepository;
 import com.armorauth.data.repository.UserFederatedBindingRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,11 +31,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class FederatedBindingAdminService {
 
     private final UserFederatedBindingRepository bindingRepository;
+    private final UserInfoRepository userRepository;
     private final AuditEventService auditEventService;
 
     public FederatedBindingAdminService(UserFederatedBindingRepository bindingRepository,
+                                        UserInfoRepository userRepository,
                                         AuditEventService auditEventService) {
         this.bindingRepository = bindingRepository;
+        this.userRepository = userRepository;
         this.auditEventService = auditEventService;
     }
 
@@ -67,9 +72,13 @@ public class FederatedBindingAdminService {
     }
 
     private FederatedBindingDTO.Response toResponse(UserFederatedBinding binding) {
+        UserInfo user = userRepository.findById(binding.getUserId()).orElse(null);
         return new FederatedBindingDTO.Response(
                 binding.getId(),
                 binding.getUserId(),
+                user != null ? user.getUsername() : null,
+                user != null ? user.getDisplayName() : null,
+                user != null ? user.getEmail() : null,
                 binding.getRegistrationId(),
                 binding.getProviderUserId(),
                 binding.getProviderUsername(),

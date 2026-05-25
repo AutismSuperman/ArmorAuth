@@ -35,8 +35,10 @@ public class IdentityProviderController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'APPLICATION_ADMIN')")
-    public ApiResponse<Page<IdentityProviderDTO.Response>> listProviders(Pageable pageable) {
-        return ApiResponse.ok(idpService.listProviders(pageable));
+    public ApiResponse<Page<IdentityProviderDTO.Response>> listProviders(
+            Pageable pageable,
+            @RequestParam(name = "source", required = false) String source) {
+        return ApiResponse.ok(idpService.listProviders(pageable, source));
     }
 
     @GetMapping("/{id}")
@@ -63,6 +65,15 @@ public class IdentityProviderController {
     public ApiResponse<Void> updateProviderStatus(@PathVariable String id, @RequestParam Boolean enabled) {
         idpService.updateProviderStatus(id, enabled);
         return ApiResponse.ok();
+    }
+
+    @PatchMapping("/{id}/login-display")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ApiResponse<IdentityProviderDTO.Response> updateProviderLoginDisplay(
+            @PathVariable String id,
+            @RequestBody IdentityProviderDTO.LoginDisplayRequest request) {
+        return ApiResponse.ok(idpService.updateProviderLoginDisplay(
+                id, request != null ? request.displayOnLogin() : null));
     }
 
     @PostMapping("/{id}:test")

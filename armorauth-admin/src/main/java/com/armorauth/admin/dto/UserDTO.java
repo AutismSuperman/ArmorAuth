@@ -43,6 +43,8 @@ public class UserDTO {
             String email,
             String phone,
             String avatar,
+            Boolean emailVerified,
+            Boolean phoneVerified,
             String profile
     ) {
     }
@@ -55,6 +57,8 @@ public class UserDTO {
             String email,
             String phone,
             String avatar,
+            Boolean emailVerified,
+            Boolean phoneVerified,
             String profile
     ) {
     }

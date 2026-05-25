@@ -19,6 +19,8 @@ import com.armorauth.data.entity.UserInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -47,5 +49,14 @@ public interface UserInfoRepository extends JpaRepository<UserInfo, String> {
     boolean existsByEmail(String email);
 
     Page<UserInfo> findByUsernameContainingIgnoreCase(String username, Pageable pageable);
+
+    @Query("""
+            SELECT u FROM UserInfo u
+            WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
+               OR LOWER(u.displayName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+               OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))
+               OR LOWER(u.phone) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            """)
+    Page<UserInfo> search(@Param("keyword") String keyword, Pageable pageable);
 
 }

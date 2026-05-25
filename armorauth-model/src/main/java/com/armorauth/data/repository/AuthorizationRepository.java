@@ -21,6 +21,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -46,5 +48,10 @@ public interface AuthorizationRepository  extends JpaRepository<Authorization, S
             " or a.deviceCodeValue = :token"
     )
     Optional<Authorization> findByStateOrAuthorizationCodeValueOrAccessTokenValueOrRefreshTokenValueOrOidcIdTokenValueOrUserCodeValueOrDeviceCodeValue(@Param("token") String token);
+
+    @Query("select a from Authorization a where a.accessTokenValue is not null" +
+            " and a.accessTokenIssuedAt >= :from" +
+            " and a.accessTokenIssuedAt < :to")
+    List<Authorization> findIssuedAccessTokens(@Param("from") Instant from, @Param("to") Instant to);
 
 }

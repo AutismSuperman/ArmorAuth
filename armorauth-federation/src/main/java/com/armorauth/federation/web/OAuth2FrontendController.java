@@ -19,6 +19,7 @@ import com.armorauth.authentication.CaptchaVerifyService;
 import com.armorauth.authentication.SmsOtpService;
 import com.armorauth.captcha.GraphicCaptchaService;
 import com.armorauth.data.entity.IdentityProvider;
+import com.armorauth.data.repository.IdentityProviderDisplayPreferenceRepository;
 import com.armorauth.data.repository.IdentityProviderRepository;
 import com.armorauth.federation.config.FederationProperties;
 import com.armorauth.data.entity.OAuth2Scope;
@@ -85,6 +86,8 @@ public class OAuth2FrontendController {
 
     private final IdentityProviderRepository identityProviderRepository;
 
+    private final IdentityProviderDisplayPreferenceRepository displayPreferenceRepository;
+
     private final RelyingPartyRegistrationRepository relyingPartyRegistrationRepository;
 
     private final OAuth2AuthorizationConsentService authorizationConsentService;
@@ -114,6 +117,7 @@ public class OAuth2FrontendController {
     public OAuth2FrontendController(RegisteredClientRepository registeredClientRepository,
                                     ClientRegistrationRepository clientRegistrationRepository,
                                     ObjectProvider<IdentityProviderRepository> identityProviderRepositoryProvider,
+                                    ObjectProvider<IdentityProviderDisplayPreferenceRepository> displayPreferenceRepositoryProvider,
                                     RelyingPartyRegistrationRepository relyingPartyRegistrationRepository,
                                     OAuth2AuthorizationConsentService authorizationConsentService,
                                     OAuth2ScopeRepository oAuth2ScopeRepository,
@@ -131,6 +135,7 @@ public class OAuth2FrontendController {
         this.registeredClientRepository = registeredClientRepository;
         this.clientRegistrationRepository = clientRegistrationRepository;
         this.identityProviderRepository = identityProviderRepositoryProvider.getIfAvailable();
+        this.displayPreferenceRepository = displayPreferenceRepositoryProvider.getIfAvailable();
         this.relyingPartyRegistrationRepository = relyingPartyRegistrationRepository;
         this.authorizationConsentService = authorizationConsentService;
         this.oAuth2ScopeRepository = oAuth2ScopeRepository;
@@ -374,6 +379,7 @@ public class OAuth2FrontendController {
                             provider.getProviderName(),
                             authorizationUrl(provider),
                             resolveIconKey(provider.getIconKey(), provider.getProviderType(), provider.getRegistrationId()),
+                            provider.getIconUrl(),
                             resolveIconText(provider.getIconKey(), provider.getProviderType(), provider.getRegistrationId()))));
         }
         if (this.clientRegistrationRepository instanceof Iterable<?> registrations) {
@@ -382,12 +388,16 @@ public class OAuth2FrontendController {
                     if (!knownRegistrationIds.add(clientRegistration.getRegistrationId())) {
                         continue;
                     }
+                    if (!isConfiguredProviderDisplayed(clientRegistration.getRegistrationId())) {
+                        continue;
+                    }
                     String iconKey = normalizeIconKey(clientRegistration.getRegistrationId());
                     providers.add(new FederatedLoginProvider(
                             clientRegistration.getRegistrationId(),
                             clientRegistration.getClientName(),
                             "/oauth2/authorization/" + clientRegistration.getRegistrationId(),
                             iconKey,
+                            null,
                             resolveIconText(iconKey, null, clientRegistration.getRegistrationId())));
                 }
             }
@@ -403,11 +413,21 @@ public class OAuth2FrontendController {
                             relyingPartyRegistration.getRegistrationId(),
                             "/saml2/authorization/" + relyingPartyRegistration.getRegistrationId(),
                             "saml",
+                            null,
                             "SSO"));
                 }
             }
         }
         return providers;
+    }
+
+    private boolean isConfiguredProviderDisplayed(String registrationId) {
+        if (this.displayPreferenceRepository == null || !StringUtils.hasText(registrationId)) {
+            return true;
+        }
+        return this.displayPreferenceRepository.findById(registrationId)
+                .map(preference -> preference.getDisplayOnLogin() == null || preference.getDisplayOnLogin())
+                .orElse(true);
     }
 
     private boolean isFederatedLoginProvider(IdentityProvider provider) {
@@ -507,14 +527,17 @@ public class OAuth2FrontendController {
 
         private final String iconKey;
 
+        private final String iconUrl;
+
         private final String iconText;
 
         public FederatedLoginProvider(String registrationId, String clientName, String authorizationUrl,
-                                      String iconKey, String iconText) {
+                                      String iconKey, String iconUrl, String iconText) {
             this.registrationId = registrationId;
             this.clientName = StringUtils.hasText(clientName) ? clientName : registrationId;
             this.authorizationUrl = authorizationUrl;
             this.iconKey = StringUtils.hasText(iconKey) ? iconKey : "custom";
+            this.iconUrl = StringUtils.hasText(iconUrl) ? iconUrl : null;
             this.iconText = StringUtils.hasText(iconText) ? iconText : "ID";
         }
 
@@ -532,6 +555,10 @@ public class OAuth2FrontendController {
 
         public String getIconKey() {
             return iconKey;
+        }
+
+        public String getIconUrl() {
+            return iconUrl;
         }
 
         public String getIconText() {

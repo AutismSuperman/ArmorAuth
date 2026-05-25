@@ -42,6 +42,8 @@ public class OAuth2Client implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
+
+    public static final String DEFAULT_ROLE_MFA_REQUIRED = "SUPER_ADMIN,TENANT_ADMIN";
     /**
      * id
      */
@@ -120,6 +122,12 @@ public class OAuth2Client implements Serializable {
      */
     @Column(name = "mfa_required")
     private Boolean mfaRequired = false;
+
+    /**
+     * 触发 MFA 的角色编码，逗号分隔。
+     */
+    @Column(name = "role_mfa_required", length = 500)
+    private String roleMfaRequired = DEFAULT_ROLE_MFA_REQUIRED;
 
 
     @Override

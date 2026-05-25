@@ -6,50 +6,27 @@
     <title>账号确认 - ArmorAuth</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
-    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026052402">
+    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026052408">
 </head>
-<body>
+<body class="authing-login-page identity-page" data-page-title-key="page.federatedConfirm.title">
 <div class="page-shell">
-    <main class="panel-frame">
-        <section class="visual-panel">
-            <div class="brand-row">
-                <div class="brand-chip brand-chip-logo">
-                    <img class="brand-logo" src="/brand/icon.svg" alt="ArmorAuth logo">
-                    <span class="brand-copy">
-                        <span>第三方账号确认</span>
-                    </span>
-                </div>
-                <div class="top-actions">
-                    <span class="status-pill">第三方登录</span>
-                    <button class="theme-toggle" type="button" data-theme-toggle>
-                        <span class="theme-toggle-icon" data-theme-icon>
-                            <svg class="icon-sun" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="5"></circle>
-                                <line x1="12" y1="1" x2="12" y2="3"></line>
-                                <line x1="12" y1="21" x2="12" y2="23"></line>
-                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                                <line x1="1" y1="12" x2="3" y2="12"></line>
-                                <line x1="21" y1="12" x2="23" y2="12"></line>
-                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                            </svg>
-                            <svg class="icon-moon" viewBox="0 0 24 24">
-                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                            </svg>
-                        </span>
-                        <span data-theme-text>深色</span>
-                    </button>
-                </div>
+    <main class="login-product-shell is-wide">
+        <section class="login-visual-panel" data-visual="federated">
+            <div class="login-brand">
+                <img class="login-brand-mark" src="/brand/icon.svg" alt="ArmorAuth logo">
+                <span>
+                    <strong>ArmorAuth</strong>
+                    <small>第三方账号确认</small>
+                </span>
             </div>
 
-            <div class="hero-copy">
-                <span class="eyebrow">账号确认</span>
+            <div class="login-visual-copy">
+                <span class="login-kicker">第三方登录</span>
                 <h1>确认第三方账号对应的本地身份。</h1>
                 <p>确认后即可继续进入账号服务。</p>
             </div>
 
-            <div class="confirm-stage">
+            <div class="confirm-stage compact-confirm-stage">
                 <div class="confirm-badge">
                     <span class="confirm-badge-label">待确认账号</span>
                     <strong>${pending.displayName()!pending.providerUsername()!'未提供'}</strong>
@@ -92,10 +69,42 @@
                 </div>
             </div>
         </section>
-        <section class="content-panel">
-            <div class="content-column">
-                <div class="section-title">
-                    <span class="eyebrow">本地账号</span>
+
+        <section class="login-card-panel">
+            <div class="login-card is-wide">
+                <div class="login-card-toolbar">
+                    <div class="login-card-logo">
+                        <img src="/brand/icon.svg" alt="ArmorAuth logo">
+                        <span>账号确认</span>
+                    </div>
+                    <div class="top-actions">
+                        <button class="locale-toggle" type="button" data-locale-toggle>
+                            <span data-locale-text>EN</span>
+                        </button>
+                        <button class="theme-toggle" type="button" data-theme-toggle>
+                            <span class="theme-toggle-icon" data-theme-icon>
+                                <svg class="icon-sun" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="5"></circle>
+                                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                                </svg>
+                                <svg class="icon-moon" viewBox="0 0 24 24">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                </svg>
+                            </span>
+                            <span data-theme-text>深色</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="login-card-title">
+                    <span class="login-card-kicker">本地账号</span>
                     <h1>确认账号</h1>
                     <p>创建新账号，或绑定到已有账号后继续。</p>
                 </div>
@@ -126,8 +135,8 @@
                             <input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" placeholder="请再次输入密码">
                         </div>
                         <div class="action-row action-row-between">
+                            <a class="button secondary" href="/federated/confirm/cancel">返回登录页</a>
                             <button class="button primary" type="submit">创建并完成登录</button>
-                            <a class="button secondary" href="/login?mode=confirm">返回登录页</a>
                         </div>
                     </form>
 
@@ -141,14 +150,14 @@
                             <input id="bind-password" name="password" type="password" autocomplete="current-password" placeholder="请输入已有账号密码">
                         </div>
                         <div class="action-row action-row-between">
+                            <a class="button secondary" href="/federated/confirm/cancel">返回登录页</a>
                             <button class="button primary" type="submit">绑定并完成登录</button>
-                            <a class="button secondary" href="/login?mode=confirm">返回登录页</a>
                         </div>
                     </form>
                 </div>
-            </div>
 
-            <p class="footer-copy">ArmorAuth 第三方接入</p>
+                <p class="footer-copy">ArmorAuth 第三方接入</p>
+            </div>
         </section>
     </main>
     <footer class="page-footer">
@@ -163,6 +172,6 @@
         </div>
     </footer>
 </div>
-<script src="/assets/armorauth-ui.js?v=20260524"></script>
+<script src="/assets/armorauth-ui.js?v=2026052404"></script>
 </body>
 </html>

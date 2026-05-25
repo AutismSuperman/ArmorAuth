@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 280" role="img" aria-label="Device activation">
+  <path fill="#93c5fd" fill-opacity=".18" d="M61 213c-26-30-16-89 18-123 43-42 116-51 171-29 50 20 79 69 64 110-16 45-75 65-128 68-48 3-98 4-125-26Z"/>
+  <rect x="74" y="72" width="152" height="104" rx="18" fill="#eff6ff"/>
+  <rect x="92" y="92" width="116" height="56" rx="12" fill="#fff"/>
+  <rect x="114" y="193" width="72" height="12" rx="6" fill="#bfdbfe"/>
+  <rect x="134" y="176" width="32" height="20" rx="6" fill="#2563eb"/>
+  <rect x="238" y="94" width="62" height="106" rx="20" fill="#dbeafe"/>
+  <rect x="249" y="113" width="40" height="58" rx="10" fill="#fff"/>
+  <circle cx="269" cy="185" r="6" fill="#2563eb"/>
+  <g fill="#2563eb">
+    <rect x="105" y="112" width="18" height="18" rx="5"/><rect x="132" y="112" width="18" height="18" rx="5"/>
+    <rect x="159" y="112" width="18" height="18" rx="5"/><rect x="186" y="112" width="18" height="18" rx="5"/>
+  </g>
+  <path fill="none" stroke="#60a5fa" stroke-linecap="round" stroke-width="5" d="M224 129c12-13 24-13 36 0"/>
+  <circle cx="72" cy="86" r="7" fill="#22c55e"/>
+</svg>

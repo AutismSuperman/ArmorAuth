@@ -51,7 +51,7 @@ export default [
         path: '/main/users',
         name: 'Users',
         component: () => import('../views/main/Users.vue'),
-        meta: { title: '用户管理' }
+        meta: { title: 'OAuth 用户' }
     },
     {
         path: '/main/organizations',

@@ -136,7 +136,7 @@ public class DefaultSecurityConfig {
         final AuthenticationSuccessHandler effectiveSuccessHandler =
                 authFactorRepository != null
                         ? new MfaAuthenticationSuccessHandler(authFactorRepository, authenticationSuccessHandler,
-                                mfaPolicyService, userInfoRepository)
+                                mfaPolicyService, userInfoRepository, requestCache)
                         : authenticationSuccessHandler;
 
         http.securityMatchers(securityMatchers -> securityMatchers
@@ -154,6 +154,7 @@ public class DefaultSecurityConfig {
                         .requestMatchers("/login/captcha/image").permitAll()
                         .requestMatchers("/login/captcha/info").permitAll()
                         .requestMatchers("/federated/confirm").permitAll()
+                        .requestMatchers("/federated/confirm/cancel").permitAll()
                         .requestMatchers("/federated/confirm/create").permitAll()
                         .requestMatchers("/federated/confirm/bind").permitAll()
                         .requestMatchers("/saml2/authorization/**").permitAll()

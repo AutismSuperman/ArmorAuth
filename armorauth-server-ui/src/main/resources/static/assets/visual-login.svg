@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 280" role="img" aria-label="Secure login">
+  <defs>
+    <linearGradient id="a" x1="88" x2="280" y1="54" y2="224" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#eff6ff"/><stop offset="1" stop-color="#bfdbfe"/>
+    </linearGradient>
+    <linearGradient id="b" x1="141" x2="234" y1="85" y2="178" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#60a5fa"/><stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <path fill="#93c5fd" fill-opacity=".18" d="M55 211c-25-35-8-96 37-129 52-38 127-33 177 1 43 29 54 81 25 116-31 37-94 38-145 37-40-1-76 0-94-25Z"/>
+  <rect x="82" y="56" width="196" height="144" rx="24" fill="url(#a)"/>
+  <rect x="107" y="82" width="84" height="13" rx="6.5" fill="#93c5fd"/>
+  <rect x="107" y="112" width="134" height="12" rx="6" fill="#dbeafe"/>
+  <rect x="107" y="140" width="104" height="12" rx="6" fill="#dbeafe"/>
+  <rect x="107" y="166" width="74" height="16" rx="8" fill="#2563eb"/>
+  <path fill="url(#b)" d="M231 77 267 92v27c0 33-24 56-36 61-12-5-36-28-36-61V92l36-15Z"/>
+  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="7" d="m214 119 12 12 24-30"/>
+  <circle cx="75" cy="88" r="9" fill="#60a5fa" opacity=".8"/>
+  <circle cx="303" cy="190" r="7" fill="#22c55e" opacity=".85"/>
+  <rect x="129" y="214" width="102" height="12" rx="6" fill="#0f172a" opacity=".12"/>
+</svg>

@@ -1,38 +1,44 @@
-# ArmorAuth Mock System
+# ArmorAuth Development Seed Profile
 
-这套 mock profile 用 H2 本地库启动完整服务端，并补充用户、租户、组织、OAuth2 应用、身份源、Webhook、审计事件和 token 统计数据。
+ArmorAuth includes a development-oriented seed profile for local UI and API exploration. It is not part of the production deployment model.
 
-## 启动服务端
+## Purpose
 
-```powershell
-$env:SystemRoot='C:\WINDOWS'; $env:windir='C:\WINDOWS'; $env:COMSPEC='C:\WINDOWS\system32\cmd.exe'; $env:HTTP_PROXY='http://127.0.0.1:7897'; $env:HTTPS_PROXY='http://127.0.0.1:7897'; $env:ALL_PROXY='http://127.0.0.1:7897'; $env:JAVA_HOME="$env:USERPROFILE\.jdks\temurin-21.0.11"; $env:MAVEN_HOME="$env:USERPROFILE\.maven\apache-maven-3.9.9"; $env:PATH="$env:JAVA_HOME\bin;$env:MAVEN_HOME\bin;$env:PATH"; $env:MAVEN_OPTS='-Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=7897 -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=7897'; mvn -pl armorauth-server -am spring-boot:run "-Dspring-boot.run.profiles=mock"
+The profile creates representative data for:
+
+- Users and roles.
+- Tenants and organizations.
+- OAuth2/OIDC applications.
+- Identity providers.
+- Webhooks.
+- Audit events.
+- Token statistics.
+
+This helps contributors work on management screens and integration flows without preparing every record manually.
+
+## Usage
+
+Run the server with the `mock` profile from a local development environment:
+
+```bash
+mvn -pl armorauth-server -am spring-boot:run -Dspring-boot.run.profiles=mock
 ```
 
-服务默认监听 `http://localhost:9000`，H2 文件库在 `.runtime/h2/identity_server_mock`。
+The profile uses an H2 file database under the local runtime directory. Do not commit generated runtime files.
 
-## Mock 账号
+## Seed Accounts
 
-所有 mock 账号密码都是 `admin123`：
+Seed accounts are intended for local development only. Passwords and test users must not be reused in shared environments.
 
-| 用户名 | 手机号 | 角色 |
-| --- | --- | --- |
-| `admin` | `13103777777` | 超级管理员 |
-| `app.manager` | `13900000001` | 应用管理员 |
-| `audit.viewer` | `13900000002` | 审计查看者 |
-| `demo.user` | `13900000003` | 普通用户 |
+| Username | Role |
+| --- | --- |
+| `admin` | Super administrator |
+| `app.manager` | Application administrator |
+| `audit.viewer` | Audit reviewer |
+| `demo.user` | Regular user |
 
-mock profile 会开启 `armorauth.captcha.sms.expose-code=true`，短信验证码登录时页面会显示本次 OTP。
+## Notes For Contributors
 
-## 样例测试
-
-Java samples 要从 samples 父 POM 跑，根目录 `-pl armorauth-samples` 只会跑聚合 POM：
-
-```powershell
-$env:SystemRoot='C:\WINDOWS'; $env:windir='C:\WINDOWS'; $env:COMSPEC='C:\WINDOWS\system32\cmd.exe'; $env:HTTP_PROXY='http://127.0.0.1:7897'; $env:HTTPS_PROXY='http://127.0.0.1:7897'; $env:ALL_PROXY='http://127.0.0.1:7897'; $env:JAVA_HOME="$env:USERPROFILE\.jdks\temurin-21.0.11"; $env:MAVEN_HOME="$env:USERPROFILE\.maven\apache-maven-3.9.9"; $env:PATH="$env:JAVA_HOME\bin;$env:MAVEN_HOME\bin;$env:PATH"; $env:MAVEN_OPTS='-Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=7897 -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=7897'; mvn -f armorauth-samples/pom.xml test
-```
-
-React PKCE sample 使用 `react-spa-pkce` 客户端：
-
-```powershell
-$env:SystemRoot='C:\WINDOWS'; $env:windir='C:\WINDOWS'; $env:COMSPEC='C:\WINDOWS\system32\cmd.exe'; $env:HTTP_PROXY='http://127.0.0.1:7897'; $env:HTTPS_PROXY='http://127.0.0.1:7897'; $env:ALL_PROXY='http://127.0.0.1:7897'; cd armorauth-samples/armorauth-samples-react-pkce; npm install; npm run build
-```
+- Keep seed data realistic enough to exercise the admin console.
+- Keep local machine paths, proxy settings, PIDs, logs, and transient command output out of this document.
+- Prefer adding reusable seed records over documenting one-off manual setup.

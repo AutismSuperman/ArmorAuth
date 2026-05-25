@@ -20,24 +20,29 @@ import com.armorauth.common.audit.AuditContext;
 import com.armorauth.common.exception.ResourceNotFoundException;
 import com.armorauth.data.entity.OAuth2Client;
 import com.armorauth.data.repository.OAuth2ClientRepository;
+import com.armorauth.data.repository.RoleRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class LoginPolicyService {
 
-    private static final List<String> ROLE_MFA_REQUIRED = List.of("SUPER_ADMIN", "TENANT_ADMIN");
-
     private final OAuth2ClientRepository clientRepository;
+    private final RoleRepository roleRepository;
     private final AuditEventService auditEventService;
 
     public LoginPolicyService(OAuth2ClientRepository clientRepository,
+                              RoleRepository roleRepository,
                               AuditEventService auditEventService) {
         this.clientRepository = clientRepository;
+        this.roleRepository = roleRepository;
         this.auditEventService = auditEventService;
     }
 
@@ -57,6 +62,9 @@ public class LoginPolicyService {
         OAuth2Client client = findClient(id);
         if (request.mfaRequired() != null) {
             client.setMfaRequired(request.mfaRequired());
+        }
+        if (request.roleMfaRequired() != null) {
+            client.setRoleMfaRequired(formatRoleCodes(request.roleMfaRequired()));
         }
         client = clientRepository.save(client);
 
@@ -79,8 +87,33 @@ public class LoginPolicyService {
                 client.getClientId(),
                 client.getClientName(),
                 Boolean.TRUE.equals(client.getMfaRequired()),
-                ROLE_MFA_REQUIRED,
+                parseRoleCodes(client.getRoleMfaRequired()),
                 client.getClientIdIssuedAt()
         );
+    }
+
+    private String formatRoleCodes(List<String> roleCodes) {
+        Set<String> normalized = new LinkedHashSet<>();
+        for (String roleCode : roleCodes) {
+            if (roleCode == null || roleCode.isBlank()) {
+                continue;
+            }
+            String resolved = roleRepository.findByRoleCodeIgnoreCase(roleCode.trim())
+                    .orElseThrow(() -> new IllegalArgumentException("角色不存在: " + roleCode))
+                    .getRoleCode();
+            normalized.add(resolved);
+        }
+        return String.join(",", normalized);
+    }
+
+    private List<String> parseRoleCodes(String roleCodes) {
+        if (roleCodes == null || roleCodes.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(roleCodes.split(","))
+                .map(String::trim)
+                .filter(role -> !role.isBlank())
+                .distinct()
+                .toList();
     }
 }

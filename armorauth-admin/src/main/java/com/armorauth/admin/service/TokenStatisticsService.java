@@ -16,15 +16,25 @@
 package com.armorauth.admin.service;
 
 import com.armorauth.common.audit.SecurityAuditEvent;
+import com.armorauth.data.entity.Authorization;
+import com.armorauth.data.entity.OAuth2Client;
 import com.armorauth.data.entity.TokenStatistics;
+import com.armorauth.data.repository.AuthorizationRepository;
+import com.armorauth.data.repository.OAuth2ClientRepository;
 import com.armorauth.data.repository.TokenStatisticsRepository;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Token 签发统计服务
@@ -36,9 +46,15 @@ import java.util.List;
 public class TokenStatisticsService {
 
     private final TokenStatisticsRepository statsRepository;
+    private final AuthorizationRepository authorizationRepository;
+    private final OAuth2ClientRepository clientRepository;
 
-    public TokenStatisticsService(TokenStatisticsRepository statsRepository) {
+    public TokenStatisticsService(TokenStatisticsRepository statsRepository,
+                                  AuthorizationRepository authorizationRepository,
+                                  OAuth2ClientRepository clientRepository) {
         this.statsRepository = statsRepository;
+        this.authorizationRepository = authorizationRepository;
+        this.clientRepository = clientRepository;
     }
 
     @EventListener
@@ -77,14 +93,17 @@ public class TokenStatisticsService {
 
     @Transactional(readOnly = true)
     public List<TokenStatistics> getStatistics(String clientId, LocalDate from, LocalDate to) {
-        return statsRepository.findByClientIdAndDateBetween(clientId, from, to);
+        List<TokenStatistics> persisted = sortStatistics(
+                statsRepository.findByClientIdAndDateBetween(clientId, from, to));
+        return persisted.isEmpty() ? buildAuthorizationSummary(clientId, from, to) : persisted;
     }
 
     @Transactional(readOnly = true)
     public List<TokenStatistics> getSummary(LocalDate from, LocalDate to) {
-        return statsRepository.findAll().stream()
+        List<TokenStatistics> persisted = statsRepository.findAll().stream()
                 .filter(s -> !s.getDate().isBefore(from) && !s.getDate().isAfter(to))
                 .toList();
+        return persisted.isEmpty() ? buildAuthorizationSummary(null, from, to) : sortStatistics(persisted);
     }
 
     private String extractGrantType(String detail) {
@@ -94,5 +113,65 @@ public class TokenStatisticsService {
         if (detail.contains("refresh_token")) return "refresh_token";
         if (detail.contains("device_code")) return "urn:ietf:params:oauth:grant-type:device_code";
         return "unknown";
+    }
+
+    private List<TokenStatistics> buildAuthorizationSummary(String clientIdFilter, LocalDate from, LocalDate to) {
+        ZoneId zoneId = ZoneId.systemDefault();
+        Instant fromInstant = from.atStartOfDay(zoneId).toInstant();
+        Instant toInstant = to.plusDays(1).atStartOfDay(zoneId).toInstant();
+        Map<String, String> clientIdCache = new HashMap<>();
+        Map<String, TokenStatistics> summaries = new HashMap<>();
+
+        for (Authorization authorization : authorizationRepository.findIssuedAccessTokens(fromInstant, toInstant)) {
+            String clientId = clientIdCache.computeIfAbsent(authorization.getRegisteredClientId(), this::resolveClientId);
+            if (StringUtils.hasText(clientIdFilter) && !clientIdFilter.equals(clientId)) {
+                continue;
+            }
+
+            LocalDate date = authorization.getAccessTokenIssuedAt().atZone(zoneId).toLocalDate();
+            String grantType = StringUtils.hasText(authorization.getAuthorizationGrantType())
+                    ? authorization.getAuthorizationGrantType()
+                    : "unknown";
+            String tokenType = "ACCESS_TOKEN";
+            String key = clientId + "|" + grantType + "|" + tokenType + "|" + date;
+            TokenStatistics stats = summaries.computeIfAbsent(key, ignored -> {
+                TokenStatistics s = new TokenStatistics();
+                s.setId("live|" + key);
+                s.setClientId(clientId);
+                s.setGrantType(grantType);
+                s.setTokenType(tokenType);
+                s.setDate(date);
+                s.setCount(0L);
+                return s;
+            });
+
+            stats.setCount(stats.getCount() + 1);
+            Instant issuedAt = authorization.getAccessTokenIssuedAt();
+            if (stats.getLastIssuedAt() == null || issuedAt.isAfter(stats.getLastIssuedAt())) {
+                stats.setLastIssuedAt(issuedAt);
+            }
+        }
+
+        return sortStatistics(new ArrayList<>(summaries.values()));
+    }
+
+    private String resolveClientId(String registeredClientId) {
+        if (!StringUtils.hasText(registeredClientId)) {
+            return "unknown";
+        }
+        return clientRepository.findOAuth2ClientById(registeredClientId)
+                .map(OAuth2Client::getClientId)
+                .orElse(registeredClientId);
+    }
+
+    private List<TokenStatistics> sortStatistics(List<TokenStatistics> statistics) {
+        return statistics.stream()
+                .sorted(Comparator.comparing(TokenStatistics::getDate,
+                                Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(TokenStatistics::getClientId,
+                                Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(TokenStatistics::getGrantType,
+                                Comparator.nullsLast(Comparator.naturalOrder())))
+                .toList();
     }
 }

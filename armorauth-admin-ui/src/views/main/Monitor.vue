@@ -38,6 +38,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { message } from 'ant-design-vue'
 import { getAuditEvents, getTokenSummary } from '../../api'
 import dayjs from 'dayjs'
 
@@ -51,14 +52,18 @@ const tokenColumns = [
   { title: 'Client ID', dataIndex: 'clientId', key: 'clientId', ellipsis: true },
   { title: '授权类型', dataIndex: 'grantType', key: 'grantType', width: 160 },
   { title: 'Token 类型', dataIndex: 'tokenType', key: 'tokenType', width: 130 },
-  { title: '签发次数', key: 'count', width: 100 }
+  { title: '签发次数', key: 'count', width: 100 },
+  { title: '最近签发', dataIndex: 'lastIssuedAt', key: 'lastIssuedAt', width: 180, customRender: ({ text }) => formatTime(text) }
 ]
 
 const fetchData = async () => {
   loading.value = true
   try {
-    const from = dateRange.value[0].format('YYYY-MM-DD')
-    const to = dateRange.value[1].format('YYYY-MM-DD')
+    const range = dateRange.value?.[0] && dateRange.value?.[1]
+      ? dateRange.value
+      : [dayjs().subtract(7, 'day'), dayjs()]
+    const from = range[0].format('YYYY-MM-DD')
+    const to = range[1].format('YYYY-MM-DD')
     const res = await getTokenSummary(from, to)
     tokenStats.value = res.data || []
     try {
@@ -66,10 +71,16 @@ const fetchData = async () => {
       stats.loginFailure = (await getAuditEvents(0, 1, 'LOGIN_FAILURE')).data?.totalElements || 0
       stats.tokenIssued = (await getAuditEvents(0, 1, 'TOKEN_ISSUED')).data?.totalElements || 0
       stats.mfaChallenge = (await getAuditEvents(0, 1, 'MFA_CHALLENGE')).data?.totalElements || 0
-    } catch (e) { /* ignore */ }
-  } catch (e) { /* ignore */ }
+    } catch (e) {
+      message.warning('概览指标加载失败: ' + e.message)
+    }
+  } catch (e) {
+    message.error('Token 签发统计加载失败: ' + e.message)
+  }
   finally { loading.value = false }
 }
+
+const formatTime = value => value ? dayjs(value).format('YYYY-MM-DD HH:mm:ss') : '-'
 
 onMounted(fetchData)
 </script>

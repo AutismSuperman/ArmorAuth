@@ -8,6 +8,7 @@ target/
 ### Local runtime / Codex artifacts ###
 .codex-temp/
 .playwright-cli/
+.runtime/
 logs/
 output/
 *.log

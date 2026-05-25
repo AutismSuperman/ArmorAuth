@@ -31,6 +31,7 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
@@ -128,8 +129,10 @@ public class AuthorizationServerConfig {
     @Bean
     public OAuth2AuthorizationService authorizationService(
             AuthorizationRepository authorizationRepository,
-            RegisteredClientRepository registeredClientRepository) {
-        return new JpaOAuth2AuthorizationService(authorizationRepository, registeredClientRepository);
+            RegisteredClientRepository registeredClientRepository,
+            ApplicationEventPublisher applicationEventPublisher) {
+        return new JpaOAuth2AuthorizationService(authorizationRepository, registeredClientRepository,
+                applicationEventPublisher);
     }
 
     @Bean

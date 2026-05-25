@@ -2,10 +2,17 @@
   <div class="page-container">
     <div class="page-header">
       <h2>身份源管理</h2>
-      <a-button type="primary" @click="showCreate">
-        <template #icon><PlusOutlined /></template>
-        添加身份源
-      </a-button>
+      <div class="page-actions">
+        <a-select
+          v-model:value="sourceFilter"
+          :options="sourceOptions"
+          class="source-filter"
+          @change="handleSourceFilterChange" />
+        <a-button type="primary" @click="showCreate">
+          <template #icon><PlusOutlined /></template>
+          添加身份源
+        </a-button>
+      </div>
     </div>
 
     <a-table :dataSource="providers" :columns="columns" :loading="loading"
@@ -18,23 +25,35 @@
           </a-tag>
         </template>
         <template v-if="column.key === 'icon'">
-          <a-tag :color="iconMeta(record.iconKey, record.providerType).color" class="provider-tag">
+          <span v-if="record.iconUrl" class="provider-uploaded-tag">
+            <img :src="record.iconUrl" alt="" />
+            自定义上传
+          </span>
+          <a-tag v-else :color="iconMeta(record.iconKey, record.providerType).color" class="provider-tag">
             <component :is="iconMeta(record.iconKey, record.providerType).icon" />
             {{ iconMeta(record.iconKey, record.providerType).label }}
           </a-tag>
         </template>
-        <template v-if="column.key === 'displayOnLogin'">
-          <a-tag v-if="record.providerType === 'LDAP'">不适用</a-tag>
-          <a-tag v-else :color="record.displayOnLogin === false ? 'default' : 'green'">
-            {{ record.displayOnLogin === false ? '隐藏' : '显示' }}
+        <template v-if="column.key === 'source'">
+          <a-tag :color="sourceColor(record)">
+            {{ sourceLabel(record) }}
           </a-tag>
         </template>
+        <template v-if="column.key === 'displayOnLogin'">
+          <a-tag v-if="record.providerType === 'LDAP'">不适用</a-tag>
+          <a-switch v-else :checked="record.displayOnLogin !== false"
+                    :loading="record.displayUpdating"
+                    @change="val => toggleLoginDisplay(record, val)"
+                    checked-children="显示" un-checked-children="隐藏" />
+        </template>
         <template v-if="column.key === 'status'">
-          <a-switch :checked="record.enabled" @change="val => toggleStatus(record, val)"
+          <a-tag v-if="isConfigProvider(record)" color="green">配置生效</a-tag>
+          <a-switch v-else :checked="record.enabled" @change="val => toggleStatus(record, val)"
                     checked-children="启用" un-checked-children="禁用" />
         </template>
         <template v-if="column.key === 'action'">
-          <a-space>
+          <a-space v-if="!isConfigProvider(record)">
+            <a @click="showConfig(record)">查看配置</a>
             <a @click="showEdit(record)">编辑</a>
             <a @click="handleTest(record, false)">测试</a>
             <a-popconfirm title="远程探测会访问身份源配置的外部 URL，确认执行？" @confirm="handleTest(record, true)">
@@ -48,6 +67,10 @@
               <a style="color: #ff4d4f">删除</a>
             </a-popconfirm>
           </a-space>
+          <a-space v-else>
+            <a @click="showConfig(record)">查看配置</a>
+            <a-typography-text type="secondary">配置文件只读</a-typography-text>
+          </a-space>
         </template>
       </template>
     </a-table>
@@ -58,7 +81,7 @@
         <a-form-item label="提供商类型" required>
           <div class="provider-type-grid" :class="{ disabled: isEdit }">
             <button
-              v-for="type in providerTypes"
+              v-for="type in providerTypeOptions"
               :key="type.value"
               type="button"
               class="provider-type-option"
@@ -74,17 +97,38 @@
         <a-row v-if="form.providerType !== 'LDAP'" :gutter="16">
           <a-col :span="15">
             <a-form-item label="登录页图标">
-              <div class="idp-icon-grid">
+              <div class="idp-icon-toolbar">
+                <a-segmented
+                  v-model:value="iconMode"
+                  :options="iconModeOptions" />
+              </div>
+              <div v-if="iconMode === 'library'" class="idp-icon-grid">
                 <button
                   v-for="option in iconOptions"
                   :key="option.value"
                   type="button"
                   class="idp-icon-option"
-                  :class="{ active: form.iconKey === option.value }"
-                  @click="form.iconKey = option.value">
+                  :class="{ active: form.iconKey === option.value && !form.iconUrl }"
+                  @click="selectIcon(option.value)">
                   <component :is="option.icon" />
                   <span>{{ option.label }}</span>
                 </button>
+              </div>
+              <div v-else class="idp-icon-upload-panel">
+                <a-upload
+                  :show-upload-list="false"
+                  :before-upload="beforeIconUpload"
+                  accept="image/svg+xml,image/png,image/jpeg,image/webp">
+                  <a-button>
+                    <template #icon><UploadOutlined /></template>
+                    上传图标
+                  </a-button>
+                </a-upload>
+                <div v-if="form.iconUrl" class="idp-icon-upload-preview">
+                  <img :src="form.iconUrl" alt="" />
+                  <a-button type="link" size="small" @click="clearUploadedIcon">移除</a-button>
+                </div>
+                <a-typography-text type="secondary">支持 SVG、PNG、JPG、WebP，建议 200KB 内。</a-typography-text>
               </div>
             </a-form-item>
           </a-col>
@@ -297,6 +341,162 @@
       </a-form>
     </a-modal>
 
+    <a-modal v-model:open="configVisible" title="查看身份源配置" :footer="null" width="840px">
+      <template v-if="configRecord">
+        <div class="config-view-header">
+          <div>
+            <div class="config-view-title">{{ configRecord.providerName }}</div>
+            <div class="config-view-subtitle">{{ configRecord.registrationId }}</div>
+          </div>
+          <a-space>
+            <a-tag :color="sourceColor(configRecord)">{{ sourceLabel(configRecord) }}</a-tag>
+            <a-tag :color="configRecord.readOnly ? 'orange' : 'green'">
+              {{ configRecord.readOnly ? '只读' : '可编辑' }}
+            </a-tag>
+          </a-space>
+        </div>
+
+        <a-descriptions bordered size="small" :column="2" class="config-descriptions">
+          <a-descriptions-item label="提供商类型">
+            <a-tag :color="providerMeta(configRecord.providerType).color" class="provider-tag">
+              <component :is="providerMeta(configRecord.providerType).icon" />
+              {{ providerMeta(configRecord.providerType).label }}
+            </a-tag>
+          </a-descriptions-item>
+          <a-descriptions-item label="登录页">
+            {{ configRecord.providerType === 'LDAP' ? '不适用' : displayText(configRecord.displayOnLogin !== false ? '显示' : '隐藏') }}
+          </a-descriptions-item>
+          <a-descriptions-item label="Client ID">
+            <span class="config-value">{{ displayText(configRecord.clientId) }}</span>
+          </a-descriptions-item>
+          <a-descriptions-item label="状态">
+            {{ isConfigProvider(configRecord) ? '配置生效' : (configRecord.enabled ? '启用' : '禁用') }}
+          </a-descriptions-item>
+          <a-descriptions-item label="链接策略">{{ displayText(configRecord.linkingStrategy) }}</a-descriptions-item>
+          <a-descriptions-item label="顺序">{{ displayText(configRecord.displayOrder) }}</a-descriptions-item>
+          <a-descriptions-item label="图标">
+            <span v-if="configRecord.iconUrl" class="provider-uploaded-tag">
+              <img :src="configRecord.iconUrl" alt="" />
+              自定义上传
+            </span>
+            <a-tag v-else :color="iconMeta(configRecord.iconKey, configRecord.providerType).color" class="provider-tag">
+              <component :is="iconMeta(configRecord.iconKey, configRecord.providerType).icon" />
+              {{ iconMeta(configRecord.iconKey, configRecord.providerType).label }}
+            </a-tag>
+          </a-descriptions-item>
+          <a-descriptions-item label="更新时间">{{ displayText(configRecord.updatedAt) }}</a-descriptions-item>
+        </a-descriptions>
+
+        <template v-if="configRecord.providerType !== 'SAML' && configRecord.providerType !== 'LDAP'">
+          <a-divider orientation="left">OAuth / OIDC</a-divider>
+          <a-descriptions bordered size="small" :column="1" class="config-descriptions">
+            <a-descriptions-item label="回调地址">
+              <span class="config-value">{{ displayText(configRecord.redirectUri) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="授权类型">
+              <span class="config-value">{{ displayText(configRecord.authorizationGrantType) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="客户端认证">
+              <span class="config-value">{{ displayText(configRecord.clientAuthenticationMethod) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="用户 ID 映射">
+              <span class="config-value">{{ displayText(configRecord.userNameAttributeName) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="Authorization URI">
+              <span class="config-value">{{ displayText(configRecord.authorizationUri) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="Token URI">
+              <span class="config-value">{{ displayText(configRecord.tokenUri) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="UserInfo URI">
+              <span class="config-value">{{ displayText(configRecord.userinfoUri) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="JWK Set URI">
+              <span class="config-value">{{ displayText(configRecord.jwkSetUri) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="Scopes">
+              <span class="config-value">{{ displayText(configRecord.scopes) }}</span>
+            </a-descriptions-item>
+          </a-descriptions>
+        </template>
+
+        <template v-if="configRecord.providerType === 'SAML'">
+          <a-divider orientation="left">SAML</a-divider>
+          <a-descriptions bordered size="small" :column="1" class="config-descriptions">
+            <a-descriptions-item label="IdP Entity ID">
+              <span class="config-value">{{ displayText(configRecord.samlEntityId) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="Metadata URL">
+              <span class="config-value">{{ displayText(configRecord.samlMetadataUrl) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="SSO URL">
+              <span class="config-value">{{ displayText(configRecord.samlSsoUrl) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="SLO URL">
+              <span class="config-value">{{ displayText(configRecord.samlSloUrl) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="SP Entity ID">
+              <span class="config-value">{{ displayText(configRecord.samlSpEntityId) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="ACS URL">
+              <span class="config-value">{{ displayText(configRecord.samlAcsUrl) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="NameID Format">
+              <span class="config-value">{{ displayText(configRecord.samlNameIdFormat) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="X.509 Certificate">
+              <pre class="config-pre">{{ displayText(configRecord.samlX509Certificate) }}</pre>
+            </a-descriptions-item>
+          </a-descriptions>
+        </template>
+
+        <template v-if="configRecord.providerType === 'LDAP'">
+          <a-divider orientation="left">LDAP / AD</a-divider>
+          <a-descriptions bordered size="small" :column="2" class="config-descriptions">
+            <a-descriptions-item label="LDAP URL">
+              <span class="config-value">{{ displayText(configRecord.ldapUrl) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="Base DN">
+              <span class="config-value">{{ displayText(configRecord.ldapBaseDn) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="Bind DN">
+              <span class="config-value">{{ displayText(configRecord.ldapBindDn) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="Bind Password">
+              {{ configRecord.ldapBindPasswordConfigured ? '已配置' : '未配置' }}
+            </a-descriptions-item>
+            <a-descriptions-item label="User Search Base">
+              <span class="config-value">{{ displayText(configRecord.ldapUserSearchBase) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="User Search Filter">
+              <span class="config-value">{{ displayText(configRecord.ldapUserSearchFilter) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="Username Attribute">
+              <span class="config-value">{{ displayText(configRecord.ldapUsernameAttribute) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="Email Attribute">
+              <span class="config-value">{{ displayText(configRecord.ldapEmailAttribute) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="Phone Attribute">
+              <span class="config-value">{{ displayText(configRecord.ldapPhoneAttribute) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="Display Name Attribute">
+              <span class="config-value">{{ displayText(configRecord.ldapDisplayNameAttribute) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="Group Attribute">
+              <span class="config-value">{{ displayText(configRecord.ldapGroupAttribute) }}</span>
+            </a-descriptions-item>
+            <a-descriptions-item label="Page Size">{{ displayText(configRecord.ldapPageSize) }}</a-descriptions-item>
+            <a-descriptions-item label="LDAPS">{{ configRecord.ldapUseSsl ? '是' : '否' }}</a-descriptions-item>
+            <a-descriptions-item label="StartTLS">{{ configRecord.ldapStartTls ? '是' : '否' }}</a-descriptions-item>
+          </a-descriptions>
+        </template>
+
+        <a-divider orientation="left">属性映射</a-divider>
+        <pre class="config-pre">{{ displayText(configRecord.attributeMapping) }}</pre>
+      </template>
+    </a-modal>
+
     <a-modal v-model:open="testVisible" title="身份源测试结果" :footer="null" width="640px">
       <a-alert :type="testResult.success ? 'success' : 'error'"
                :message="testResult.message || (testResult.success ? '配置检查通过' : '配置检查失败')"
@@ -341,7 +541,8 @@ import {
   SafetyCertificateOutlined,
   TeamOutlined,
   WechatOutlined,
-  PlusOutlined
+  PlusOutlined,
+  UploadOutlined
 } from '@ant-design/icons-vue'
 import {
   getIdentityProviders,
@@ -349,6 +550,7 @@ import {
   updateIdentityProvider,
   deleteIdentityProvider,
   updateIdpStatus,
+  updateIdpLoginDisplay,
   testIdentityProvider,
   syncIdentityProviderUsers
 } from '../../api'
@@ -359,11 +561,40 @@ const modalVisible = ref(false)
 const submitting = ref(false)
 const isEdit = ref(false)
 const editId = ref(null)
+const configVisible = ref(false)
+const configRecord = ref(null)
 const testVisible = ref(false)
 const testResult = ref({ success: false, message: '', checks: {} })
 const syncVisible = ref(false)
 const syncResult = ref({})
-const pagination = reactive({ current: 1, pageSize: 20, total: 0 })
+const sourceFilter = ref('ALL')
+const iconMode = ref('library')
+const pagination = reactive({
+  current: 1,
+  pageSize: 50,
+  total: 0,
+  showSizeChanger: true,
+  pageSizeOptions: ['20', '50', '100'],
+  showTotal: total => `共 ${total} 个身份源`
+})
+
+const sourceOptions = [
+  { label: '全部来源', value: 'ALL' },
+  { label: '配置文件提供', value: 'CONFIG_FILE' },
+  { label: '管理端配置', value: 'DATABASE' }
+]
+
+const iconModeOptions = [
+  { label: '图标库', value: 'library' },
+  { label: '上传图片', value: 'upload' }
+]
+
+const providerTypeOptions = [
+  { value: 'CUSTOM', label: 'Custom', description: '自定义 OAuth2', icon: ApiOutlined, color: 'default' },
+  { value: 'OIDC', label: 'OIDC', description: '标准协议', icon: CloudServerOutlined, color: 'blue' },
+  { value: 'SAML', label: 'SAML', description: '企业 SSO', icon: SafetyCertificateOutlined, color: 'purple' },
+  { value: 'LDAP', label: 'LDAP / AD', description: '目录服务', icon: ApartmentOutlined, color: 'green' }
+]
 
 const providerTypes = [
   { value: 'OIDC', label: 'OIDC', description: '标准协议', icon: CloudServerOutlined, color: 'blue' },
@@ -384,6 +615,7 @@ const providerMeta = (type) => providerMetaMap[type] || providerMetaMap.CUSTOM
 const defaultIconKey = (type) => (type || 'CUSTOM').toLowerCase().replace(/_/g, '-')
 const normalizeIconKey = (key) => (key || '').toString().trim().toLowerCase().replace(/_/g, '-')
 const iconOptions = [
+  { value: 'custom', label: 'Custom', icon: ApiOutlined, color: 'default' },
   { value: 'oidc', label: 'OIDC', icon: CloudServerOutlined, color: 'blue' },
   { value: 'saml', label: 'SSO', icon: SafetyCertificateOutlined, color: 'purple' },
   { value: 'wechat', label: '微信', icon: WechatOutlined, color: 'green' },
@@ -395,14 +627,24 @@ const iconOptions = [
   { value: 'gitee', label: 'Gitee', icon: CodeOutlined, color: 'red' },
   { value: 'github', label: 'GitHub', icon: CodeOutlined, color: 'default' },
   { value: 'google', label: 'Google', icon: CloudServerOutlined, color: 'blue' },
-  { value: 'custom', label: 'Custom', icon: ApiOutlined, color: 'default' }
+  { value: 'facebook', label: 'Facebook', icon: CloudServerOutlined, color: 'blue' },
+  { value: 'microsoft', label: 'Microsoft', icon: BankOutlined, color: 'blue' },
+  { value: 'gitlab', label: 'GitLab', icon: CodeOutlined, color: 'orange' },
+  { value: 'discord', label: 'Discord', icon: TeamOutlined, color: 'geekblue' },
+  { value: 'slack', label: 'Slack', icon: TeamOutlined, color: 'purple' },
+  { value: 'linkedin', label: 'LinkedIn', icon: TeamOutlined, color: 'blue' },
+  { value: 'apple', label: 'Apple', icon: CloudServerOutlined, color: 'default' },
+  { value: 'weibo', label: '微博', icon: TeamOutlined, color: 'red' },
+  { value: 'baidu', label: '百度', icon: CloudServerOutlined, color: 'blue' },
+  { value: 'douyin', label: '抖音', icon: TeamOutlined, color: 'default' },
+  { value: 'oschina', label: 'OSChina', icon: CodeOutlined, color: 'green' }
 ]
 const iconMetaMap = Object.fromEntries(iconOptions.map(option => [option.value, option]))
 const iconMeta = (key, providerType) =>
   iconMetaMap[normalizeIconKey(key)] || iconMetaMap[defaultIconKey(providerType)] || iconMetaMap.custom
 
 const form = reactive({
-  providerName: '', providerType: 'OIDC', registrationId: '', clientId: '', clientSecret: '',
+  providerName: '', providerType: 'CUSTOM', registrationId: '', clientId: '', clientSecret: '',
   authorizationUri: '', tokenUri: '', userinfoUri: '', jwkSetUri: '', scopes: '',
   samlEntityId: '', samlSsoUrl: '', samlSloUrl: '', samlX509Certificate: '',
   samlMetadataUrl: '', samlSpEntityId: '', samlAcsUrl: '', samlNameIdFormat: '',
@@ -411,7 +653,7 @@ const form = reactive({
   ldapUsernameAttribute: 'uid', ldapEmailAttribute: 'mail', ldapPhoneAttribute: 'telephoneNumber',
   ldapDisplayNameAttribute: 'displayName', ldapGroupAttribute: 'memberOf',
   ldapUseSsl: false, ldapStartTls: false, ldapPageSize: 200,
-  iconKey: 'oidc', displayOnLogin: true,
+  iconKey: 'custom', iconUrl: '', displayOnLogin: true,
   attributeMapping: '', linkingStrategy: 'AUTO_REGISTER', displayOrder: 0
 })
 
@@ -419,13 +661,14 @@ const columns = [
   { title: '名称', dataIndex: 'providerName', key: 'name', width: 150 },
   { title: '类型', key: 'type', width: 130 },
   { title: '图标', key: 'icon', width: 110 },
+  { title: '来源', key: 'source', width: 120 },
   { title: 'Registration ID', dataIndex: 'registrationId', key: 'regId', width: 180 },
   { title: 'Client ID', dataIndex: 'clientId', key: 'clientId', ellipsis: true },
   { title: '链接策略', dataIndex: 'linkingStrategy', key: 'strategy', width: 120 },
   { title: '顺序', dataIndex: 'displayOrder', key: 'order', width: 80 },
-  { title: '登录页', key: 'displayOnLogin', width: 90 },
+  { title: '登录页', key: 'displayOnLogin', width: 120 },
   { title: '状态', key: 'status', width: 100 },
-  { title: '操作', key: 'action', width: 260, fixed: 'right' }
+  { title: '操作', key: 'action', width: 330, fixed: 'right' }
 ]
 
 const checkItems = computed(() =>
@@ -449,17 +692,39 @@ const checkLabel = (value) => {
 const fetchData = async () => {
   loading.value = true
   try {
-    const res = await getIdentityProviders(pagination.current - 1, pagination.pageSize)
+    const res = await getIdentityProviders(pagination.current - 1, pagination.pageSize, sourceFilter.value)
     providers.value = res.data?.content || []
     pagination.total = res.data?.totalElements || 0
   } catch (e) { message.error('加载失败') }
   finally { loading.value = false }
 }
 
-const handleTableChange = (pag) => { pagination.current = pag.current; fetchData() }
+const handleTableChange = (pag) => {
+  pagination.current = pag.current
+  pagination.pageSize = pag.pageSize
+  fetchData()
+}
+
+const handleSourceFilterChange = () => {
+  pagination.current = 1
+  fetchData()
+}
+
+const isConfigProvider = (record) => record?.source === 'CONFIG_FILE' || record?.readOnly === true
+const sourceLabel = (record) => isConfigProvider(record) ? '配置文件提供' : '管理端配置'
+const sourceColor = (record) => isConfigProvider(record) ? 'blue' : 'default'
+const displayText = (value) => {
+  if (value === null || value === undefined || value === '') return '未配置'
+  return String(value)
+}
+
+const showConfig = (record) => {
+  configRecord.value = record
+  configVisible.value = true
+}
 
 const resetForm = () => {
-  form.providerName = ''; form.providerType = 'OIDC'; form.registrationId = ''
+  form.providerName = ''; form.providerType = 'CUSTOM'; form.registrationId = ''
   form.clientId = ''; form.clientSecret = ''; form.authorizationUri = ''
   form.tokenUri = ''; form.userinfoUri = ''; form.jwkSetUri = ''; form.scopes = ''
   form.samlEntityId = ''; form.samlSsoUrl = ''; form.samlSloUrl = ''; form.samlX509Certificate = ''
@@ -469,8 +734,9 @@ const resetForm = () => {
   form.ldapUsernameAttribute = 'uid'; form.ldapEmailAttribute = 'mail'
   form.ldapPhoneAttribute = 'telephoneNumber'; form.ldapDisplayNameAttribute = 'displayName'
   form.ldapGroupAttribute = 'memberOf'; form.ldapUseSsl = false; form.ldapStartTls = false; form.ldapPageSize = 200
-  form.iconKey = 'oidc'; form.displayOnLogin = true
+  form.iconKey = 'custom'; form.iconUrl = ''; form.displayOnLogin = true
   form.attributeMapping = ''; form.linkingStrategy = 'AUTO_REGISTER'; form.displayOrder = 0
+  iconMode.value = 'library'
   editId.value = null
 }
 
@@ -478,6 +744,8 @@ const selectProviderType = (type) => {
   if (isEdit.value) return
   form.providerType = type
   form.iconKey = defaultIconKey(type)
+  form.iconUrl = ''
+  iconMode.value = 'library'
   form.displayOnLogin = type !== 'LDAP'
   if (!form.scopes && !['SAML', 'LDAP'].includes(type)) {
     form.scopes = 'openid,profile,email'
@@ -488,6 +756,38 @@ const selectProviderType = (type) => {
   if (!form.registrationId) {
     form.registrationId = type.toLowerCase().replace(/_/g, '-')
   }
+}
+
+const selectIcon = (iconKey) => {
+  form.iconKey = iconKey
+  form.iconUrl = ''
+  iconMode.value = 'library'
+}
+
+const beforeIconUpload = (file) => {
+  const accepted = ['image/svg+xml', 'image/png', 'image/jpeg', 'image/webp']
+  const typeAccepted = accepted.includes(file.type) || /\.(svg|png|jpe?g|webp)$/i.test(file.name || '')
+  if (!typeAccepted) {
+    message.error('请上传 SVG、PNG、JPG 或 WebP 图标')
+    return false
+  }
+  if (file.size > 200 * 1024) {
+    message.error('图标不能超过 200KB')
+    return false
+  }
+  const reader = new FileReader()
+  reader.onload = event => {
+    form.iconUrl = event.target?.result || ''
+    form.iconKey = 'custom'
+    iconMode.value = 'upload'
+  }
+  reader.readAsDataURL(file)
+  return false
+}
+
+const clearUploadedIcon = () => {
+  form.iconUrl = ''
+  iconMode.value = 'library'
 }
 
 const showCreate = () => { isEdit.value = false; resetForm(); modalVisible.value = true }
@@ -517,11 +817,13 @@ const showEdit = (record) => {
     ldapStartTls: !!record.ldapStartTls,
     ldapPageSize: record.ldapPageSize || 200,
     iconKey: normalizeIconKey(record.iconKey) || defaultIconKey(record.providerType),
+    iconUrl: record.iconUrl || '',
     displayOnLogin: record.displayOnLogin !== false,
     attributeMapping: record.attributeMapping || '',
     linkingStrategy: record.linkingStrategy || 'AUTO_REGISTER',
     displayOrder: record.displayOrder || 0
   })
+  iconMode.value = form.iconUrl ? 'upload' : 'library'
   modalVisible.value = true
 }
 
@@ -548,6 +850,22 @@ const handleDelete = async (id) => {
 const toggleStatus = async (record, enabled) => {
   try { await updateIdpStatus(record.id, enabled); record.enabled = enabled; message.success(enabled ? '已启用' : '已禁用') }
   catch (e) { message.error(e.message) }
+}
+
+const toggleLoginDisplay = async (record, displayOnLogin) => {
+  const previous = record.displayOnLogin !== false
+  record.displayOnLogin = displayOnLogin
+  record.displayUpdating = true
+  try {
+    const res = await updateIdpLoginDisplay(record.id, displayOnLogin)
+    Object.assign(record, res.data || { displayOnLogin })
+    message.success(displayOnLogin ? '已显示在登录页' : '已从登录页隐藏')
+  } catch (e) {
+    record.displayOnLogin = previous
+    message.error(e.message)
+  } finally {
+    record.displayUpdating = false
+  }
 }
 
 const handleTest = async (record, probeRemote) => {
@@ -578,6 +896,37 @@ onMounted(fetchData)
   display: inline-flex;
   align-items: center;
   gap: 5px;
+}
+
+.page-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.source-filter {
+  width: 150px;
+}
+
+.provider-uploaded-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 1px 8px;
+  color: var(--aa-text-primary);
+  font-size: 12px;
+  line-height: 20px;
+  background: var(--aa-page-bg);
+  border: 1px solid var(--aa-border);
+  border-radius: 12px;
+}
+
+.provider-uploaded-tag img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  display: block;
 }
 
 .provider-type-grid {
@@ -630,6 +979,14 @@ onMounted(fetchData)
   line-height: 1.2;
 }
 
+.idp-icon-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
 .idp-icon-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
@@ -667,6 +1024,35 @@ onMounted(fetchData)
   font-weight: 600;
 }
 
+.idp-icon-upload-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 112px;
+  padding: 12px;
+  background: var(--aa-page-bg);
+  border: 1px dashed var(--aa-border);
+  border-radius: 8px;
+}
+
+.idp-icon-upload-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+}
+
+.idp-icon-upload-preview img {
+  width: 40px;
+  height: 40px;
+  padding: 6px;
+  object-fit: contain;
+  background: var(--aa-card-bg);
+  border: 1px solid var(--aa-border);
+  border-radius: 8px;
+}
+
 .idp-display-control {
   display: flex;
   flex-direction: column;
@@ -680,13 +1066,77 @@ onMounted(fetchData)
   line-height: 1.5;
 }
 
+.config-view-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.config-view-title {
+  color: var(--aa-text-primary);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.config-view-subtitle {
+  margin-top: 4px;
+  color: var(--aa-text-secondary);
+  font-family: Consolas, Monaco, monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.config-descriptions {
+  margin-bottom: 4px;
+}
+
+.config-value {
+  font-family: Consolas, Monaco, monospace;
+  word-break: break-all;
+}
+
+.config-pre {
+  min-height: 34px;
+  max-height: 220px;
+  margin: 0;
+  padding: 10px 12px;
+  overflow: auto;
+  color: var(--aa-text-primary);
+  font-family: Consolas, Monaco, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: var(--aa-page-bg);
+  border: 1px solid var(--aa-border);
+  border-radius: 6px;
+}
+
 @media (max-width: 720px) {
+  .page-actions {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .source-filter {
+    flex: 1 1 150px;
+  }
+
   .provider-type-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 
   .idp-icon-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .config-view-header {
+    flex-direction: column;
   }
 }
 </style>
