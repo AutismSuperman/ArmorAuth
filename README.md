@@ -4,6 +4,8 @@
 
 # ArmorAuth
 
+[简体中文](README.zh-CN.md)
+
 ArmorAuth is an open source identity and authorization platform built on Spring Security and Spring Authorization Server. It provides a self-hosted authorization server, an admin API, an admin console, and hosted authentication pages for teams that need private deployment, OAuth 2.0 / OpenID Connect compatibility, and extensible identity workflows.
 
 The project is designed for product teams and platform engineers who want a clear Java/Spring codebase rather than a black-box identity service.
