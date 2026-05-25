@@ -1,0 +1,2 @@
+com.armorauth.autoconfigure.ArmorAuthResourceServerAutoConfiguration
+com.armorauth.autoconfigure.ArmorAuthOidcClientAutoConfiguration

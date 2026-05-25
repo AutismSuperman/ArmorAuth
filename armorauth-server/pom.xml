@@ -16,7 +16,7 @@
     <dependencies>
         <dependency>
             <groupId>com.armorauth</groupId>
-            <artifactId>armorauth-spring-boot-starter</artifactId>
+            <artifactId>armorauth</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>

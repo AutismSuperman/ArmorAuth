@@ -34,6 +34,8 @@ The project is designed for product teams and platform engineers who want a clea
 | `armorauth-admin-ui` | Vue 3 admin console |
 | `armorauth-server-ui` | Hosted identity pages and static assets |
 | `armorauth-server` | Runnable Spring Boot server |
+| `armorauth-spring-boot-autoconfigure` | Lightweight auto-configuration for relying Spring Boot services |
+| `armorauth-spring-boot-starter` | Starter dependency for Resource Server and OIDC Login integration |
 | `armorauth-samples` | Integration samples for OAuth/OIDC clients |
 
 ## User-Facing Surfaces
@@ -52,6 +54,7 @@ The project is designed for product teams and platform engineers who want a clea
 | [Operation Manual](docs/operation-manual.md) | Day-to-day administration and operational workflows |
 | [Deployment Guide](docs/deployment-guide.md) | Production deployment, proxy, database, backup, and security guidance |
 | [API Reference](docs/api-reference.md) | Admin API and account API reference |
+| [Spring Boot Starter](docs/spring-boot-starter.md) | Resource Server and OIDC Login integration for relying Spring Boot services |
 | [Federation Configuration](docs/federation-config.md) | OAuth2/OIDC, SAML, and LDAP identity provider setup |
 | [MFA Configuration](docs/mfa-config.md) | MFA, TOTP, Passkey, and application policy setup |
 | [Security Best Practices](docs/security-best-practices.md) | Security checklist and hardening notes |

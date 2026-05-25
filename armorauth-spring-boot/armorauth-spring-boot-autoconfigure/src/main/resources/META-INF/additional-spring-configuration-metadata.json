@@ -1,0 +1,16 @@
+{
+  "properties": [
+    {
+      "name": "armorauth.resource-server.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable ArmorAuth's default JWT resource server security filter chain for /api/** endpoints.",
+      "defaultValue": false
+    },
+    {
+      "name": "armorauth.oidc-client.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable ArmorAuth's default OIDC login security filter chain.",
+      "defaultValue": false
+    }
+  ]
+}

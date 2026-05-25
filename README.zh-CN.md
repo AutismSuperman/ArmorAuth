@@ -34,6 +34,8 @@ ArmorAuth 是一个基于 Spring Security 与 Spring Authorization Server 构建
 | `armorauth-admin-ui` | Vue 3 管理控制台 |
 | `armorauth-server-ui` | 托管身份页面模板与静态资源 |
 | `armorauth-server` | 可独立运行的 Spring Boot 服务端 |
+| `armorauth-spring-boot-autoconfigure` | 面向接入方 Spring Boot 服务的轻量自动配置 |
+| `armorauth-spring-boot-starter` | Resource Server 与 OIDC Login 接入 Starter |
 | `armorauth-samples` | OAuth/OIDC 客户端接入样例 |
 
 ## 对外能力
@@ -52,6 +54,7 @@ ArmorAuth 是一个基于 Spring Security 与 Spring Authorization Server 构建
 | [操作手册](docs/operation-manual.zh-CN.md) | 日常管理与运营流程 |
 | [部署指南](docs/deployment-guide.zh-CN.md) | 生产部署、反向代理、数据库、备份与安全配置 |
 | [API Reference](docs/api-reference.md) | 管理 API 与账户 API |
+| [Spring Boot Starter](docs/spring-boot-starter.md) | Spring Boot 资源服务器与 OIDC Login 接入 |
 | [联合登录配置](docs/federation-config.md) | OAuth2/OIDC、SAML、LDAP 身份源配置 |
 | [MFA 配置](docs/mfa-config.md) | MFA、TOTP、Passkey 与应用策略 |
 | [安全最佳实践](docs/security-best-practices.md) | 安全加固与检查清单 |

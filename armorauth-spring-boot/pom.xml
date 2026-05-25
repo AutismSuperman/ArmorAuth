@@ -13,6 +13,7 @@
     <artifactId>armorauth-spring-boot</artifactId>
     <packaging>pom</packaging>
     <modules>
+        <module>armorauth-spring-boot-autoconfigure</module>
         <module>armorauth-spring-boot-starter</module>
     </modules>
 

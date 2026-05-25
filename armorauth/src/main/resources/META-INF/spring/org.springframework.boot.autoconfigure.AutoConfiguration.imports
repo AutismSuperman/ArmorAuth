@@ -1,4 +1,2 @@
 com.armorauth.config.DefaultCaptchaConfiguration
 com.armorauth.config.SecurityEnhancementConfiguration
-com.armorauth.config.ArmorAuthResourceServerAutoConfiguration
-com.armorauth.config.ArmorAuthOidcClientAutoConfiguration
