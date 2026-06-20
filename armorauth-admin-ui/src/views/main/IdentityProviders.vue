@@ -24,16 +24,6 @@
             {{ providerMeta(record.providerType).label }}
           </a-tag>
         </template>
-        <template v-if="column.key === 'icon'">
-          <span v-if="record.iconUrl" class="provider-uploaded-tag">
-            <img :src="record.iconUrl" alt="" />
-            自定义上传
-          </span>
-          <a-tag v-else :color="iconMeta(record.iconKey, record.providerType).color" class="provider-tag">
-            <component :is="iconMeta(record.iconKey, record.providerType).icon" />
-            {{ iconMeta(record.iconKey, record.providerType).label }}
-          </a-tag>
-        </template>
         <template v-if="column.key === 'source'">
           <a-tag :color="sourceColor(record)">
             {{ sourceLabel(record) }}
@@ -94,54 +84,6 @@
             </button>
           </div>
         </a-form-item>
-        <a-row v-if="form.providerType !== 'LDAP'" :gutter="16">
-          <a-col :span="15">
-            <a-form-item label="登录页图标">
-              <div class="idp-icon-toolbar">
-                <a-segmented
-                  v-model:value="iconMode"
-                  :options="iconModeOptions" />
-              </div>
-              <div v-if="iconMode === 'library'" class="idp-icon-grid">
-                <button
-                  v-for="option in iconOptions"
-                  :key="option.value"
-                  type="button"
-                  class="idp-icon-option"
-                  :class="{ active: form.iconKey === option.value && !form.iconUrl }"
-                  @click="selectIcon(option.value)">
-                  <component :is="option.icon" />
-                  <span>{{ option.label }}</span>
-                </button>
-              </div>
-              <div v-else class="idp-icon-upload-panel">
-                <a-upload
-                  :show-upload-list="false"
-                  :before-upload="beforeIconUpload"
-                  accept="image/svg+xml,image/png,image/jpeg,image/webp">
-                  <a-button>
-                    <template #icon><UploadOutlined /></template>
-                    上传图标
-                  </a-button>
-                </a-upload>
-                <div v-if="form.iconUrl" class="idp-icon-upload-preview">
-                  <img :src="form.iconUrl" alt="" />
-                  <a-button type="link" size="small" @click="clearUploadedIcon">移除</a-button>
-                </div>
-                <a-typography-text type="secondary">支持 SVG、PNG、JPG、WebP，建议 200KB 内。</a-typography-text>
-              </div>
-            </a-form-item>
-          </a-col>
-          <a-col :span="9">
-            <a-form-item label="登录页展示" class="idp-display-form-item">
-              <div class="idp-display-control">
-                <a-switch v-model:checked="form.displayOnLogin"
-                          checked-children="显示" un-checked-children="隐藏" />
-                <span>关闭后不会出现在 server 登录页，已配置的授权入口仍保留。</span>
-              </div>
-            </a-form-item>
-          </a-col>
-        </a-row>
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="提供商名称" required>
@@ -151,6 +93,22 @@
           <a-col :span="12">
             <a-form-item label="Registration ID" required>
               <a-input v-model:value="form.registrationId" :disabled="isEdit" placeholder="唯一标识，如 enterprise-oidc" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-row v-if="form.providerType !== 'LDAP'" :gutter="16">
+          <a-col :span="12">
+            <a-form-item label="登录页展示" class="idp-display-form-item">
+              <div class="idp-display-control">
+                <a-switch v-model:checked="form.displayOnLogin"
+                          checked-children="显示" un-checked-children="隐藏" />
+                <span>关闭后不会出现在 server 登录页，已配置的授权入口仍保留。</span>
+              </div>
+            </a-form-item>
+          </a-col>
+          <a-col :span="12">
+            <a-form-item label="显示顺序">
+              <a-input-number v-model:value="form.displayOrder" :min="0" style="width: 100%" />
             </a-form-item>
           </a-col>
         </a-row>
@@ -328,16 +286,64 @@
               </a-select>
             </a-form-item>
           </a-col>
-          <a-col :span="12">
-            <a-form-item label="显示顺序">
-              <a-input-number v-model:value="form.displayOrder" :min="0" style="width: 100%" />
-            </a-form-item>
-          </a-col>
         </a-row>
         <a-form-item label="属性映射 JSON">
           <a-textarea v-model:value="form.attributeMapping" :rows="3"
                       placeholder='{"email":"email","displayName":"name"}' />
         </a-form-item>
+        <a-collapse
+          v-if="form.providerType !== 'LDAP'"
+          v-model:activeKey="iconPanelActiveKeys"
+          ghost
+          class="idp-icon-collapse">
+          <a-collapse-panel key="login-icon" header="登录页图标">
+            <div class="idp-icon-summary">
+              <div class="idp-icon-current">
+                <span v-if="form.iconUrl" class="provider-uploaded-tag">
+                  <img :src="form.iconUrl" alt="" />
+                  自定义上传
+                </span>
+                <a-tag v-else :color="iconMeta(form.iconKey, form.providerType).color" class="provider-tag">
+                  <component :is="iconMeta(form.iconKey, form.providerType).icon" />
+                  {{ iconMeta(form.iconKey, form.providerType).label }}
+                </a-tag>
+                <span>{{ iconMode === 'auto' ? '自动' : '自定义' }}</span>
+              </div>
+              <a-segmented
+                v-model:value="iconMode"
+                :options="iconModeOptions"
+                @change="handleIconModeChange" />
+            </div>
+            <div v-if="iconMode === 'library'" class="idp-icon-grid">
+              <button
+                v-for="option in iconOptions"
+                :key="option.value"
+                type="button"
+                class="idp-icon-option"
+                :class="{ active: form.iconKey === option.value && !form.iconUrl }"
+                @click="selectIcon(option.value)">
+                <component :is="option.icon" />
+                <span>{{ option.label }}</span>
+              </button>
+            </div>
+            <div v-else-if="iconMode === 'upload'" class="idp-icon-upload-panel">
+              <a-upload
+                :show-upload-list="false"
+                :before-upload="beforeIconUpload"
+                accept="image/svg+xml,image/png,image/jpeg,image/webp">
+                <a-button>
+                  <template #icon><UploadOutlined /></template>
+                  上传图标
+                </a-button>
+              </a-upload>
+              <div v-if="form.iconUrl" class="idp-icon-upload-preview">
+                <img :src="form.iconUrl" alt="" />
+                <a-button type="link" size="small" @click="clearUploadedIcon">移除</a-button>
+              </div>
+              <a-typography-text type="secondary">支持 SVG、PNG、JPG、WebP，建议 200KB 内。</a-typography-text>
+            </div>
+          </a-collapse-panel>
+        </a-collapse>
       </a-form>
     </a-modal>
 
@@ -363,8 +369,21 @@
               {{ providerMeta(configRecord.providerType).label }}
             </a-tag>
           </a-descriptions-item>
-          <a-descriptions-item label="登录页">
-            {{ configRecord.providerType === 'LDAP' ? '不适用' : displayText(configRecord.displayOnLogin !== false ? '显示' : '隐藏') }}
+          <a-descriptions-item label="登录页入口">
+            <span v-if="configRecord.providerType === 'LDAP'">不适用</span>
+            <span v-else class="idp-login-entry-cell">
+              <a-tag :color="configRecord.displayOnLogin !== false ? 'green' : 'default'">
+                {{ configRecord.displayOnLogin !== false ? '显示' : '隐藏' }}
+              </a-tag>
+              <span v-if="configRecord.iconUrl" class="provider-uploaded-tag">
+                <img :src="configRecord.iconUrl" alt="" />
+                自定义上传
+              </span>
+              <a-tag v-else :color="iconMeta(configRecord.iconKey, configRecord.providerType).color" class="provider-tag">
+                <component :is="iconMeta(configRecord.iconKey, configRecord.providerType).icon" />
+                {{ iconMeta(configRecord.iconKey, configRecord.providerType).label }}
+              </a-tag>
+            </span>
           </a-descriptions-item>
           <a-descriptions-item label="Client ID">
             <span class="config-value">{{ displayText(configRecord.clientId) }}</span>
@@ -374,16 +393,6 @@
           </a-descriptions-item>
           <a-descriptions-item label="链接策略">{{ displayText(configRecord.linkingStrategy) }}</a-descriptions-item>
           <a-descriptions-item label="顺序">{{ displayText(configRecord.displayOrder) }}</a-descriptions-item>
-          <a-descriptions-item label="图标">
-            <span v-if="configRecord.iconUrl" class="provider-uploaded-tag">
-              <img :src="configRecord.iconUrl" alt="" />
-              自定义上传
-            </span>
-            <a-tag v-else :color="iconMeta(configRecord.iconKey, configRecord.providerType).color" class="provider-tag">
-              <component :is="iconMeta(configRecord.iconKey, configRecord.providerType).icon" />
-              {{ iconMeta(configRecord.iconKey, configRecord.providerType).label }}
-            </a-tag>
-          </a-descriptions-item>
           <a-descriptions-item label="更新时间">{{ displayText(configRecord.updatedAt) }}</a-descriptions-item>
         </a-descriptions>
 
@@ -568,7 +577,8 @@ const testResult = ref({ success: false, message: '', checks: {} })
 const syncVisible = ref(false)
 const syncResult = ref({})
 const sourceFilter = ref('ALL')
-const iconMode = ref('library')
+const iconMode = ref('auto')
+const iconPanelActiveKeys = ref([])
 const pagination = reactive({
   current: 1,
   pageSize: 50,
@@ -585,6 +595,7 @@ const sourceOptions = [
 ]
 
 const iconModeOptions = [
+  { label: '自动', value: 'auto' },
   { label: '图标库', value: 'library' },
   { label: '上传图片', value: 'upload' }
 ]
@@ -653,14 +664,13 @@ const form = reactive({
   ldapUsernameAttribute: 'uid', ldapEmailAttribute: 'mail', ldapPhoneAttribute: 'telephoneNumber',
   ldapDisplayNameAttribute: 'displayName', ldapGroupAttribute: 'memberOf',
   ldapUseSsl: false, ldapStartTls: false, ldapPageSize: 200,
-  iconKey: 'custom', iconUrl: '', displayOnLogin: true,
+  iconKey: '', iconUrl: '', displayOnLogin: true,
   attributeMapping: '', linkingStrategy: 'AUTO_REGISTER', displayOrder: 0
 })
 
 const columns = [
   { title: '名称', dataIndex: 'providerName', key: 'name', width: 150 },
   { title: '类型', key: 'type', width: 130 },
-  { title: '图标', key: 'icon', width: 110 },
   { title: '来源', key: 'source', width: 120 },
   { title: 'Registration ID', dataIndex: 'registrationId', key: 'regId', width: 180 },
   { title: 'Client ID', dataIndex: 'clientId', key: 'clientId', ellipsis: true },
@@ -734,18 +744,19 @@ const resetForm = () => {
   form.ldapUsernameAttribute = 'uid'; form.ldapEmailAttribute = 'mail'
   form.ldapPhoneAttribute = 'telephoneNumber'; form.ldapDisplayNameAttribute = 'displayName'
   form.ldapGroupAttribute = 'memberOf'; form.ldapUseSsl = false; form.ldapStartTls = false; form.ldapPageSize = 200
-  form.iconKey = 'custom'; form.iconUrl = ''; form.displayOnLogin = true
+  form.iconKey = ''; form.iconUrl = ''; form.displayOnLogin = true
   form.attributeMapping = ''; form.linkingStrategy = 'AUTO_REGISTER'; form.displayOrder = 0
-  iconMode.value = 'library'
+  iconMode.value = 'auto'
+  iconPanelActiveKeys.value = []
   editId.value = null
 }
 
 const selectProviderType = (type) => {
   if (isEdit.value) return
   form.providerType = type
-  form.iconKey = defaultIconKey(type)
+  form.iconKey = ''
   form.iconUrl = ''
-  iconMode.value = 'library'
+  iconMode.value = 'auto'
   form.displayOnLogin = type !== 'LDAP'
   if (!form.scopes && !['SAML', 'LDAP'].includes(type)) {
     form.scopes = 'openid,profile,email'
@@ -755,6 +766,24 @@ const selectProviderType = (type) => {
   }
   if (!form.registrationId) {
     form.registrationId = type.toLowerCase().replace(/_/g, '-')
+  }
+}
+
+const handleIconModeChange = (mode) => {
+  if (mode === 'auto') {
+    form.iconKey = ''
+    form.iconUrl = ''
+    return
+  }
+  if (mode === 'library') {
+    form.iconUrl = ''
+    if (!form.iconKey) {
+      form.iconKey = defaultIconKey(form.providerType)
+    }
+    return
+  }
+  if (mode === 'upload' && !form.iconUrl) {
+    form.iconKey = 'custom'
   }
 }
 
@@ -787,13 +816,16 @@ const beforeIconUpload = (file) => {
 
 const clearUploadedIcon = () => {
   form.iconUrl = ''
-  iconMode.value = 'library'
+  form.iconKey = ''
+  iconMode.value = 'auto'
 }
 
 const showCreate = () => { isEdit.value = false; resetForm(); modalVisible.value = true }
 
 const showEdit = (record) => {
   isEdit.value = true; editId.value = record.id
+  const normalizedIconKey = normalizeIconKey(record.iconKey)
+  const providerDefaultIconKey = defaultIconKey(record.providerType)
   Object.assign(form, {
     providerName: record.providerName, providerType: record.providerType,
     registrationId: record.registrationId, clientId: record.clientId,
@@ -816,14 +848,15 @@ const showEdit = (record) => {
     ldapUseSsl: !!record.ldapUseSsl,
     ldapStartTls: !!record.ldapStartTls,
     ldapPageSize: record.ldapPageSize || 200,
-    iconKey: normalizeIconKey(record.iconKey) || defaultIconKey(record.providerType),
+    iconKey: normalizedIconKey && normalizedIconKey !== providerDefaultIconKey ? normalizedIconKey : '',
     iconUrl: record.iconUrl || '',
     displayOnLogin: record.displayOnLogin !== false,
     attributeMapping: record.attributeMapping || '',
     linkingStrategy: record.linkingStrategy || 'AUTO_REGISTER',
     displayOrder: record.displayOrder || 0
   })
-  iconMode.value = form.iconUrl ? 'upload' : 'library'
+  iconMode.value = form.iconUrl ? 'upload' : (form.iconKey ? 'library' : 'auto')
+  iconPanelActiveKeys.value = []
   modalVisible.value = true
 }
 
@@ -929,6 +962,13 @@ onMounted(fetchData)
   display: block;
 }
 
+.idp-login-entry-cell {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .provider-type-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -979,12 +1019,33 @@ onMounted(fetchData)
   line-height: 1.2;
 }
 
-.idp-icon-toolbar {
+.idp-icon-collapse {
+  margin-top: -4px;
+  margin-bottom: 16px;
+  border: 1px solid var(--aa-border);
+  border-radius: 8px;
+}
+
+.idp-icon-summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.idp-icon-current {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.idp-icon-current > span:last-child {
+  color: var(--aa-text-secondary);
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .idp-icon-grid {
@@ -1133,6 +1194,11 @@ onMounted(fetchData)
 
   .idp-icon-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .idp-icon-summary {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .config-view-header {

@@ -47,12 +47,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 @Service
 public class IdentityProviderService {
@@ -99,22 +97,21 @@ public class IdentityProviderService {
         List<IdentityProvider> databaseProviders =
                 idpRepository.findAll(Sort.by(Sort.Direction.ASC, "displayOrder")
                         .and(Sort.by(Sort.Direction.ASC, "providerName")));
-        Set<String> databaseRegistrationIds = new HashSet<>();
-        for (IdentityProvider provider : databaseProviders) {
-            databaseRegistrationIds.add(provider.getRegistrationId());
-        }
 
         List<IdentityProviderDTO.Response> responses = new ArrayList<>();
         configuredProviders.values().stream()
-                .filter(provider -> !databaseRegistrationIds.contains(provider.registrationId()))
                 .map(provider -> toConfiguredResponse(provider, preferences.get(provider.registrationId())))
                 .forEach(responses::add);
-        databaseProviders.stream().map(this::toResponse).forEach(responses::add);
+        databaseProviders.stream()
+                .filter(provider -> !configuredProviders.containsKey(provider.getRegistrationId()))
+                .map(this::toResponse)
+                .forEach(responses::add);
 
         responses.sort(Comparator
                 .comparing((IdentityProviderDTO.Response response) ->
+                        SOURCE_CONFIG_FILE.equals(response.source()) ? 0 : 1)
+                .thenComparing(response ->
                         response.displayOrder() != null ? response.displayOrder() : 0)
-                .thenComparing(response -> SOURCE_CONFIG_FILE.equals(response.source()) ? 0 : 1)
                 .thenComparing(response -> response.providerName() != null ? response.providerName() : ""));
 
         responses = filterBySource(responses, source);
