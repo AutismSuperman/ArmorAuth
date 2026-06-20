@@ -5,7 +5,7 @@
         <h2>会话管理</h2>
         <div class="page-subtitle">活跃会话查询和强制下线</div>
       </div>
-      <a-space wrap>
+      <div class="session-toolbar">
         <a-input-search
           v-model:value="username"
           allow-clear
@@ -18,42 +18,44 @@
           <template #icon><ReloadOutlined /></template>
           全部
         </a-button>
-      </a-space>
+      </div>
     </div>
 
-    <a-row :gutter="[16, 16]" class="metric-grid">
-      <a-col :xs="24" :sm="12" :lg="8" v-for="item in metrics" :key="item.key">
+    <div class="session-metric-grid">
+      <div v-for="item in metrics" :key="item.key">
         <a-card class="metric-card" :bordered="false">
           <a-statistic :title="item.label" :value="item.value" />
         </a-card>
-      </a-col>
-    </a-row>
+      </div>
+    </div>
 
-    <a-table
-      row-key="sessionId"
-      size="middle"
-      :columns="columns"
-      :dataSource="sessions"
-      :loading="loading"
-      :pagination="false"
-      :scroll="{ x: 960 }"
-      bordered>
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'sessionId'">
-          <span class="session-id">{{ record.sessionId }}</span>
+    <div class="session-table">
+      <a-table
+        row-key="sessionId"
+        size="middle"
+        :columns="columns"
+        :dataSource="sessions"
+        :loading="loading"
+        :pagination="false"
+        :scroll="{ x: 960 }"
+        bordered>
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'sessionId'">
+            <span class="session-id">{{ record.sessionId }}</span>
+          </template>
+          <template v-if="column.key === 'active'">
+            <a-tag :color="record.active ? 'green' : 'default'">
+              {{ record.active ? '活跃' : '已过期' }}
+            </a-tag>
+          </template>
+          <template v-if="column.key === 'action'">
+            <a-popconfirm title="确认强制下线此会话？" ok-text="下线" cancel-text="取消" @confirm="handleExpire(record.sessionId)">
+              <a style="color: #ff4d4f">强制下线</a>
+            </a-popconfirm>
+          </template>
         </template>
-        <template v-if="column.key === 'active'">
-          <a-tag :color="record.active ? 'green' : 'default'">
-            {{ record.active ? '活跃' : '已过期' }}
-          </a-tag>
-        </template>
-        <template v-if="column.key === 'action'">
-          <a-popconfirm title="确认强制下线此会话？" ok-text="下线" cancel-text="取消" @confirm="handleExpire(record.sessionId)">
-            <a style="color: #ff4d4f">强制下线</a>
-          </a-popconfirm>
-        </template>
-      </template>
-    </a-table>
+      </a-table>
+    </div>
   </div>
 </template>
 
@@ -117,18 +119,51 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
+.page-container {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.page-header {
+  gap: 16px;
+  align-items: flex-start;
+}
+
 .page-subtitle {
   margin-top: 6px;
   color: var(--aa-text-secondary);
   font-size: 13px;
 }
 
-.user-search {
-  width: 260px;
+.session-toolbar {
+  display: flex;
+  flex: 1 1 320px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
 }
 
-.metric-grid {
+.user-search {
+  flex: 0 1 260px;
+  min-width: 180px;
+  max-width: 100%;
+}
+
+.session-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
   width: 100%;
+  min-width: 0;
+}
+
+.session-table {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .session-id {
@@ -136,13 +171,29 @@ onMounted(fetchData)
   font-size: 12px;
 }
 
+@media (max-width: 1180px) {
+  .session-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 720px) {
   .page-header {
+    align-items: stretch;
     flex-direction: column;
   }
 
+  .session-toolbar {
+    justify-content: flex-start;
+  }
+
   .user-search {
-    width: 100%;
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .session-metric-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
