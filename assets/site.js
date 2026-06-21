@@ -88,9 +88,40 @@
     }
   });
 
+  const closeMobileNav = () => {
+    document.querySelectorAll('.topbar.is-open').forEach((topbar) => {
+      topbar.classList.remove('is-open');
+      topbar.querySelector('[data-nav-toggle]')?.setAttribute('aria-expanded', 'false');
+    });
+  };
+
+  document.querySelectorAll('[data-nav-toggle]').forEach((button) => {
+    const topbar = button.closest('.topbar');
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const shouldOpen = !topbar.classList.contains('is-open');
+      closeThemeMenus();
+      topbar.classList.toggle('is-open', shouldOpen);
+      button.setAttribute('aria-expanded', String(shouldOpen));
+    });
+  });
+
+  document.querySelectorAll('.top-nav a').forEach((link) => {
+    link.addEventListener('click', () => {
+      closeMobileNav();
+    });
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 720) {
+      closeMobileNav();
+    }
+  });
+
   window.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       closeThemeMenus();
+      closeMobileNav();
     }
   });
 

@@ -26,7 +26,11 @@
           <img src="./assets/logo-mark.svg" alt="" />
           <span>ArmorAuth<small>Spring Boot Starter</small></span>
         </a>
-        <nav class="top-nav" aria-label="Primary">
+        <button class="mobile-nav-toggle" type="button" data-nav-toggle aria-controls="primary-navigation" aria-expanded="false">
+          <span class="mobile-nav-lines" aria-hidden="true"></span>
+          <span class="mobile-nav-text">菜单</span>
+        </button>
+        <nav class="top-nav" id="primary-navigation" aria-label="Primary">
           <a href="./">首页</a>
           <a href="./guide.html">指引</a>
           <a href="./manual.html">功能手册</a>
