@@ -29,7 +29,7 @@ ArmorAuth 面向需要掌控身份基础设施的产品团队和平台工程团�
 
 - 账号密码登录与记住我会话。
 - 图形验证码登录、短信一次性验证码登录。
-- MFA：TOTP 身份验证器、账号安全因子和恢复码相关流程。
+- MFA：TOTP 身份验证器、Passkey/WebAuthn 因子、登录二次验证和账号联系方式验证。
 - Passkey / WebAuthn 无密码登录。
 - OAuth2/OIDC、SAML、LDAP/AD 以及内置社交/企业身份源联合登录。
 - 外部账号绑定与确认页面，用于将第三方身份安全绑定到本地账号。
@@ -98,9 +98,11 @@ ArmorAuth 对外提供标准授权服务器端点，同时将运行状态落库�
 
 | 文档 | 说明 |
 | --- | --- |
+| [文档索引](docs/README.md) | `docs` 目录入口和推荐阅读顺序 |
 | [产品概览](docs/product-overview.zh-CN.md) | 产品定位、核心能力和系统入口 |
 | [快速开始](docs/quick-start.zh-CN.md) | 本地构建和运行 ArmorAuth |
 | [基础使用](docs/basic-usage.zh-CN.md) | 租户、应用、用户、MFA 和账号中心的基础流程 |
+| [功能链路总览](docs/feature-flows.zh-CN.md) | 从管理入口、API 到运行时的完整功能链路 |
 | [操作手册](docs/operation-manual.zh-CN.md) | 日常管理与运营流程 |
 | [部署指南](docs/deployment-guide.zh-CN.md) | 生产部署、反向代理、数据库、备份与安全配置 |
 | [API Reference](docs/api-reference.md) | 管理 API、账户 API 和协议相关 API |

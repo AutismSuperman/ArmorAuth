@@ -29,7 +29,7 @@ The hosted login flow is built to cover common consumer, enterprise, and interna
 
 - Password login with remember-me session support.
 - Graphic captcha and SMS one-time-code login flows.
-- MFA with TOTP authenticator factors and recovery-code-oriented account security flows.
+- MFA with TOTP authenticator factors, Passkey/WebAuthn factors, login step-up, and account contact verification.
 - Passkey / WebAuthn passwordless sign-in.
 - Federated sign-in through OAuth2/OIDC, SAML, LDAP/AD, and built-in social or enterprise providers.
 - External account linking and confirmation pages for safely binding federated identities to local users.
@@ -98,9 +98,11 @@ The sample workspace includes Spring Boot and OAuth/OIDC clients for local integ
 
 | Document | Purpose |
 | --- | --- |
+| [Docs Index](docs/README.md) | Entry point and recommended reading order for the `docs` directory |
 | [Product Overview](docs/product-overview.md) | Product positioning, capabilities, and system surfaces |
 | [Quick Start](docs/quick-start.md) | Build and run ArmorAuth locally |
 | [Basic Usage](docs/basic-usage.md) | First tenant, application, user, MFA, and account-center workflows |
+| [Feature Flows](docs/feature-flows.zh-CN.md) | Chinese feature-chain guide from admin entry points to runtime behavior |
 | [Operation Manual](docs/operation-manual.md) | Day-to-day administration and operations |
 | [Deployment Guide](docs/deployment-guide.md) | Production deployment, proxy, database, backup, and security guidance |
 | [API Reference](docs/api-reference.md) | Admin API, account API, and protocol-adjacent API reference |

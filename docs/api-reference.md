@@ -328,6 +328,7 @@
 | DELETE | `/api/admin/v1/organizations/{id}` | `/api/admin/v1/tenants/{tenantId}/organizations/{id}` | 删除组织 |
 | GET | `/api/admin/v1/organizations/{id}/members` | `/api/admin/v1/tenants/{tenantId}/organizations/{id}/members` | 获取成员 |
 | POST | `/api/admin/v1/organizations/{id}/members` | `/api/admin/v1/tenants/{tenantId}/organizations/{id}/members` | 添加成员 |
+| PUT | `/api/admin/v1/organizations/{id}/members/{userId}` | `/api/admin/v1/tenants/{tenantId}/organizations/{id}/members/{userId}` | 更新成员角色 |
 | DELETE | `/api/admin/v1/organizations/{id}/members/{userId}` | `/api/admin/v1/tenants/{tenantId}/organizations/{id}/members/{userId}` | 移除成员 |
 
 组织创建请求：
@@ -352,6 +353,14 @@
 }
 ```
 
+更新成员角色时路径已经包含 `userId`，请求体只需要新的 `orgRole`：
+
+```json
+{
+  "orgRole": "ADMIN"
+}
+```
+
 ---
 
 ## 身份源和外部账号绑定
@@ -365,6 +374,7 @@
 | POST | `/api/admin/v1/identity-providers` | 创建身份源 | `SUPER_ADMIN` |
 | PUT | `/api/admin/v1/identity-providers/{id}` | 更新身份源 | `SUPER_ADMIN` |
 | PATCH | `/api/admin/v1/identity-providers/{id}/status?enabled=true` | 启用或禁用身份源 | `SUPER_ADMIN` |
+| PATCH | `/api/admin/v1/identity-providers/{id}/login-display` | 设置是否展示到托管登录页 | `SUPER_ADMIN` |
 | POST | `/api/admin/v1/identity-providers/{id}:test?probeRemote=false` | 测试身份源配置 | `SUPER_ADMIN`、`APPLICATION_ADMIN` |
 | POST | `/api/admin/v1/identity-providers/{id}:sync-users` | LDAP/AD 用户同步或同步预演 | `SUPER_ADMIN`、`USER_ADMIN` |
 | DELETE | `/api/admin/v1/identity-providers/{id}` | 删除身份源 | `SUPER_ADMIN` |
@@ -412,6 +422,14 @@
 ```
 
 更新请求不包含 `providerType` 和 `registrationId`。更新时 `clientSecret` 留空会保留原密钥。
+
+登录页展示请求：
+
+```json
+{
+  "displayOnLogin": true
+}
+```
 
 SAML 身份源支持配置模型、管理 API、UI 录入、字段校验和 SP-initiated 登录。SAML 可以使用 `samlMetadataUrl` 方式配置，或手动填写 `samlEntityId`、`samlSsoUrl`、`samlX509Certificate`；`samlSpEntityId`、`samlAcsUrl`、`samlNameIdFormat` 会进入运行时 Relying Party 配置。运行时默认使用 `/saml2/authorization/{registrationId}` 发起 AuthnRequest，使用 `/login/saml2/sso/{registrationId}` 接收断言并复用联合账号绑定/自动注册流程；`runtimeSupport=sp_redirect_post_assertion` 表示该身份源可用于 SAML 登录。
 
@@ -514,6 +532,7 @@ LDAP/AD 同步请求默认是预演模式：
 | GET | `/api/admin/v1/jwk-keys` | 获取 JWK 元数据列表 | 管理员 |
 | POST | `/api/admin/v1/jwk-keys/rotate` | 轮换 JWK，生成新 active key | `SUPER_ADMIN` |
 | POST | `/api/admin/v1/jwk-keys/{kid}/retire` | 废弃 standby key | `SUPER_ADMIN` |
+| DELETE | `/api/admin/v1/jwk-keys/{kid}` | 删除非 active key | `SUPER_ADMIN` |
 
 JWK 响应字段：`id`、`kid`、`keyType`、`algorithm`、`status`、`createdAt`、`expiresAt`。
 
@@ -635,6 +654,8 @@ JWK 响应字段：`id`、`kid`、`keyType`、`algorithm`、`status`、`createdA
 | GET | `/api/account/v1/me` | 获取当前用户资料 |
 | PUT | `/api/account/v1/me` | 更新当前用户资料 |
 | POST | `/api/account/v1/password:change` | 修改当前用户密码 |
+| POST | `/api/account/v1/me/{channel}:send-verification-code` | 发送邮箱或手机号验证码，`channel` 为 `email` 或 `phone` |
+| POST | `/api/account/v1/me/{channel}:verify` | 验证邮箱或手机号，`channel` 为 `email` 或 `phone` |
 | GET | `/api/account/v1/security` | 获取当前用户账号安全状态 |
 | PATCH | `/api/account/v1/security/mfa` | 更新当前用户登录 MFA 偏好 |
 | GET | `/api/account/v1/factors` | 获取当前用户 MFA 因子 |
@@ -662,6 +683,16 @@ JWK 响应字段：`id`、`kid`、`keyType`、`algorithm`、`status`、`createdA
 {
   "oldPassword": "OldStrongP@ss123",
   "newPassword": "NewStrongP@ss123"
+}
+```
+
+发送联系方式验证码响应字段：`channel`、`target`、`message`、`debugCode`。`debugCode` 只应在开发或演示环境暴露。
+
+验证联系方式请求：
+
+```json
+{
+  "code": "123456"
 }
 ```
 

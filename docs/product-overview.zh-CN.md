@@ -19,7 +19,7 @@ ArmorAuth 适合这些场景：
 | --- | --- |
 | 授权服务器 | Authorization Code、Client Credentials、Refresh Token、Device Authorization、discovery、JWKS、introspection、revocation、OIDC logout |
 | 托管身份页面 | 登录、授权确认、MFA 挑战、设备激活、激活结果、账号中心、联合身份确认 |
-| 账号安全 | 密码登录、图形验证码、短信验证码登录、TOTP MFA、Passkey/WebAuthn、恢复码相关流程、联系方式验证、会话可见性 |
+| 账号安全 | 密码登录、图形验证码、短信验证码登录、TOTP MFA、Passkey/WebAuthn、登录二次验证、联系方式验证 |
 | 管理能力 | 应用、Scope、用户、角色、权限、租户、组织、身份源、会话、审计、Webhook、Token 统计、JWK 元数据 |
 | 联合身份 | OAuth2/OIDC、SAML SP 登录、LDAP/AD bind/search 登录、内置 Provider 元数据和账号绑定 |
 | 接入集成 | SCIM 2.0 用户/组、授权检查 API、Webhook、Java Action SPI、Spring Boot Starter |
@@ -48,6 +48,7 @@ ArmorAuth 主要有三个使用入口：
 
 1. 按 [快速开始](quick-start.zh-CN.md) 在本地启动系统。
 2. 阅读 [基础使用](basic-usage.zh-CN.md)，创建租户、应用和测试用户。
-3. 按 [Spring Boot Starter](spring-boot-starter.md) 接入一个 Spring Boot 业务服务。
-4. 进入共享或生产环境前阅读 [安全最佳实践](security-best-practices.md)。
-5. 按 [部署指南](deployment-guide.zh-CN.md) 规划生产部署。
+3. 阅读 [功能链路总览](feature-flows.zh-CN.md)，确认租户、应用、用户、MFA、身份源、SCIM、Webhook 和 Starter 的完整链路。
+4. 按 [Spring Boot Starter](spring-boot-starter.md) 接入一个 Spring Boot 业务服务。
+5. 进入共享或生产环境前阅读 [安全最佳实践](security-best-practices.md)。
+6. 按 [部署指南](deployment-guide.zh-CN.md) 规划生产部署。

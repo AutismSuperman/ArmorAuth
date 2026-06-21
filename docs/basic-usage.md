@@ -1,6 +1,6 @@
 # ArmorAuth Basic Usage
 
-This guide describes the first operational workflows after ArmorAuth is running. Use it with [Quick Start](quick-start.md) for local evaluation or with [Deployment Guide](deployment-guide.md) for shared environments.
+This guide describes the first operational workflows after ArmorAuth is running. Use it with [Quick Start](quick-start.md) for local evaluation or with [Deployment Guide](deployment-guide.md) for shared environments. The most complete feature-chain walkthrough is currently maintained in Chinese at [Feature Flows](feature-flows.zh-CN.md).
 
 ## 1. Sign In To The Admin Console
 

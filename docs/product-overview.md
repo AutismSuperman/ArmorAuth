@@ -19,7 +19,7 @@ ArmorAuth fits these scenarios:
 | --- | --- |
 | Authorization server | Authorization Code, Client Credentials, Refresh Token, Device Authorization, discovery, JWKS, introspection, revocation, and OIDC logout |
 | Hosted identity pages | Sign-in, consent, MFA challenge, device activation, activation result, account center, and federated account confirmation |
-| Account security | Password login, captcha, SMS code login, TOTP MFA, Passkey/WebAuthn, recovery-code-oriented flows, contact verification, and session visibility |
+| Account security | Password login, captcha, SMS code login, TOTP MFA, Passkey/WebAuthn, login step-up, contact verification, and session visibility |
 | Administration | Applications, scopes, users, roles, permissions, tenants, organizations, identity providers, sessions, audit logs, webhooks, token statistics, and JWK metadata |
 | Federation | OAuth2/OIDC, SAML SP login, LDAP/AD bind/search login, built-in provider metadata, and account linking |
 | Provisioning and integration | SCIM 2.0 users/groups, authorization-check API, webhooks, Java action SPI, and Spring Boot starter integration |

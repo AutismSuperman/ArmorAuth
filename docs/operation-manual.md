@@ -1,6 +1,6 @@
 # ArmorAuth Operation Manual
 
-This manual describes common administration workflows for a running ArmorAuth installation. It focuses on operator routines after the system is available. For first-time product usage, start with [Basic Usage](basic-usage.md).
+This manual describes common administration workflows for a running ArmorAuth installation. It focuses on operator routines after the system is available. For first-time product usage, start with [Basic Usage](basic-usage.md). The detailed feature-chain walkthrough is currently maintained in Chinese at [Feature Flows](feature-flows.zh-CN.md).
 
 ## Operator Roles
 
