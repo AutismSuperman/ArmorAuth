@@ -33,6 +33,7 @@ public class ApplicationDTO {
      * 创建应用请求
      */
     public record CreateRequest(
+            String tenantId,
             @NotBlank(message = "clientName不能为空")
             String clientName,
             @NotBlank(message = "clientAuthenticationMethods不能为空")
@@ -44,7 +45,8 @@ public class ApplicationDTO {
             List<String> scopes,
             ClientSettingsDTO clientSettings,
             TokenSettingsDTO tokenSettings,
-            Boolean mfaRequired
+            Boolean mfaRequired,
+            Boolean dynamicClientRegistrar
     ) {
     }
 
@@ -52,6 +54,7 @@ public class ApplicationDTO {
      * 更新应用请求
      */
     public record UpdateRequest(
+            String tenantId,
             String clientName,
             String clientAuthenticationMethods,
             String authorizationGrantTypes,
@@ -60,7 +63,8 @@ public class ApplicationDTO {
             List<String> scopes,
             ClientSettingsDTO clientSettings,
             TokenSettingsDTO tokenSettings,
-            Boolean mfaRequired
+            Boolean mfaRequired,
+            Boolean dynamicClientRegistrar
     ) {
     }
 
@@ -70,6 +74,9 @@ public class ApplicationDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record Response(
             String id,
+            String tenantId,
+            String tenantCode,
+            String issuerPath,
             String clientId,
             String clientName,
             String clientAuthenticationMethods,
@@ -83,6 +90,8 @@ public class ApplicationDTO {
             Instant clientSecretExpiresAt,
             Boolean enabled,
             Boolean mfaRequired,
+            String registrationSource,
+            Boolean dynamicClientRegistrar,
             String clientSecret
     ) {
     }
@@ -94,7 +103,11 @@ public class ApplicationDTO {
             String jwkSetUrl,
             Boolean requireAuthorizationConsent,
             Boolean requireProofKey,
-            String signingAlgorithm
+            String signingAlgorithm,
+            String x509CertificateSubjectDN,
+            Boolean dpopEnabled,
+            Boolean dpopRequired,
+            String dpopAllowedAlgorithms
     ) {
     }
 
@@ -108,7 +121,8 @@ public class ApplicationDTO {
             Long authorizationCodeTimeToLiveSeconds,
             String idTokenSignatureAlgorithm,
             Boolean reuseRefreshTokens,
-            String tokenFormat
+            String tokenFormat,
+            Boolean x509CertificateBoundAccessTokens
     ) {
     }
 

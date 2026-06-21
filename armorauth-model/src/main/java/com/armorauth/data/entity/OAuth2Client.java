@@ -48,8 +48,17 @@ public class OAuth2Client implements Serializable {
      * id
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+    /**
+     * 所属租户/issuer。
+     */
+    @Column(name = "tenant_id", nullable = false)
+    private String tenantId = "tenant-default";
+    /**
+     * 注册来源：ADMIN 或 DYNAMIC_REGISTRATION。
+     */
+    @Column(name = "registration_source", nullable = false, length = 50)
+    private String registrationSource = "ADMIN";
     /**
      * 客户端id
      */

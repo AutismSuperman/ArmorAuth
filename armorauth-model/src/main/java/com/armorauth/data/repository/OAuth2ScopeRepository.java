@@ -34,6 +34,8 @@ public interface OAuth2ScopeRepository extends JpaRepository<OAuth2Scope, OAuth2
 
     List<OAuth2Scope> findAllByClientIdAndScopeIn(String clientId, Collection<String> scopes);
 
+    List<OAuth2Scope> findAllByClientId(String clientId);
+
     Page<OAuth2Scope> findByClientId(String clientId, Pageable pageable);
 
     Optional<OAuth2Scope> findByClientIdAndScope(String clientId, String scope);

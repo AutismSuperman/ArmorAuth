@@ -9,7 +9,8 @@
     </div>
 
     <a-table :dataSource="webhooks" :columns="columns" :loading="loading"
-             :pagination="pagination" @change="handleTableChange" row-key="id" size="middle">
+             :pagination="pagination" :scroll="{ x: 1240 }"
+             @change="handleTableChange" row-key="id" size="middle">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'events'">
           <a-tag v-for="ev in (record.eventTypes || '').split(',')" :key="ev" style="margin: 2px">{{ ev }}</a-tag>
@@ -74,11 +75,11 @@ const form = reactive({ name: '', url: '', secret: '', eventTypes: [] })
 
 const columns = [
   { title: '名称', dataIndex: 'name', key: 'name', width: 160 },
-  { title: 'URL', dataIndex: 'url', key: 'url', ellipsis: true },
+  { title: 'URL', dataIndex: 'url', key: 'url', width: 400, ellipsis: true },
   { title: '事件类型', key: 'events', width: 300 },
   { title: '状态', key: 'status', width: 80 },
   { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', width: 180 },
-  { title: '操作', key: 'action', width: 100, fixed: 'right' }
+  { title: '操作', key: 'action', width: 120, fixed: 'right' }
 ]
 
 const fetchData = async () => {

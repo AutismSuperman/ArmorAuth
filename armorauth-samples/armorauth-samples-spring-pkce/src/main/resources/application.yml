@@ -1,0 +1,39 @@
+server:
+  port: ${ARMORAUTH_SAMPLE_PORT:8086}
+
+logging:
+  level:
+    org.springframework.web: trace
+    org.springframework.security: debug
+    org.springframework.security.oauth2: debug
+
+armorauth:
+  sample:
+    registration-id: ${ARMORAUTH_SAMPLE_REGISTRATION_ID:spring-pkce}
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          spring-pkce:
+            provider: spring-pkce
+            client-name: Spring Boot PKCE Sample
+            client-id: ${ARMORAUTH_SAMPLE_CLIENT_ID:spring-pkce}
+            redirect-uri: '{baseUrl}/login/oauth2/code/{registrationId}'
+            authorization-grant-type: authorization_code
+            client-authentication-method: none
+            scope: openid,profile,email,message.read
+          tenant-demo-pkce:
+            provider: tenant-demo-pkce
+            client-name: Tenant Demo Spring Boot PKCE Sample
+            client-id: ${ARMORAUTH_SAMPLE_TENANT_CLIENT_ID:tenant-demo-pkce}
+            redirect-uri: '{baseUrl}/login/oauth2/code/{registrationId}'
+            authorization-grant-type: authorization_code
+            client-authentication-method: none
+            scope: openid,profile,email,message.read
+        provider:
+          spring-pkce:
+            issuer-uri: ${ARMORAUTH_SAMPLE_ISSUER:http://localhost:9000}
+          tenant-demo-pkce:
+            issuer-uri: ${ARMORAUTH_SAMPLE_TENANT_ISSUER:http://localhost:9000/t/demo}

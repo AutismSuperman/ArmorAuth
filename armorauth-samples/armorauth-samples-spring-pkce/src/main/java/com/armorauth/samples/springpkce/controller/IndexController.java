@@ -1,0 +1,57 @@
+/*
+ * Copyright (c) 2023-present ArmorAuth. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.armorauth.samples.springpkce.controller;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class IndexController {
+
+    @GetMapping("/")
+    public String index(
+            Model model,
+            @RegisteredOAuth2AuthorizedClient OAuth2AuthorizedClient authorizedClient,
+            @AuthenticationPrincipal OAuth2User oauth2User
+    ) {
+        OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
+
+        model.addAttribute("userName", oauth2User.getName());
+        model.addAttribute("clientName", authorizedClient.getClientRegistration().getClientName());
+        model.addAttribute("clientId", authorizedClient.getClientRegistration().getClientId());
+        model.addAttribute("registrationId", authorizedClient.getClientRegistration().getRegistrationId());
+        model.addAttribute("userAttributes", oauth2User.getAttributes());
+        model.addAttribute("scopes",
+                StringUtils.collectionToCommaDelimitedString(authorizedClient.getClientRegistration().getScopes()));
+        model.addAttribute("redirectUri", authorizedClient.getClientRegistration().getRedirectUri());
+        model.addAttribute("authorizationUri",
+                authorizedClient.getClientRegistration().getProviderDetails().getAuthorizationUri());
+        model.addAttribute("tokenUri", authorizedClient.getClientRegistration().getProviderDetails().getTokenUri());
+        model.addAttribute("jwkSetUri", authorizedClient.getClientRegistration().getProviderDetails().getJwkSetUri());
+        model.addAttribute("accessTokenIssuedAt", accessToken.getIssuedAt());
+        model.addAttribute("accessTokenExpiresAt", accessToken.getExpiresAt());
+        model.addAttribute("accessTokenScopes",
+                StringUtils.collectionToCommaDelimitedString(accessToken.getScopes()));
+        return "index";
+    }
+}

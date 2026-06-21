@@ -19,16 +19,21 @@ import com.armorauth.authentication.DeviceClientAuthenticationProvider;
 import com.armorauth.authorization.JpaOAuth2AuthorizationConsentService;
 import com.armorauth.authorization.JpaOAuth2AuthorizationService;
 import com.armorauth.authorization.client.JpaRegisteredClientRepository;
+import com.armorauth.authorization.tenant.TenantIssuerFilter;
 import com.armorauth.crypto.SecretCryptoService;
 import com.armorauth.data.repository.AuthorizationConsentRepository;
 import com.armorauth.data.repository.AuthorizationRepository;
+import com.armorauth.data.repository.AuditEventRepository;
 import com.armorauth.data.repository.JwkKeyRepository;
 import com.armorauth.data.repository.OAuth2ClientRepository;
+import com.armorauth.data.repository.TenantRepository;
 import com.armorauth.jose.PersistentJwkSource;
 import com.armorauth.security.DeviceVerificationResponseHandler;
 import com.armorauth.web.authentication.DeviceClientAuthenticationConverter;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.ApplicationEventPublisher;
@@ -47,6 +52,7 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 @Configuration(proxyBeanMethods = false)
@@ -67,7 +73,10 @@ public class AuthorizationServerConfig {
             RegisteredClientRepository registeredClientRepository,
             OAuth2AuthorizationService authorizationService,
             OAuth2AuthorizationConsentService authorizationConsentService,
-            AuthorizationServerSettings authorizationServerSettings
+            AuthorizationServerSettings authorizationServerSettings,
+            RequestCache requestCache,
+            @Value("${armorauth.authorization-server.dynamic-client-registration.enabled:false}")
+            boolean dynamicClientRegistrationEnabled
     ) throws Exception {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer();
 
@@ -84,30 +93,39 @@ public class AuthorizationServerConfig {
                         new LoginUrlAuthenticationEntryPoint(CUSTOM_LOGIN_PAGE),
                         new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                 ))
+                .requestCache(requestCacheConfigurer -> requestCacheConfigurer.requestCache(requestCache))
                 .csrf(AbstractHttpConfigurer::disable);
 
-        http.with(authorizationServerConfigurer, authorizationServer ->
+        http.with(authorizationServerConfigurer, authorizationServer -> {
+            authorizationServer
+                    .registeredClientRepository(registeredClientRepository)
+                    .authorizationService(authorizationService)
+                    .authorizationConsentService(authorizationConsentService)
+                    .authorizationServerSettings(authorizationServerSettings)
+                    .pushedAuthorizationRequestEndpoint(Customizer.withDefaults())
+                    .deviceAuthorizationEndpoint(deviceAuthorizationEndpoint ->
+                            deviceAuthorizationEndpoint.verificationUri(CUSTOM_ACTIVATE_PAGE)
+                    )
+                    .deviceVerificationEndpoint(deviceVerificationEndpoint ->
+                            deviceVerificationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)
+                                    .deviceVerificationResponseHandler(deviceVerificationResponseHandler)
+                    )
+                    .clientAuthentication(clientAuthentication ->
+                            clientAuthentication
+                                    .authenticationConverter(deviceClientAuthenticationConverter)
+                                    .authenticationProvider(deviceClientAuthenticationProvider)
+                    )
+                    .authorizationEndpoint(authorizationEndpoint ->
+                            authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)
+                    );
+            if (dynamicClientRegistrationEnabled) {
                 authorizationServer
-                        .registeredClientRepository(registeredClientRepository)
-                        .authorizationService(authorizationService)
-                        .authorizationConsentService(authorizationConsentService)
-                        .authorizationServerSettings(authorizationServerSettings)
-                        .deviceAuthorizationEndpoint(deviceAuthorizationEndpoint ->
-                                deviceAuthorizationEndpoint.verificationUri(CUSTOM_ACTIVATE_PAGE)
-                        )
-                        .deviceVerificationEndpoint(deviceVerificationEndpoint ->
-                                deviceVerificationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)
-                                        .deviceVerificationResponseHandler(deviceVerificationResponseHandler)
-                        )
-                        .clientAuthentication(clientAuthentication ->
-                                clientAuthentication
-                                        .authenticationConverter(deviceClientAuthenticationConverter)
-                                        .authenticationProvider(deviceClientAuthenticationProvider)
-                        )
-                        .authorizationEndpoint(authorizationEndpoint ->
-                                authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)
-                        )
-                        .oidc(Customizer.withDefaults()));
+                        .clientRegistrationEndpoint(Customizer.withDefaults())
+                        .oidc(oidc -> oidc.clientRegistrationEndpoint(Customizer.withDefaults()));
+            } else {
+                authorizationServer.oidc(Customizer.withDefaults());
+            }
+        });
 
         http
                 .oauth2ResourceServer(oauth2ResourceServer ->
@@ -117,13 +135,29 @@ public class AuthorizationServerConfig {
     }
 
     @Bean
-    public AuthorizationServerSettings authorizationServerSettings() {
-        return AuthorizationServerSettings.builder().build();
+    public AuthorizationServerSettings authorizationServerSettings(
+            @Value("${armorauth.authorization-server.multiple-issuers.enabled:false}")
+            boolean multipleIssuersEnabled) {
+        return AuthorizationServerSettings.builder()
+                .multipleIssuersAllowed(multipleIssuersEnabled)
+                .build();
     }
 
     @Bean
-    public RegisteredClientRepository registeredClientRepository(OAuth2ClientRepository oAuth2ClientRepository) {
-        return new JpaRegisteredClientRepository(oAuth2ClientRepository);
+    public FilterRegistrationBean<TenantIssuerFilter> tenantIssuerFilter(
+            TenantRepository tenantRepository,
+            @Value("${armorauth.authorization-server.multiple-issuers.enabled:false}")
+            boolean multipleIssuersEnabled) {
+        FilterRegistrationBean<TenantIssuerFilter> registration = new FilterRegistrationBean<>(
+                new TenantIssuerFilter(tenantRepository, multipleIssuersEnabled));
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return registration;
+    }
+
+    @Bean
+    public RegisteredClientRepository registeredClientRepository(OAuth2ClientRepository oAuth2ClientRepository,
+                                                                 AuditEventRepository auditEventRepository) {
+        return new JpaRegisteredClientRepository(oAuth2ClientRepository, auditEventRepository);
     }
 
     @Bean

@@ -30,6 +30,9 @@ spring:
       ddl-auto: none
 
 armorauth:
+  authorization-server:
+    multiple-issuers:
+      enabled: true
   federation:
     enabled: false
     default-login-mode: confirm

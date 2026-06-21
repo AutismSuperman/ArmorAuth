@@ -31,8 +31,14 @@ public interface JwkKeyRepository extends JpaRepository<JwkKey, String> {
 
     Optional<JwkKey> findByKid(String kid);
 
+    Optional<JwkKey> findByTenantIdAndKid(String tenantId, String kid);
+
     List<JwkKey> findByStatus(JwkKey.JwkKeyStatus status);
 
+    List<JwkKey> findByTenantIdAndStatus(String tenantId, JwkKey.JwkKeyStatus status);
+
     Optional<JwkKey> findFirstByStatusOrderByCreatedAtDesc(JwkKey.JwkKeyStatus status);
+
+    Optional<JwkKey> findFirstByTenantIdAndStatusOrderByCreatedAtDesc(String tenantId, JwkKey.JwkKeyStatus status);
 
 }

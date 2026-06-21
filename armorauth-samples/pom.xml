@@ -14,6 +14,8 @@
     <packaging>pom</packaging>
     <modules>
         <module>armorauth-samples-oidc-login</module>
+        <module>armorauth-samples-tenant-oidc-login</module>
+        <module>armorauth-samples-spring-pkce</module>
         <module>armorauth-samples-client</module>
         <module>armorauth-samples-pkce</module>
     </modules>

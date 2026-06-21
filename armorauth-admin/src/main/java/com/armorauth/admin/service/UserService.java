@@ -20,6 +20,7 @@ import com.armorauth.common.audit.AuditContext;
 import com.armorauth.common.exception.ResourceNotFoundException;
 import com.armorauth.data.entity.UserInfo;
 import com.armorauth.data.entity.UserRole;
+import com.armorauth.data.repository.OrganizationMemberRepository;
 import com.armorauth.data.repository.UserInfoRepository;
 import com.armorauth.data.repository.UserRoleRepository;
 import org.springframework.data.domain.Page;
@@ -45,17 +46,20 @@ public class UserService {
 
     private final UserInfoRepository userRepository;
     private final UserRoleRepository userRoleRepository;
+    private final OrganizationMemberRepository organizationMemberRepository;
     private final PasswordEncoder passwordEncoder;
     private final PasswordPolicyService passwordPolicyService;
     private final AuditEventService auditEventService;
 
     public UserService(UserInfoRepository userRepository,
                        UserRoleRepository userRoleRepository,
+                       OrganizationMemberRepository organizationMemberRepository,
                        PasswordEncoder passwordEncoder,
                        PasswordPolicyService passwordPolicyService,
                        AuditEventService auditEventService) {
         this.userRepository = userRepository;
         this.userRoleRepository = userRoleRepository;
+        this.organizationMemberRepository = organizationMemberRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordPolicyService = passwordPolicyService;
         this.auditEventService = auditEventService;
@@ -121,24 +125,16 @@ public class UserService {
         if (request.displayName() != null) {
             user.setDisplayName(request.displayName());
         }
-        if (request.email() != null) {
-            user.setEmail(request.email());
-        }
-        if (request.phone() != null) {
-            user.setPhone(request.phone());
-        }
-        if (request.avatar() != null) {
-            user.setAvatar(request.avatar());
-        }
+        user.setEmail(request.email());
+        user.setPhone(request.phone());
+        user.setAvatar(request.avatar());
         if (request.emailVerified() != null) {
             user.setEmailVerified(request.emailVerified());
         }
         if (request.phoneVerified() != null) {
             user.setPhoneVerified(request.phoneVerified());
         }
-        if (request.profile() != null) {
-            user.setProfile(request.profile());
-        }
+        user.setProfile(request.profile());
         user.setUpdateTime(Instant.now());
         user = userRepository.save(user);
 
@@ -220,6 +216,7 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("用户", id));
         String username = user.getUsername();
         userRoleRepository.deleteByUserId(id);
+        organizationMemberRepository.deleteByUserId(id);
         userRepository.delete(user);
 
         auditEventService.record("USER_DELETED",

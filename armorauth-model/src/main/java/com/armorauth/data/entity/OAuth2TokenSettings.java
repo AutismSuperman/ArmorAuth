@@ -59,6 +59,9 @@ public class OAuth2TokenSettings implements Serializable {
 
     private String tokenFormat;
 
+    @Column(name = "x509_certificate_bound_access_tokens")
+    private Boolean x509CertificateBoundAccessTokens;
+
 
     @Override
     public boolean equals(Object o) {

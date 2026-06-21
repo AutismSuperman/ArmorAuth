@@ -16,6 +16,7 @@
 package com.armorauth.samples.config;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -35,6 +36,14 @@ import java.net.URI;
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfiguration {
 
+    private final String registrationId;
+
+    public SecurityConfiguration(
+            @Value("${armorauth.sample.registration-id:autism-client-oidc}") String registrationId
+    ) {
+        this.registrationId = registrationId;
+    }
+
     /***
      * 自定义
      *
@@ -51,7 +60,7 @@ public class SecurityConfiguration {
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2Login -> oauth2Login
-                        .loginPage("/oauth2/authorization/autism-client-oidc")
+                        .loginPage("/oauth2/authorization/" + registrationId)
                 )
                 .logout(logout -> logout.logoutSuccessHandler(logoutSuccessHandler))
         ;

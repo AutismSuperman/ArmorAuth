@@ -1,29 +1,183 @@
 import axios from 'axios'
 
+const AUTH_TOKEN_KEY = 'admin_token'
+const AUTH_USER_KEY = 'admin_user'
+const AUTH_LOGIN_AT_KEY = 'admin_login_at'
+const AUTH_VERIFIED_AT_KEY = 'admin_verified_at'
+
 const api = axios.create({
   baseURL: '/api/admin/v1',
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' }
 })
 
+const encodeBasicToken = (username, password) => {
+  const credentials = `${username}:${password}`
+  const bytes = new TextEncoder().encode(credentials)
+  let binary = ''
+  bytes.forEach(byte => { binary += String.fromCharCode(byte) })
+  return btoa(binary)
+}
+
+const decodeBasicToken = (token) => {
+  const binary = atob(token)
+  const bytes = Uint8Array.from(binary, char => char.charCodeAt(0))
+  return new TextDecoder().decode(bytes)
+}
+
+const safeJsonParse = (value) => {
+  try {
+    return value ? JSON.parse(value) : null
+  } catch {
+    return null
+  }
+}
+
+const nowIso = () => new Date().toISOString()
+
+const saveAdminUser = (payload = {}) => {
+  const current = getAdminUser()
+  const next = {
+    username: payload.username || current.username || getAdminUsername() || '',
+    displayName: payload.displayName || current.displayName || payload.username || current.username || '',
+    authorities: payload.authorities || current.authorities || [],
+    loginAt: payload.loginAt || current.loginAt || localStorage.getItem(AUTH_LOGIN_AT_KEY) || nowIso(),
+    verifiedAt: payload.verifiedAt || current.verifiedAt || localStorage.getItem(AUTH_VERIFIED_AT_KEY) || ''
+  }
+  localStorage.setItem(AUTH_USER_KEY, JSON.stringify(next))
+  localStorage.setItem(AUTH_LOGIN_AT_KEY, next.loginAt)
+  if (next.verifiedAt) {
+    localStorage.setItem(AUTH_VERIFIED_AT_KEY, next.verifiedAt)
+  }
+  return next
+}
+
+export const getAdminToken = () => localStorage.getItem(AUTH_TOKEN_KEY)
+
+export const isAdminAuthenticated = () => !!getAdminToken()
+
+export const getAdminUsername = () => {
+  const token = getAdminToken()
+  if (!token) return ''
+  try {
+    return decodeBasicToken(token).split(':')[0] || ''
+  } catch {
+    return ''
+  }
+}
+
+export const getAdminUser = () => {
+  const stored = safeJsonParse(localStorage.getItem(AUTH_USER_KEY))
+  const username = stored?.username || getAdminUsername()
+  return {
+    username,
+    displayName: stored?.displayName || username || '管理员',
+    authorities: stored?.authorities || [],
+    loginAt: stored?.loginAt || localStorage.getItem(AUTH_LOGIN_AT_KEY) || '',
+    verifiedAt: stored?.verifiedAt || localStorage.getItem(AUTH_VERIFIED_AT_KEY) || ''
+  }
+}
+
+export const clearAdminAuth = () => {
+  localStorage.removeItem(AUTH_TOKEN_KEY)
+  localStorage.removeItem(AUTH_USER_KEY)
+  localStorage.removeItem(AUTH_LOGIN_AT_KEY)
+  localStorage.removeItem(AUTH_VERIFIED_AT_KEY)
+}
+
+const emitAuthEvent = (name, detail = {}) => {
+  window.dispatchEvent(new CustomEvent(name, { detail }))
+}
+
 api.interceptors.request.use(config => {
-  const token = localStorage.getItem('admin_token')
-  if (token) {
+  const token = getAdminToken()
+  if (token && !config.headers.Authorization && !config.headers.authorization) {
     config.headers.Authorization = 'Basic ' + token
   }
   return config
 })
 
 api.interceptors.response.use(
-  res => res.data,
+  res => {
+    const body = res.data
+    if (body && typeof body.code === 'number' && body.code >= 400) {
+      const error = new Error(body.message || '请求失败')
+      error.status = body.code
+      error.code = body.code
+      error.data = body
+      return Promise.reject(error)
+    }
+    return body
+  },
   err => {
-    const msg = err.response?.data?.message || err.message || '请求失败'
-    return Promise.reject(new Error(msg))
+    const status = err.response?.status || err.status
+    const body = err.response?.data || err.data
+    let msg = body?.message || err.message || '请求失败'
+
+    if (status === 401) {
+      clearAdminAuth()
+      msg = '登录已过期或凭证无效，请重新登录'
+      emitAuthEvent('armorauth:auth-expired', { status, message: msg })
+    } else if (status === 403) {
+      msg = body?.message || '当前账号没有此操作权限'
+      emitAuthEvent('armorauth:forbidden', { status, message: msg, url: err.config?.url })
+    }
+
+    const error = new Error(msg)
+    error.status = status
+    error.code = body?.code || status
+    error.data = body
+    error.url = err.config?.url
+    return Promise.reject(error)
   }
 )
 
+export const validateAdminSession = async () => {
+  if (!getAdminToken()) {
+    throw new Error('未登录')
+  }
+  const response = await getAdminProfile()
+  const profile = response?.data || {}
+  const username = profile.username || getAdminUsername()
+  return saveAdminUser({
+    username,
+    displayName: getAdminUser().displayName || username,
+    authorities: profile.authorities || [],
+    verifiedAt: nowIso()
+  })
+}
+
+export const loginAdmin = async (username, password) => {
+  const normalizedUsername = (username || '').trim()
+  if (!normalizedUsername || !password) {
+    throw new Error('请输入用户名和密码')
+  }
+
+  clearAdminAuth()
+  localStorage.setItem(AUTH_TOKEN_KEY, encodeBasicToken(normalizedUsername, password))
+  saveAdminUser({
+    username: normalizedUsername,
+    displayName: normalizedUsername,
+    loginAt: nowIso()
+  })
+
+  try {
+    return await validateAdminSession()
+  } catch (e) {
+    clearAdminAuth()
+    throw e
+  }
+}
+
+// 当前管理员
+export const getAdminProfile = () => api.get('/me')
+
 // 应用管理
-export const getApplications = (page = 0, size = 20) => api.get('/applications', { params: { page, size } })
+export const getApplications = (page = 0, size = 20, tenantId) => {
+  const params = { page, size }
+  if (tenantId) params.tenantId = tenantId
+  return api.get('/applications', { params })
+}
 export const getApplication = (id) => api.get(`/applications/${id}`)
 export const createApplication = (data) => api.post('/applications', data)
 export const updateApplication = (id, data) => api.put(`/applications/${id}`, data)
@@ -80,12 +234,18 @@ export const assignPermission = (roleId, permId) => api.post(`/roles/${roleId}/p
 export const removePermission = (roleId, permId) => api.delete(`/roles/${roleId}/permissions/${permId}`)
 
 // 组织管理
-export const getOrganizations = (page = 0, size = 20) => api.get('/organizations', { params: { page, size } })
+export const getOrganizations = (page = 0, size = 20, tenantId) => {
+  const url = tenantId ? `/tenants/${encodeURIComponent(tenantId)}/organizations` : '/organizations'
+  return api.get(url, { params: { page, size } })
+}
 export const getOrganization = (id) => api.get(`/organizations/${id}`)
 export const createOrganization = (data) => api.post('/organizations', data)
 export const updateOrganization = (id, data) => api.put(`/organizations/${id}`, data)
 export const deleteOrganization = (id) => api.delete(`/organizations/${id}`)
 export const getOrgMembers = (orgId, page = 0, size = 20) => api.get(`/organizations/${orgId}/members`, { params: { page, size } })
+export const addOrgMember = (orgId, data) => api.post(`/organizations/${orgId}/members`, data)
+export const updateOrgMember = (orgId, userId, data) => api.put(`/organizations/${orgId}/members/${userId}`, data)
+export const removeOrgMember = (orgId, userId) => api.delete(`/organizations/${orgId}/members/${userId}`)
 
 // 身份源管理
 export const getIdentityProviders = (page = 0, size = 20, source) => {

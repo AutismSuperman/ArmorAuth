@@ -19,6 +19,7 @@ package com.armorauth.data.entity;
 import lombok.Data;
 import org.hibernate.Hibernate;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
@@ -45,6 +46,9 @@ public class AuthorizationConsent implements Serializable {
 
     @Id
     private String registeredClientId;
+
+    @Column(name = "tenant_id", nullable = false)
+    private String tenantId = "tenant-default";
 
     private String authorities;
 

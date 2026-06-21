@@ -1,0 +1,20 @@
+spring:
+  session:
+    store-type: redis
+    timeout: 30m
+    redis:
+      namespace: armorauth:session
+      flush-mode: on-save
+  data:
+    redis:
+      repositories:
+        enabled: false
+      host: ${ARMORAUTH_REDIS_HOST:localhost}
+      port: ${ARMORAUTH_REDIS_PORT:6379}
+      password: ${ARMORAUTH_REDIS_PASSWORD:}
+      database: ${ARMORAUTH_REDIS_DATABASE:0}
+
+armorauth:
+  ha:
+    oauth-state-store: jpa
+    servlet-session-store: redis

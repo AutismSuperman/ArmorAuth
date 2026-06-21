@@ -96,9 +96,9 @@ public class OrganizationService {
                 .orElseThrow(() -> new ResourceNotFoundException("组织", id));
 
         if (request.orgName() != null) org.setOrgName(request.orgName());
-        if (request.description() != null) org.setDescription(request.description());
-        if (request.logo() != null) org.setLogo(request.logo());
-        if (request.parentId() != null) org.setParentId(request.parentId());
+        org.setDescription(request.description());
+        org.setLogo(request.logo());
+        org.setParentId(request.parentId());
         org.setUpdatedAt(Instant.now());
         org = orgRepository.save(org);
 
@@ -114,6 +114,7 @@ public class OrganizationService {
         Organization org = orgRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("组织", id));
         String orgName = org.getOrgName();
+        memberRepository.deleteByOrgId(id);
         orgRepository.delete(org);
 
         auditEventService.record("ORGANIZATION_DELETED",
@@ -142,6 +143,20 @@ public class OrganizationService {
                 "添加组织成员: " + request.userId() + " 到 " + org.getOrgName(), AuditContext.getClientIp());
 
         return new OrganizationDTO.MemberResponse(member.getId(), orgId, request.userId(), request.orgRole(), member.getCreatedAt());
+    }
+
+    @Transactional
+    public OrganizationDTO.MemberResponse updateMember(String orgId, String userId, OrganizationDTO.MemberRequest request) {
+        OrganizationMember member = memberRepository.findByOrgIdAndUserId(orgId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("组织成员", orgId + "/" + userId));
+        member.setOrgRole(request.orgRole());
+        member = memberRepository.save(member);
+
+        auditEventService.record("ORG_MEMBER_UPDATED",
+                AuditContext.getCurrentPrincipal(), "organization_member", member.getId(),
+                "更新组织成员角色: " + userId + " -> " + request.orgRole(), AuditContext.getClientIp());
+
+        return new OrganizationDTO.MemberResponse(member.getId(), orgId, userId, member.getOrgRole(), member.getCreatedAt());
     }
 
     @Transactional

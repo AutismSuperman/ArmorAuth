@@ -37,7 +37,7 @@ class MockProfileDataSmokeTest {
     void mockProfileSeedsUsersClientsIdentitySourcesAndOperationsData() {
         assertThat(count("user_info", "username in ('admin','app.manager','audit.viewer','demo.user')"))
                 .isEqualTo(4);
-        assertThat(count("oauth2_client", "client_id in ('react-spa-pkce','mock-dashboard')"))
+        assertThat(count("oauth2_client", "client_id in ('spring-pkce','mock-dashboard')"))
                 .isEqualTo(2);
         assertThat(count("tenant", "tenant_code in ('default','acme')")).isEqualTo(2);
         assertThat(count("organization", "tenant_id = 'tenant-acme'")).isEqualTo(3);
@@ -45,7 +45,7 @@ class MockProfileDataSmokeTest {
         assertThat(count("webhook_endpoint", "id = 'mock-webhook-audit'")).isEqualTo(1);
         assertThat(count("audit_event", "id like 'mock-audit-%'")).isEqualTo(3);
         assertThat(count("token_statistics", "id like 'mock-token-%'")).isEqualTo(2);
-        assertThat(count("oauth2_client_settings", "client_id = 'react-spa-pkce' and require_proof_key = true"))
+        assertThat(count("oauth2_client_settings", "client_id = 'spring-pkce' and require_proof_key = true"))
                 .isEqualTo(1);
     }
 

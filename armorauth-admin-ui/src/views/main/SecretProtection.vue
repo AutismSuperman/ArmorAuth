@@ -59,6 +59,7 @@
       :dataSource="resourceRows"
       :loading="tableLoading"
       :pagination="false"
+      :scroll="{ x: 1120 }"
       bordered>
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'name'">

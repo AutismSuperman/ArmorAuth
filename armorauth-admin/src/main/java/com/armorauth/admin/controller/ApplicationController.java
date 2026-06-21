@@ -49,9 +49,10 @@ public class ApplicationController {
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size,
             @RequestParam(name = "sort", defaultValue = "clientIdIssuedAt") String sort,
-            @RequestParam(name = "direction", defaultValue = "DESC") String direction) {
+            @RequestParam(name = "direction", defaultValue = "DESC") String direction,
+            @RequestParam(name = "tenantId", required = false) String tenantId) {
         Sort sortObj = Sort.by(Sort.Direction.fromString(direction), sort);
-        Page<ApplicationDTO.Response> result = applicationService.listApplications(PageRequest.of(page, size, sortObj));
+        Page<ApplicationDTO.Response> result = applicationService.listApplications(tenantId, PageRequest.of(page, size, sortObj));
         PageResponse<ApplicationDTO.Response> pageResponse = new PageResponse<>(
                 result.getContent(),
                 result.getTotalElements(),

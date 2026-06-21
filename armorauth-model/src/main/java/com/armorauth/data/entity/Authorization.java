@@ -43,6 +43,8 @@ public class Authorization implements Serializable {
 
     @Id
     private String id;
+    @Column(name = "tenant_id", nullable = false)
+    private String tenantId = "tenant-default";
     private String principalName;
     private String registeredClientId;
     private String state;

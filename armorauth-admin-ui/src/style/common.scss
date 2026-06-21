@@ -100,6 +100,44 @@ a {
   background: var(--aa-card-bg);
 }
 
+.ant-table-wrapper .ant-table-content,
+.ant-table-wrapper .ant-table-body {
+  overflow-x: auto !important;
+}
+
+.ant-table-wrapper .ant-table-cell {
+  vertical-align: middle;
+}
+
+.ant-table-wrapper .ant-table-cell-fix-right,
+.ant-table-wrapper .ant-table-cell-fix-right-first,
+.ant-table-wrapper .ant-table-cell-fix-right-last {
+  white-space: nowrap;
+  background: var(--aa-card-bg);
+  box-shadow: -10px 0 16px -16px rgba(15, 23, 42, 0.55);
+}
+
+.ant-table-wrapper .ant-table-cell-fix-right .ant-space,
+.ant-table-wrapper .ant-table-cell-fix-right-first .ant-space,
+.ant-table-wrapper .ant-table-cell-fix-right-last .ant-space {
+  flex-wrap: nowrap !important;
+}
+
+.ant-table-wrapper .ant-table-cell-fix-right a,
+.ant-table-wrapper .ant-table-cell-fix-right button,
+.ant-table-wrapper .ant-table-cell-fix-right-first a,
+.ant-table-wrapper .ant-table-cell-fix-right-first button,
+.ant-table-wrapper .ant-table-cell-fix-right-last a,
+.ant-table-wrapper .ant-table-cell-fix-right-last button {
+  white-space: nowrap;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th.ant-table-cell-fix-right,
+.ant-table-wrapper .ant-table-thead > tr > th.ant-table-cell-fix-right-first,
+.ant-table-wrapper .ant-table-thead > tr > th.ant-table-cell-fix-right-last {
+  background: var(--aa-bg-light) !important;
+}
+
 .ant-table-thead > tr > th {
   background: var(--aa-bg-light) !important;
   font-weight: 600 !important;
@@ -240,15 +278,21 @@ a {
 
 // ── Page pattern shared styles ──
 .page-container {
+  display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 16px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  min-width: 0;
 
   h2 {
     margin: 0;
@@ -258,10 +302,34 @@ a {
   }
 }
 
+.page-header > * {
+  min-width: 0;
+}
+
+.page-header > .ant-space {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .page-subtitle {
   margin-top: 4px;
   color: var(--aa-text-secondary);
   font-size: 13px;
+}
+
+// Keep Ant Design rows from visually merging with the next section.
+.page-container > .ant-row {
+  width: 100%;
+  min-width: 0;
+}
+
+.page-container > .ant-alert,
+.page-container > .ant-card,
+.page-container > .ant-collapse,
+.page-container > .ant-spin-nested-loading,
+.page-container > .ant-table-wrapper {
+  width: 100%;
+  min-width: 0;
 }
 
 // ── Metric cards ──
@@ -285,7 +353,17 @@ a {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  margin-bottom: 16px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.toolbar > .ant-input,
+.toolbar > .ant-input-affix-wrapper,
+.toolbar > .ant-input-search,
+.toolbar > .ant-select {
+  flex: 0 1 260px;
+  min-width: 180px;
+  max-width: 100%;
 }
 
 .banner {

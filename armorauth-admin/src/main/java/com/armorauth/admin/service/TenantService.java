@@ -21,6 +21,7 @@ import com.armorauth.common.exception.ResourceNotFoundException;
 import com.armorauth.common.exception.ValidationException;
 import com.armorauth.data.entity.Tenant;
 import com.armorauth.data.repository.TenantRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,10 +34,14 @@ public class TenantService {
 
     private final TenantRepository tenantRepository;
     private final AuditEventService auditEventService;
+    private final boolean multipleIssuersEnabled;
 
-    public TenantService(TenantRepository tenantRepository, AuditEventService auditEventService) {
+    public TenantService(TenantRepository tenantRepository, AuditEventService auditEventService,
+                         @Value("${armorauth.authorization-server.multiple-issuers.enabled:false}")
+                         boolean multipleIssuersEnabled) {
         this.tenantRepository = tenantRepository;
         this.auditEventService = auditEventService;
+        this.multipleIssuersEnabled = multipleIssuersEnabled;
     }
 
     @Transactional(readOnly = true)
@@ -83,13 +88,13 @@ public class TenantService {
                 .orElseThrow(() -> new ResourceNotFoundException("租户", id));
 
         if (request.tenantName() != null) tenant.setTenantName(request.tenantName());
-        if (request.description() != null) tenant.setDescription(request.description());
-        if (request.logo() != null) tenant.setLogo(request.logo());
-        if (request.primaryColor() != null) tenant.setPrimaryColor(request.primaryColor());
-        if (request.customDomain() != null) tenant.setCustomDomain(request.customDomain());
-        if (request.loginPageTitle() != null) tenant.setLoginPageTitle(request.loginPageTitle());
-        if (request.privacyPolicyUrl() != null) tenant.setPrivacyPolicyUrl(request.privacyPolicyUrl());
-        if (request.termsOfServiceUrl() != null) tenant.setTermsOfServiceUrl(request.termsOfServiceUrl());
+        tenant.setDescription(request.description());
+        tenant.setLogo(request.logo());
+        tenant.setPrimaryColor(request.primaryColor());
+        tenant.setCustomDomain(request.customDomain());
+        tenant.setLoginPageTitle(request.loginPageTitle());
+        tenant.setPrivacyPolicyUrl(request.privacyPolicyUrl());
+        tenant.setTermsOfServiceUrl(request.termsOfServiceUrl());
         tenant.setUpdatedAt(Instant.now());
         tenant = tenantRepository.save(tenant);
 
@@ -132,7 +137,11 @@ public class TenantService {
                 tenant.getDescription(), tenant.getLogo(), tenant.getPrimaryColor(),
                 tenant.getCustomDomain(), tenant.getLoginPageTitle(),
                 tenant.getPrivacyPolicyUrl(), tenant.getTermsOfServiceUrl(),
-                tenant.getEnabled(), tenant.getCreatedAt(), tenant.getUpdatedAt()
+                tenant.getEnabled(), "/t/" + tenant.getTenantCode(),
+                multipleIssuersEnabled && Boolean.TRUE.equals(tenant.getEnabled()),
+                tenant.getCustomDomain() == null || tenant.getCustomDomain().isBlank()
+                        ? null : "https://" + tenant.getCustomDomain(),
+                tenant.getCreatedAt(), tenant.getUpdatedAt()
         );
     }
 }

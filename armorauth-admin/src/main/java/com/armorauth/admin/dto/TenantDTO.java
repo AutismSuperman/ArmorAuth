@@ -53,6 +53,9 @@ public class TenantDTO {
             String privacyPolicyUrl,
             String termsOfServiceUrl,
             Boolean enabled,
+            String issuerPath,
+            Boolean pathIssuerEnabled,
+            String customDomainIssuer,
             Instant createdAt,
             Instant updatedAt
     ) {}

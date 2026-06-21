@@ -15,17 +15,23 @@
  */
 package com.armorauth.authorization.client;
 
+import com.armorauth.authorization.tenant.TenantIssuerContext;
 import com.armorauth.data.entity.OAuth2Client;
 import com.armorauth.data.entity.OAuth2ClientSettings;
 import com.armorauth.data.entity.OAuth2Scope;
 import com.armorauth.data.entity.OAuth2TokenSettings;
+import com.armorauth.data.entity.AuditEvent;
+import com.armorauth.data.repository.AuditEventRepository;
 import com.armorauth.data.repository.OAuth2ClientRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,23 +40,44 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
 
     private final OAuth2ClientRepository oAuth2ClientRepository;
 
+    private final AuditEventRepository auditEventRepository;
 
     public JpaRegisteredClientRepository(OAuth2ClientRepository oAuth2ClientRepository) {
+        this(oAuth2ClientRepository, null);
+    }
+
+    public JpaRegisteredClientRepository(OAuth2ClientRepository oAuth2ClientRepository,
+                                         AuditEventRepository auditEventRepository) {
         Assert.notNull(oAuth2ClientRepository, "oAuth2ClientRepository cannot be null");
         this.oAuth2ClientRepository = oAuth2ClientRepository;
+        this.auditEventRepository = auditEventRepository;
     }
 
     @Override
     public void save(RegisteredClient registeredClient) {
         Assert.notNull(registeredClient, "registeredClient cannot be null");
-        oAuth2ClientRepository.save(toEntity(registeredClient));
+        Optional<OAuth2Client> existingClient = registeredClient.getId() != null
+                ? oAuth2ClientRepository.findById(registeredClient.getId())
+                : Optional.empty();
+        boolean newClient = existingClient.isEmpty();
+        OAuth2Client entity = toEntity(registeredClient);
+        existingClient.map(OAuth2Client::getRegistrationSource)
+                .filter(StringUtils::hasText)
+                .ifPresent(entity::setRegistrationSource);
+        if (newClient && StringUtils.hasText(currentPrincipalName())) {
+            entity.setRegistrationSource("DYNAMIC_REGISTRATION");
+        }
+        oAuth2ClientRepository.save(entity);
+        if (newClient) {
+            recordClientRegistrationCreated(registeredClient);
+        }
     }
 
     @Override
     public RegisteredClient findById(String id) {
         Assert.hasText(id, "id cannot be empty");
         Optional<OAuth2Client> oAuth2ClientById =
-                oAuth2ClientRepository.findOAuth2ClientById(id);
+                oAuth2ClientRepository.findOAuth2ClientByTenantIdAndId(TenantIssuerContext.tenantIdOrDefault(), id);
         return oAuth2ClientById
                 .filter(client -> !Boolean.FALSE.equals(client.getEnabled()))
                 .map(this::toObject)
@@ -61,7 +88,8 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
     public RegisteredClient findByClientId(String clientId) {
         Assert.hasText(clientId, "clientId cannot be empty");
         Optional<OAuth2Client> oAuth2ClientByClientId =
-                oAuth2ClientRepository.findOAuth2ClientByClientId(clientId);
+                oAuth2ClientRepository.findOAuth2ClientByTenantIdAndClientId(
+                        TenantIssuerContext.tenantIdOrDefault(), clientId);
         return oAuth2ClientByClientId
                 .filter(client -> !Boolean.FALSE.equals(client.getEnabled()))
                 .map(this::toObject)
@@ -85,6 +113,7 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
                 authorizationGrantTypes.add(authorizationGrantType.getValue()));
         OAuth2Client client = new OAuth2Client();
         client.setId(registeredClient.getId());
+        client.setTenantId(TenantIssuerContext.tenantIdOrDefault());
         String clientId = registeredClient.getClientId();
         client.setClientId(clientId);
         client.setClientIdIssuedAt(registeredClient.getClientIdIssuedAt());
@@ -153,5 +182,26 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
         return builder.build();
     }
 
+    private void recordClientRegistrationCreated(RegisteredClient registeredClient) {
+        if (auditEventRepository == null) {
+            return;
+        }
+        AuditEvent event = new AuditEvent();
+        event.setEventType("CLIENT_REGISTRATION_CREATED");
+        event.setPrincipalName(currentPrincipalName());
+        event.setResourceType("application");
+        event.setResourceId(registeredClient.getClientId());
+        event.setDetail("Dynamic client registered: " + registeredClient.getClientName());
+        event.setCreatedAt(Instant.now());
+        auditEventRepository.save(event);
+    }
+
+    private String currentPrincipalName() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return null;
+        }
+        return authentication.getName();
+    }
 
 }

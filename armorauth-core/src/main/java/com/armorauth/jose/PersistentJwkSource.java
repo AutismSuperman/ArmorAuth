@@ -15,6 +15,7 @@
  */
 package com.armorauth.jose;
 
+import com.armorauth.authorization.tenant.TenantIssuerContext;
 import com.armorauth.crypto.SecretCryptoService;
 import com.armorauth.data.entity.JwkKey;
 import com.armorauth.data.repository.JwkKeyRepository;
@@ -42,6 +43,8 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.Set;
 import java.util.UUID;
 
@@ -67,7 +70,7 @@ public class PersistentJwkSource implements JWKSource<SecurityContext> {
 
     private final JwkKeyRepository jwkKeyRepository;
     private final SecretCryptoService secretCryptoService;
-    private volatile JWKSet jwkSet;
+    private final ConcurrentMap<String, JWKSet> jwkSets = new ConcurrentHashMap<>();
 
     public PersistentJwkSource(JwkKeyRepository jwkKeyRepository) {
         this(jwkKeyRepository, null);
@@ -77,21 +80,23 @@ public class PersistentJwkSource implements JWKSource<SecurityContext> {
                                SecretCryptoService secretCryptoService) {
         this.jwkKeyRepository = jwkKeyRepository;
         this.secretCryptoService = secretCryptoService;
-        this.jwkSet = loadOrCreateJwkSet();
+        this.jwkSets.put(TenantIssuerContext.DEFAULT_TENANT_ID,
+                loadOrCreateJwkSet(TenantIssuerContext.DEFAULT_TENANT_ID));
     }
 
-    private JWKSet loadOrCreateJwkSet() {
-        List<JwkKey> activeKeys = jwkKeyRepository.findByStatus(JwkKey.JwkKeyStatus.active);
+    private JWKSet loadOrCreateJwkSet(String tenantId) {
+        List<JwkKey> activeKeys = jwkKeyRepository.findByTenantIdAndStatus(tenantId, JwkKey.JwkKeyStatus.active);
         if (!activeKeys.isEmpty()) {
-            log.info("Loaded {} active JWK key(s) from database", activeKeys.size());
+            log.info("Loaded {} active JWK key(s) from database for tenant {}", activeKeys.size(), tenantId);
             List<JWK> jwkList = activeKeys.stream()
                     .map(this::toJwk)
                     .toList();
             return new JWKSet(jwkList);
         }
 
-        log.info("No active JWK keys found in database, generating new {} key pair", DEFAULT_ALGORITHM);
-        JwkKey jwkKey = generateAndPersistKey(DEFAULT_ALGORITHM);
+        log.info("No active JWK keys found in database for tenant {}, generating new {} key pair",
+                tenantId, DEFAULT_ALGORITHM);
+        JwkKey jwkKey = generateAndPersistKey(DEFAULT_ALGORITHM, tenantId);
         return new JWKSet(toJwk(jwkKey));
     }
 
@@ -111,11 +116,12 @@ public class PersistentJwkSource implements JWKSource<SecurityContext> {
      * @return 新生成的 active 密钥的 kid
      */
     public String rotateKey(String algorithm) {
+        String tenantId = TenantIssuerContext.tenantIdOrDefault();
         String normalizedAlgorithm = normalizeAlgorithm(algorithm);
-        log.info("Starting JWK key rotation, algorithm={}", normalizedAlgorithm);
+        log.info("Starting JWK key rotation, tenant={}, algorithm={}", tenantId, normalizedAlgorithm);
 
         // 将当前 active 密钥降级为 standby
-        List<JwkKey> activeKeys = jwkKeyRepository.findByStatus(JwkKey.JwkKeyStatus.active);
+        List<JwkKey> activeKeys = jwkKeyRepository.findByTenantIdAndStatus(tenantId, JwkKey.JwkKeyStatus.active);
         for (JwkKey key : activeKeys) {
             key.setStatus(JwkKey.JwkKeyStatus.standby);
             jwkKeyRepository.save(key);
@@ -123,11 +129,11 @@ public class PersistentJwkSource implements JWKSource<SecurityContext> {
         }
 
         // 生成新的 active 密钥
-        JwkKey newKey = generateAndPersistKey(normalizedAlgorithm);
-        refresh();
+        JwkKey newKey = generateAndPersistKey(normalizedAlgorithm, tenantId);
+        refresh(tenantId);
 
-        log.info("JWK key rotation completed, new active key: kid={}, algorithm={}",
-                newKey.getKid(), normalizedAlgorithm);
+        log.info("JWK key rotation completed, tenant={}, new active key: kid={}, algorithm={}",
+                tenantId, newKey.getKid(), normalizedAlgorithm);
         return newKey.getKid();
     }
 
@@ -137,11 +143,12 @@ public class PersistentJwkSource implements JWKSource<SecurityContext> {
      * @param kid 密钥 ID
      */
     public void retireKey(String kid) {
-        jwkKeyRepository.findByKid(kid).ifPresent(key -> {
+        String tenantId = TenantIssuerContext.tenantIdOrDefault();
+        jwkKeyRepository.findByTenantIdAndKid(tenantId, kid).ifPresent(key -> {
             if (key.getStatus() == JwkKey.JwkKeyStatus.standby) {
                 key.setStatus(JwkKey.JwkKeyStatus.retired);
                 jwkKeyRepository.save(key);
-                refresh();
+                refresh(tenantId);
                 log.info("Key retired: kid={}", kid);
             }
         });
@@ -153,13 +160,14 @@ public class PersistentJwkSource implements JWKSource<SecurityContext> {
      * @param kid 密钥 ID
      */
     public void deleteKey(String kid) {
-        JwkKey key = jwkKeyRepository.findByKid(kid)
+        String tenantId = TenantIssuerContext.tenantIdOrDefault();
+        JwkKey key = jwkKeyRepository.findByTenantIdAndKid(tenantId, kid)
                 .orElseThrow(() -> new IllegalArgumentException("JWK 密钥不存在: " + kid));
         if (key.getStatus() == JwkKey.JwkKeyStatus.active) {
             throw new IllegalArgumentException("Active 密钥不能删除，请先轮换后再删除");
         }
         jwkKeyRepository.delete(key);
-        refresh();
+        refresh(tenantId);
         log.info("Key deleted: kid={}", kid);
     }
 
@@ -170,12 +178,13 @@ public class PersistentJwkSource implements JWKSource<SecurityContext> {
         return jwkKeyRepository.findAll();
     }
 
-    private JwkKey generateAndPersistKey(String algorithm) {
+    private JwkKey generateAndPersistKey(String algorithm, String tenantId) {
         String normalizedAlgorithm = normalizeAlgorithm(algorithm);
         try {
             if (RSA_ALGORITHMS.contains(normalizedAlgorithm)) {
                 RSAKey rsaKey = Jwks.generateRsa();
                 return persistKey(
+                        tenantId,
                         rsaKey.getKeyID(),
                         "RSA",
                         normalizedAlgorithm,
@@ -185,6 +194,7 @@ public class PersistentJwkSource implements JWKSource<SecurityContext> {
 
             ECKey ecKey = Jwks.generateEc(EC_ALGORITHM_CURVES.get(normalizedAlgorithm));
             return persistKey(
+                    tenantId,
                     ecKey.getKeyID(),
                     "EC",
                     normalizedAlgorithm,
@@ -195,9 +205,11 @@ public class PersistentJwkSource implements JWKSource<SecurityContext> {
         }
     }
 
-    private JwkKey persistKey(String kid, String keyType, String algorithm, String publicKey, String privateKey) {
+    private JwkKey persistKey(String tenantId, String kid, String keyType, String algorithm,
+                              String publicKey, String privateKey) {
         JwkKey jwkKey = new JwkKey();
         jwkKey.setId(UUID.randomUUID().toString());
+        jwkKey.setTenantId(tenantId);
         jwkKey.setKid(kid);
         jwkKey.setKeyType(keyType);
         jwkKey.setAlgorithm(algorithm);
@@ -280,6 +292,8 @@ public class PersistentJwkSource implements JWKSource<SecurityContext> {
 
     @Override
     public List<JWK> get(JWKSelector jwkSelector, SecurityContext context) {
+        String tenantId = TenantIssuerContext.tenantIdOrDefault();
+        JWKSet jwkSet = jwkSets.computeIfAbsent(tenantId, this::loadOrCreateJwkSet);
         return jwkSelector.select(jwkSet);
     }
 
@@ -287,6 +301,10 @@ public class PersistentJwkSource implements JWKSource<SecurityContext> {
      * 重新加载密钥集
      */
     public void refresh() {
-        this.jwkSet = loadOrCreateJwkSet();
+        refresh(TenantIssuerContext.tenantIdOrDefault());
+    }
+
+    private void refresh(String tenantId) {
+        this.jwkSets.put(tenantId, loadOrCreateJwkSet(tenantId));
     }
 }

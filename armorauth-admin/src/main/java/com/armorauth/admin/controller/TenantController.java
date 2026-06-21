@@ -34,13 +34,13 @@ public class TenantController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN', 'USER_ADMIN')")
     public ApiResponse<Page<TenantDTO.Response>> listTenants(Pageable pageable) {
         return ApiResponse.ok(tenantService.listTenants(pageable));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN', 'USER_ADMIN')")
     public ApiResponse<TenantDTO.Response> getTenant(@PathVariable String id) {
         return ApiResponse.ok(tenantService.getTenant(id));
     }

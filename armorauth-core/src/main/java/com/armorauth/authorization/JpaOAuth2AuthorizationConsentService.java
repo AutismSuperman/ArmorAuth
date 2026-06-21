@@ -15,6 +15,7 @@
  */
 package com.armorauth.authorization;
 
+import com.armorauth.authorization.tenant.TenantIssuerContext;
 import com.armorauth.data.entity.AuthorizationConsent;
 import com.armorauth.data.repository.AuthorizationConsentRepository;
 import org.springframework.dao.DataRetrievalFailureException;
@@ -55,7 +56,8 @@ public class JpaOAuth2AuthorizationConsentService implements OAuth2Authorization
     @Override
     public void remove(OAuth2AuthorizationConsent oAuth2AuthorizationConsent) {
         Assert.notNull(oAuth2AuthorizationConsent, "oAuth2AuthorizationConsent cannot be null");
-        authorizationConsentRepository.deleteByPrincipalNameAndRegisteredClientId(
+        authorizationConsentRepository.deleteByTenantIdAndPrincipalNameAndRegisteredClientId(
+                TenantIssuerContext.tenantIdOrDefault(),
                 oAuth2AuthorizationConsent.getPrincipalName(),
                 oAuth2AuthorizationConsent.getRegisteredClientId()
         );
@@ -65,7 +67,8 @@ public class JpaOAuth2AuthorizationConsentService implements OAuth2Authorization
     public OAuth2AuthorizationConsent findById(String registeredClientId, String principalName) {
         Assert.hasText(registeredClientId, "registeredClientId cannot be empty");
         Assert.hasText(principalName, "principalName cannot be empty");
-        AuthorizationConsent byPrincipalNameAndRegisteredClientId = authorizationConsentRepository.findByPrincipalNameAndRegisteredClientId(
+        AuthorizationConsent byPrincipalNameAndRegisteredClientId = authorizationConsentRepository.findByTenantIdAndPrincipalNameAndRegisteredClientId(
+                TenantIssuerContext.tenantIdOrDefault(),
                 principalName,
                 registeredClientId
         );
@@ -111,6 +114,7 @@ public class JpaOAuth2AuthorizationConsentService implements OAuth2Authorization
         AuthorizationConsent authorizationConsent = new AuthorizationConsent();
         authorizationConsent.setRegisteredClientId(oAuth2AuthorizationConsent.getRegisteredClientId());
         authorizationConsent.setPrincipalName(oAuth2AuthorizationConsent.getPrincipalName());
+        authorizationConsent.setTenantId(TenantIssuerContext.tenantIdOrDefault());
         Set<String> authorities = new HashSet<>();
         for (GrantedAuthority authority : oAuth2AuthorizationConsent.getAuthorities()) {
             authorities.add(authority.getAuthority());

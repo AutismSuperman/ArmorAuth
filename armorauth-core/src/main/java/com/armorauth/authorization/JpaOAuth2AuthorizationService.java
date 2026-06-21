@@ -15,6 +15,7 @@
  */
 package com.armorauth.authorization;
 
+import com.armorauth.authorization.tenant.TenantIssuerContext;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -91,13 +92,15 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
     @Override
     public void remove(OAuth2Authorization authorization) {
         Assert.notNull(authorization, "authorization cannot be null");
-        authorizationRepository.deleteById(authorization.getId());
+        authorizationRepository.findByTenantIdAndId(TenantIssuerContext.tenantIdOrDefault(), authorization.getId())
+                .ifPresent(authorizationRepository::delete);
     }
 
     @Override
     public OAuth2Authorization findById(String id) {
         Assert.hasText(id, "id cannot be empty");
-        Optional<Authorization> authorization = this.authorizationRepository.findById(id);
+        Optional<Authorization> authorization = this.authorizationRepository.findByTenantIdAndId(
+                TenantIssuerContext.tenantIdOrDefault(), id);
         return authorization.map(this::toObject).orElse(null);
     }
 
@@ -105,22 +108,23 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
     public OAuth2Authorization findByToken(String token, OAuth2TokenType tokenType) {
         Assert.hasText(token, "token cannot be empty");
         Optional<Authorization> result;
+        String tenantId = TenantIssuerContext.tenantIdOrDefault();
         if (tokenType == null) {
-            result = authorizationRepository.findByStateOrAuthorizationCodeValueOrAccessTokenValueOrRefreshTokenValueOrOidcIdTokenValueOrUserCodeValueOrDeviceCodeValue(token);
+            result = authorizationRepository.findByTenantIdAndAnyToken(tenantId, token);
         } else if (OAuth2ParameterNames.STATE.equals(tokenType.getValue())) {
-            result = authorizationRepository.findByState(token);
+            result = authorizationRepository.findByTenantIdAndState(tenantId, token);
         } else if (OAuth2ParameterNames.CODE.equals(tokenType.getValue())) {
-            result = authorizationRepository.findByAuthorizationCodeValue(token);
+            result = authorizationRepository.findByTenantIdAndAuthorizationCodeValue(tenantId, token);
         } else if (OAuth2ParameterNames.ACCESS_TOKEN.equals(tokenType.getValue())) {
-            result = authorizationRepository.findByAccessTokenValue(token);
+            result = authorizationRepository.findByTenantIdAndAccessTokenValue(tenantId, token);
         } else if (OAuth2ParameterNames.REFRESH_TOKEN.equals(tokenType.getValue())) {
-            result = authorizationRepository.findByRefreshTokenValue(token);
+            result = authorizationRepository.findByTenantIdAndRefreshTokenValue(tenantId, token);
         }else if (OidcParameterNames.ID_TOKEN.equals(tokenType.getValue())) {
-            result = this.authorizationRepository.findByOidcIdTokenValue(token);
+            result = this.authorizationRepository.findByTenantIdAndOidcIdTokenValue(tenantId, token);
         } else if (OAuth2ParameterNames.USER_CODE.equals(tokenType.getValue())) {
-            result = this.authorizationRepository.findByUserCodeValue(token);
+            result = this.authorizationRepository.findByTenantIdAndUserCodeValue(tenantId, token);
         } else if (OAuth2ParameterNames.DEVICE_CODE.equals(tokenType.getValue())) {
-            result = this.authorizationRepository.findByDeviceCodeValue(token);
+            result = this.authorizationRepository.findByTenantIdAndDeviceCodeValue(tenantId, token);
         }  else {
             result = Optional.empty();
         }
@@ -223,6 +227,7 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
     private Authorization toEntity(OAuth2Authorization oAuth2Authorization) {
         Authorization authorization = new Authorization();
         authorization.setId(oAuth2Authorization.getId());
+        authorization.setTenantId(TenantIssuerContext.tenantIdOrDefault());
         authorization.setRegisteredClientId(oAuth2Authorization.getRegisteredClientId());
         authorization.setPrincipalName(oAuth2Authorization.getPrincipalName());
         authorization.setAuthorizationGrantType(oAuth2Authorization.getAuthorizationGrantType().getValue());

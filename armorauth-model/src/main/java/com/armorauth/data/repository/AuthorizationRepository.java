@@ -32,13 +32,21 @@ import java.util.Optional;
 @Repository
 public interface AuthorizationRepository  extends JpaRepository<Authorization, String> {
 
+    Optional<Authorization> findByTenantIdAndId(String tenantId, String id);
     Optional<Authorization> findByState(String state);
+    Optional<Authorization> findByTenantIdAndState(String tenantId, String state);
     Optional<Authorization> findByAuthorizationCodeValue(String authorizationCode);
+    Optional<Authorization> findByTenantIdAndAuthorizationCodeValue(String tenantId, String authorizationCode);
     Optional<Authorization> findByAccessTokenValue(String accessToken);
+    Optional<Authorization> findByTenantIdAndAccessTokenValue(String tenantId, String accessToken);
     Optional<Authorization> findByRefreshTokenValue(String refreshToken);
+    Optional<Authorization> findByTenantIdAndRefreshTokenValue(String tenantId, String refreshToken);
     Optional<Authorization> findByOidcIdTokenValue(String idToken);
+    Optional<Authorization> findByTenantIdAndOidcIdTokenValue(String tenantId, String idToken);
     Optional<Authorization> findByUserCodeValue(String userCode);
+    Optional<Authorization> findByTenantIdAndUserCodeValue(String tenantId, String userCode);
     Optional<Authorization> findByDeviceCodeValue(String deviceCode);
+    Optional<Authorization> findByTenantIdAndDeviceCodeValue(String tenantId, String deviceCode);
     @Query("select a from Authorization a where a.state = :token" +
             " or a.authorizationCodeValue = :token" +
             " or a.accessTokenValue = :token" +
@@ -48,6 +56,16 @@ public interface AuthorizationRepository  extends JpaRepository<Authorization, S
             " or a.deviceCodeValue = :token"
     )
     Optional<Authorization> findByStateOrAuthorizationCodeValueOrAccessTokenValueOrRefreshTokenValueOrOidcIdTokenValueOrUserCodeValueOrDeviceCodeValue(@Param("token") String token);
+
+    @Query("select a from Authorization a where a.tenantId = :tenantId and (a.state = :token" +
+            " or a.authorizationCodeValue = :token" +
+            " or a.accessTokenValue = :token" +
+            " or a.refreshTokenValue = :token" +
+            " or a.oidcIdTokenValue = :token" +
+            " or a.userCodeValue = :token" +
+            " or a.deviceCodeValue = :token)"
+    )
+    Optional<Authorization> findByTenantIdAndAnyToken(@Param("tenantId") String tenantId, @Param("token") String token);
 
     @Query("select a from Authorization a where a.accessTokenValue is not null" +
             " and a.accessTokenIssuedAt >= :from" +

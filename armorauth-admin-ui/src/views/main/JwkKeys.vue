@@ -39,7 +39,7 @@
       :dataSource="keys"
       :loading="loading"
       :pagination="false"
-      :scroll="{ x: 1160 }"
+      :scroll="{ x: 1300 }"
       bordered>
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'kid'">
@@ -101,13 +101,13 @@ const algorithmOptions = [
 ]
 
 const columns = [
-  { title: 'Kid', dataIndex: 'kid', key: 'kid', ellipsis: true },
+  { title: 'Kid', dataIndex: 'kid', key: 'kid', width: 340, ellipsis: true },
   { title: '类型', dataIndex: 'keyType', key: 'keyType', width: 100 },
   { title: '算法', dataIndex: 'algorithm', key: 'algorithm', width: 150 },
   { title: '状态', key: 'status', width: 120 },
   { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', width: 190 },
   { title: '过期时间', dataIndex: 'expiresAt', key: 'expiresAt', width: 190 },
-  { title: '操作', key: 'action', width: 150, fixed: 'right' }
+  { title: '操作', key: 'action', width: 180, fixed: 'right' }
 ]
 
 const normalizeStatus = (status) => (status || '').toUpperCase()

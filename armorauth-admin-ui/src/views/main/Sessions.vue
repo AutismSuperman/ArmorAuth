@@ -37,7 +37,7 @@
         :dataSource="sessions"
         :loading="loading"
         :pagination="false"
-        :scroll="{ x: 960 }"
+        :scroll="{ x: 1040 }"
         bordered>
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'sessionId'">
@@ -74,7 +74,7 @@ const columns = [
   { title: '用户', dataIndex: 'username', key: 'username', width: 180 },
   { title: '最后访问', dataIndex: 'lastRequest', key: 'lastRequest', width: 220 },
   { title: '状态', key: 'active', width: 100 },
-  { title: '操作', key: 'action', width: 120, fixed: 'right' }
+  { title: '操作', key: 'action', width: 160, fixed: 'right' }
 ]
 
 const metrics = computed(() => {

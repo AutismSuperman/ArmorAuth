@@ -13,7 +13,7 @@
       :columns="columns"
       :loading="loading"
       :pagination="pagination"
-      :scroll="{ x: 1120 }"
+      :scroll="{ x: 1500 }"
       row-key="id"
       size="middle"
       @change="handleTableChange">
@@ -120,7 +120,7 @@ const columns = [
   { title: '角色 MFA', key: 'roleMfaRequired', width: 280 },
   { title: '处罚点', key: 'enforcement', width: 260 },
   { title: '更新时间', key: 'updatedAt', width: 190 },
-  { title: '操作', key: 'action', width: 90, fixed: 'right' }
+  { title: '操作', key: 'action', width: 130, fixed: 'right' }
 ]
 
 const roleSelectOptions = computed(() => roles.value.map(role => ({

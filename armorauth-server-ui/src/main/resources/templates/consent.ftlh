@@ -22,8 +22,8 @@
 
             <div class="login-visual-copy">
                 <span class="login-kicker">授权中</span>
-                <h1 data-i18n-template="consent.requestTitle" data-i18n-value-client-name="${clientName?html}">${clientName?html} 正在请求访问你的账号。</h1>
-                <p data-i18n-template="consent.accountText" data-i18n-value-principal-name="${principalName?html}">当前账号为 ${principalName?html}，请确认是否开放本次访问。</p>
+                <h1 data-i18n-template="consent.requestTitle" data-i18n-value-client-name="${clientName}">${clientName} 正在请求访问你的账号。</h1>
+                <p data-i18n-template="consent.accountText" data-i18n-value-principal-name="${principalName}">当前账号为 ${principalName}，请确认是否开放本次访问。</p>
             </div>
 
             <div class="identity-menu" aria-label="授权确认">

@@ -24,5 +24,7 @@ public interface TenantRepository extends JpaRepository<Tenant, String> {
 
     Optional<Tenant> findByTenantCode(String tenantCode);
 
+    Optional<Tenant> findByTenantCodeAndEnabled(String tenantCode, Boolean enabled);
+
     boolean existsByTenantCode(String tenantCode);
 }

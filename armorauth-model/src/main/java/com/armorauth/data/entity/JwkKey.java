@@ -43,6 +43,9 @@ public class JwkKey implements Serializable {
     @Id
     private String id;
 
+    @Column(name = "tenant_id", nullable = false)
+    private String tenantId = "tenant-default";
+
     @Column(unique = true, nullable = false)
     private String kid;
 

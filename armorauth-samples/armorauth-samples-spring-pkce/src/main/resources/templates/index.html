@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6" lang="en">
+<head>
+    <title>ArmorAuth Spring Boot PKCE Sample</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8"/>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 32px;
+            color: #1f2937;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin: 24px 0 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+        }
+
+        th,
+        td {
+            text-align: left;
+            vertical-align: top;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 10px 8px;
+            word-break: break-all;
+        }
+
+        th {
+            width: 220px;
+            color: #4b5563;
+            font-weight: 600;
+        }
+
+        button {
+            border: 0;
+            border-radius: 6px;
+            background: #2563eb;
+            color: #ffffff;
+            padding: 9px 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div>
+        <h1>ArmorAuth Spring Boot PKCE Sample</h1>
+        <div>Signed in as <strong th:text="${userName}"></strong></div>
+    </div>
+    <form action="#" th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+        <button type="submit">Logout</button>
+    </form>
+</header>
+
+<h2>Client</h2>
+<table>
+    <tr>
+        <th>Client name</th>
+        <td th:text="${clientName}"></td>
+    </tr>
+    <tr>
+        <th>Client ID</th>
+        <td th:text="${clientId}"></td>
+    </tr>
+    <tr>
+        <th>Registration ID</th>
+        <td th:text="${registrationId}"></td>
+    </tr>
+    <tr>
+        <th>Scopes</th>
+        <td th:text="${scopes}"></td>
+    </tr>
+    <tr>
+        <th>Redirect URI template</th>
+        <td th:text="${redirectUri}"></td>
+    </tr>
+</table>
+
+<h2>Provider</h2>
+<table>
+    <tr>
+        <th>Authorization URI</th>
+        <td th:text="${authorizationUri}"></td>
+    </tr>
+    <tr>
+        <th>Token URI</th>
+        <td th:text="${tokenUri}"></td>
+    </tr>
+    <tr>
+        <th>JWK Set URI</th>
+        <td th:text="${jwkSetUri}"></td>
+    </tr>
+</table>
+
+<h2>Access Token</h2>
+<table>
+    <tr>
+        <th>Issued at</th>
+        <td th:text="${accessTokenIssuedAt}"></td>
+    </tr>
+    <tr>
+        <th>Expires at</th>
+        <td th:text="${accessTokenExpiresAt}"></td>
+    </tr>
+    <tr>
+        <th>Token scopes</th>
+        <td th:text="${accessTokenScopes}"></td>
+    </tr>
+</table>
+
+<h2>User Attributes</h2>
+<table>
+    <tr th:each="userAttribute : ${userAttributes}">
+        <th th:text="${userAttribute.key}"></th>
+        <td th:text="${userAttribute.value}"></td>
+    </tr>
+</table>
+</body>
+</html>

@@ -23,10 +23,12 @@ import com.armorauth.data.entity.OAuth2Client;
 import com.armorauth.data.entity.OAuth2ClientSettings;
 import com.armorauth.data.entity.OAuth2Scope;
 import com.armorauth.data.entity.OAuth2TokenSettings;
+import com.armorauth.data.entity.Tenant;
 import com.armorauth.data.repository.OAuth2ClientRepository;
 import com.armorauth.data.repository.OAuth2ClientSettingsRepository;
 import com.armorauth.data.repository.OAuth2ScopeRepository;
 import com.armorauth.data.repository.OAuth2TokenSettingsRepository;
+import com.armorauth.data.repository.TenantRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,10 +50,18 @@ import java.util.stream.Collectors;
 @Service
 public class ApplicationService {
 
+    private static final String DEFAULT_TENANT_ID = "tenant-default";
+    private static final String REGISTRATION_SOURCE_ADMIN = "ADMIN";
+    private static final String SCOPE_CLIENT_CREATE = "client.create";
+    private static final String SCOPE_CLIENT_READ = "client.read";
+    private static final Set<String> DPOP_ALLOWED_ALGORITHMS = Set.of(
+            "ES256", "ES384", "ES512", "RS256", "RS384", "RS512", "PS256", "PS384", "PS512");
+
     private final OAuth2ClientRepository clientRepository;
     private final OAuth2ClientSettingsRepository clientSettingsRepository;
     private final OAuth2TokenSettingsRepository tokenSettingsRepository;
     private final OAuth2ScopeRepository scopeRepository;
+    private final TenantRepository tenantRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuditEventService auditEventService;
     private final boolean allowHttpLocal;
@@ -60,6 +70,7 @@ public class ApplicationService {
                               OAuth2ClientSettingsRepository clientSettingsRepository,
                               OAuth2TokenSettingsRepository tokenSettingsRepository,
                               OAuth2ScopeRepository scopeRepository,
+                              TenantRepository tenantRepository,
                               PasswordEncoder passwordEncoder,
                               AuditEventService auditEventService,
                               @Value("${armorauth.admin.redirect-uri-allow-http-local:true}") boolean allowHttpLocal) {
@@ -67,6 +78,7 @@ public class ApplicationService {
         this.clientSettingsRepository = clientSettingsRepository;
         this.tokenSettingsRepository = tokenSettingsRepository;
         this.scopeRepository = scopeRepository;
+        this.tenantRepository = tenantRepository;
         this.passwordEncoder = passwordEncoder;
         this.auditEventService = auditEventService;
         this.allowHttpLocal = allowHttpLocal;
@@ -76,7 +88,10 @@ public class ApplicationService {
      * 分页查询应用列表
      */
     @Transactional(readOnly = true)
-    public Page<ApplicationDTO.Response> listApplications(Pageable pageable) {
+    public Page<ApplicationDTO.Response> listApplications(String tenantId, Pageable pageable) {
+        if (hasText(tenantId)) {
+            return clientRepository.findByTenantId(tenantId, pageable).map(this::toResponse);
+        }
         return clientRepository.findAll(pageable).map(this::toResponse);
     }
 
@@ -95,6 +110,11 @@ public class ApplicationService {
      */
     @Transactional
     public ApplicationDTO.Response createApplication(ApplicationDTO.CreateRequest request) {
+        String tenantId = resolveTenantId(request.tenantId());
+        validateTenantExists(tenantId);
+        validateClientProtocolSettings(request.clientAuthenticationMethods(), request.authorizationGrantTypes(),
+                request.clientSettings(), request.tokenSettings(), request.dynamicClientRegistrar());
+
         // 校验 redirect URI
         RedirectUriValidator.validateAll(request.redirectUris(), allowHttpLocal);
         RedirectUriValidator.validateAll(request.postLogoutRedirectUris(), allowHttpLocal);
@@ -103,6 +123,9 @@ public class ApplicationService {
         String rawSecret = UUID.randomUUID().toString();
 
         OAuth2Client client = new OAuth2Client();
+        client.setId(UUID.randomUUID().toString());
+        client.setTenantId(tenantId);
+        client.setRegistrationSource(REGISTRATION_SOURCE_ADMIN);
         client.setClientId(clientId);
         client.setClientSecret(passwordEncoder.encode(rawSecret));
         client.setClientName(request.clientName());
@@ -127,9 +150,19 @@ public class ApplicationService {
                     request.clientSettings().requireProofKey() != null
                             ? request.clientSettings().requireProofKey() : false);
             clientSettings.setSigningAlgorithm(request.clientSettings().signingAlgorithm());
+            clientSettings.setX509CertificateSubjectDN(request.clientSettings().x509CertificateSubjectDN());
+            clientSettings.setDpopEnabled(
+                    request.clientSettings().dpopEnabled() != null
+                            ? request.clientSettings().dpopEnabled() : false);
+            clientSettings.setDpopRequired(
+                    request.clientSettings().dpopRequired() != null
+                            ? request.clientSettings().dpopRequired() : false);
+            clientSettings.setDpopAllowedAlgorithms(request.clientSettings().dpopAllowedAlgorithms());
         } else {
             clientSettings.setRequireAuthorizationConsent(false);
             clientSettings.setRequireProofKey(false);
+            clientSettings.setDpopEnabled(false);
+            clientSettings.setDpopRequired(false);
         }
         clientSettingsRepository.save(clientSettings);
 
@@ -154,6 +187,9 @@ public class ApplicationService {
                     request.tokenSettings().reuseRefreshTokens() != null
                             ? request.tokenSettings().reuseRefreshTokens() : false);
             tokenSettings.setTokenFormat(request.tokenSettings().tokenFormat());
+            tokenSettings.setX509CertificateBoundAccessTokens(
+                    request.tokenSettings().x509CertificateBoundAccessTokens() != null
+                            ? request.tokenSettings().x509CertificateBoundAccessTokens() : false);
         } else {
             tokenSettings.setAccessTokenTimeToLive(Duration.ofSeconds(300));
             tokenSettings.setRefreshTokenTimeToLive(Duration.ofSeconds(3600));
@@ -161,12 +197,14 @@ public class ApplicationService {
             tokenSettings.setAuthorizationCodeTimeToLive(Duration.ofSeconds(300));
             tokenSettings.setReuseRefreshTokens(false);
             tokenSettings.setTokenFormat("self-contained");
+            tokenSettings.setX509CertificateBoundAccessTokens(false);
         }
         tokenSettingsRepository.save(tokenSettings);
 
         // 保存Scope
-        if (request.scopes() != null && !request.scopes().isEmpty()) {
-            for (String scope : request.scopes()) {
+        Set<String> scopes = resolveRequestedScopes(request.scopes(), request.dynamicClientRegistrar());
+        if (!scopes.isEmpty()) {
+            for (String scope : scopes) {
                 OAuth2Scope oAuth2Scope = new OAuth2Scope();
                 oAuth2Scope.setClientId(clientId);
                 oAuth2Scope.setScope(scope);
@@ -180,14 +218,16 @@ public class ApplicationService {
                 "创建应用: " + request.clientName(), AuditContext.getClientIp());
 
         // 返回响应（只在创建时返回明文secret）
-        ApplicationDTO.Response response = toResponse(clientRepository.findOAuth2ClientById(clientId).orElse(client));
+        ApplicationDTO.Response response = toResponse(clientRepository.findOAuth2ClientById(client.getId()).orElse(client));
         return new ApplicationDTO.Response(
-                response.id(), response.clientId(), response.clientName(),
+                response.id(), response.tenantId(), response.tenantCode(), response.issuerPath(),
+                response.clientId(), response.clientName(),
                 response.clientAuthenticationMethods(), response.authorizationGrantTypes(),
                 response.redirectUris(), response.postLogoutRedirectUris(),
                 response.scopes(), response.clientSettings(), response.tokenSettings(),
                 response.clientIdIssuedAt(), response.clientSecretExpiresAt(),
-                response.enabled(), response.mfaRequired(), rawSecret
+                response.enabled(), response.mfaRequired(), response.registrationSource(),
+                response.dynamicClientRegistrar(), rawSecret
         );
     }
 
@@ -198,6 +238,17 @@ public class ApplicationService {
     public ApplicationDTO.Response updateApplication(String id, ApplicationDTO.UpdateRequest request) {
         OAuth2Client client = clientRepository.findOAuth2ClientById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("应用", id));
+        if (hasText(request.tenantId()) && !Objects.equals(client.getTenantId(), request.tenantId())) {
+            throw new IllegalArgumentException("应用租户归属创建后不可修改");
+        }
+        String targetClientAuthenticationMethods = request.clientAuthenticationMethods() != null
+                ? request.clientAuthenticationMethods()
+                : client.getClientAuthenticationMethods();
+        String targetGrantTypes = request.authorizationGrantTypes() != null
+                ? request.authorizationGrantTypes()
+                : client.getAuthorizationGrantTypes();
+        validateClientProtocolSettings(targetClientAuthenticationMethods, targetGrantTypes,
+                request.clientSettings(), request.tokenSettings(), request.dynamicClientRegistrar());
 
         // 校验 redirect URI
         if (request.redirectUris() != null) {
@@ -229,7 +280,7 @@ public class ApplicationService {
 
         // 更新客户端设置
         if (request.clientSettings() != null) {
-            OAuth2ClientSettings clientSettings = clientSettingsRepository.findById(id).orElse(new OAuth2ClientSettings());
+            OAuth2ClientSettings clientSettings = clientSettingsRepository.findById(client.getClientId()).orElse(new OAuth2ClientSettings());
             clientSettings.setClientId(client.getClientId());
             if (request.clientSettings().jwkSetUrl() != null) {
                 clientSettings.setJwkSetUrl(request.clientSettings().jwkSetUrl());
@@ -243,12 +294,24 @@ public class ApplicationService {
             if (request.clientSettings().signingAlgorithm() != null) {
                 clientSettings.setSigningAlgorithm(request.clientSettings().signingAlgorithm());
             }
+            if (request.clientSettings().x509CertificateSubjectDN() != null) {
+                clientSettings.setX509CertificateSubjectDN(request.clientSettings().x509CertificateSubjectDN());
+            }
+            if (request.clientSettings().dpopEnabled() != null) {
+                clientSettings.setDpopEnabled(request.clientSettings().dpopEnabled());
+            }
+            if (request.clientSettings().dpopRequired() != null) {
+                clientSettings.setDpopRequired(request.clientSettings().dpopRequired());
+            }
+            if (request.clientSettings().dpopAllowedAlgorithms() != null) {
+                clientSettings.setDpopAllowedAlgorithms(request.clientSettings().dpopAllowedAlgorithms());
+            }
             clientSettingsRepository.save(clientSettings);
         }
 
         // 更新Token设置
         if (request.tokenSettings() != null) {
-            OAuth2TokenSettings tokenSettings = tokenSettingsRepository.findById(id).orElse(new OAuth2TokenSettings());
+            OAuth2TokenSettings tokenSettings = tokenSettingsRepository.findById(client.getClientId()).orElse(new OAuth2TokenSettings());
             tokenSettings.setClientId(client.getClientId());
             if (request.tokenSettings().accessTokenTimeToLiveSeconds() != null) {
                 tokenSettings.setAccessTokenTimeToLive(Duration.ofSeconds(request.tokenSettings().accessTokenTimeToLiveSeconds()));
@@ -262,24 +325,18 @@ public class ApplicationService {
             if (request.tokenSettings().tokenFormat() != null) {
                 tokenSettings.setTokenFormat(request.tokenSettings().tokenFormat());
             }
+            if (request.tokenSettings().x509CertificateBoundAccessTokens() != null) {
+                tokenSettings.setX509CertificateBoundAccessTokens(request.tokenSettings().x509CertificateBoundAccessTokens());
+            }
             tokenSettingsRepository.save(tokenSettings);
         }
 
         // 更新Scope
-        if (request.scopes() != null) {
-            List<OAuth2Scope> existingScopes = scopeRepository.findAllByClientIdAndScopeIn(
-                    client.getClientId(), request.scopes());
-            Set<String> existingScopeNames = existingScopes.stream()
-                    .map(OAuth2Scope::getScope)
-                    .collect(Collectors.toSet());
-            for (String scope : request.scopes()) {
-                if (!existingScopeNames.contains(scope)) {
-                    OAuth2Scope oAuth2Scope = new OAuth2Scope();
-                    oAuth2Scope.setClientId(client.getClientId());
-                    oAuth2Scope.setScope(scope);
-                    scopeRepository.save(oAuth2Scope);
-                }
-            }
+        if (request.scopes() != null || request.dynamicClientRegistrar() != null) {
+            Set<String> requestedScopes = request.scopes() != null
+                    ? resolveRequestedScopes(request.scopes(), request.dynamicClientRegistrar())
+                    : resolveRequestedScopes(currentScopeNames(client.getClientId()), request.dynamicClientRegistrar());
+            replaceScopes(client.getClientId(), requestedScopes);
         }
 
         // 审计日志
@@ -356,6 +413,9 @@ public class ApplicationService {
         List<String> scopes = client.getScopes() != null
                 ? client.getScopes().stream().map(OAuth2Scope::getScope).toList()
                 : Collections.emptyList();
+        Tenant tenant = resolveTenant(client.getTenantId());
+        String tenantCode = tenant != null ? tenant.getTenantCode() : null;
+        String issuerPath = tenantCode != null ? "/t/" + tenantCode : null;
 
         ApplicationDTO.ClientSettingsDTO clientSettingsDTO = null;
         if (client.getClientSettings() != null) {
@@ -364,7 +424,11 @@ public class ApplicationService {
                     cs.getJwkSetUrl(),
                     cs.getRequireAuthorizationConsent(),
                     cs.getRequireProofKey(),
-                    cs.getSigningAlgorithm()
+                    cs.getSigningAlgorithm(),
+                    cs.getX509CertificateSubjectDN(),
+                    cs.getDpopEnabled(),
+                    cs.getDpopRequired(),
+                    cs.getDpopAllowedAlgorithms()
             );
         }
 
@@ -378,12 +442,16 @@ public class ApplicationService {
                     ts.getAuthorizationCodeTimeToLive() != null ? ts.getAuthorizationCodeTimeToLive().getSeconds() : null,
                     ts.getIdTokenSignatureAlgorithm(),
                     ts.getReuseRefreshTokens(),
-                    ts.getTokenFormat()
+                    ts.getTokenFormat(),
+                    ts.getX509CertificateBoundAccessTokens()
             );
         }
 
         return new ApplicationDTO.Response(
                 client.getId(),
+                client.getTenantId(),
+                tenantCode,
+                issuerPath,
                 client.getClientId(),
                 client.getClientName(),
                 client.getClientAuthenticationMethods(),
@@ -397,7 +465,121 @@ public class ApplicationService {
                 client.getClientSecretExpiresAt(),
                 client.getEnabled(),
                 client.getMfaRequired(),
+                Optional.ofNullable(client.getRegistrationSource()).orElse(REGISTRATION_SOURCE_ADMIN),
+                isDynamicClientRegistrar(scopes),
                 null // 不返回secret明文
         );
+    }
+
+    private void validateClientProtocolSettings(String clientAuthenticationMethods,
+                                                String authorizationGrantTypes,
+                                                ApplicationDTO.ClientSettingsDTO clientSettings,
+                                                ApplicationDTO.TokenSettingsDTO tokenSettings,
+                                                Boolean dynamicClientRegistrar) {
+        Set<String> methods = parseCsv(clientAuthenticationMethods);
+        Set<String> grantTypes = parseCsv(authorizationGrantTypes);
+        boolean usesTlsClientAuth = methods.contains("tls_client_auth");
+        boolean usesSelfSignedTlsClientAuth = methods.contains("self_signed_tls_client_auth");
+        boolean usesMtls = usesTlsClientAuth || usesSelfSignedTlsClientAuth;
+
+        if (usesTlsClientAuth && (clientSettings == null || !hasText(clientSettings.x509CertificateSubjectDN()))) {
+            throw new IllegalArgumentException("tls_client_auth 需要配置 x509CertificateSubjectDN");
+        }
+        if (usesSelfSignedTlsClientAuth && (clientSettings == null || !hasText(clientSettings.jwkSetUrl()))) {
+            throw new IllegalArgumentException("self_signed_tls_client_auth 需要配置 jwkSetUrl");
+        }
+        if (tokenSettings != null
+                && Boolean.TRUE.equals(tokenSettings.x509CertificateBoundAccessTokens())
+                && !usesMtls) {
+            throw new IllegalArgumentException("x509CertificateBoundAccessTokens 只能用于 mTLS 客户端认证方式");
+        }
+        if (clientSettings != null && Boolean.TRUE.equals(clientSettings.dpopRequired())
+                && !Boolean.TRUE.equals(clientSettings.dpopEnabled())) {
+            throw new IllegalArgumentException("dpopRequired 需要先启用 dpopEnabled");
+        }
+        if (clientSettings != null && hasText(clientSettings.dpopAllowedAlgorithms())) {
+            Set<String> algorithms = parseCsv(clientSettings.dpopAllowedAlgorithms());
+            if (!DPOP_ALLOWED_ALGORITHMS.containsAll(algorithms)) {
+                throw new IllegalArgumentException("dpopAllowedAlgorithms 包含不支持的算法");
+            }
+        }
+        if (Boolean.TRUE.equals(dynamicClientRegistrar)
+                && !grantTypes.contains("client_credentials")) {
+            throw new IllegalArgumentException("DCR registrar 客户端必须支持 client_credentials 授权类型");
+        }
+    }
+
+    private String resolveTenantId(String tenantId) {
+        return hasText(tenantId) ? tenantId : DEFAULT_TENANT_ID;
+    }
+
+    private void validateTenantExists(String tenantId) {
+        if (DEFAULT_TENANT_ID.equals(tenantId)) {
+            return;
+        }
+        if (!tenantRepository.existsById(tenantId)) {
+            throw new ResourceNotFoundException("租户", tenantId);
+        }
+    }
+
+    private Tenant resolveTenant(String tenantId) {
+        if (!hasText(tenantId)) {
+            return null;
+        }
+        return tenantRepository.findById(tenantId).orElse(null);
+    }
+
+    private Set<String> resolveRequestedScopes(Collection<String> requestedScopes, Boolean dynamicClientRegistrar) {
+        Set<String> scopes = requestedScopes == null
+                ? new LinkedHashSet<>()
+                : requestedScopes.stream()
+                .filter(this::hasText)
+                .map(String::trim)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        if (Boolean.TRUE.equals(dynamicClientRegistrar)) {
+            scopes.add(SCOPE_CLIENT_CREATE);
+            scopes.add(SCOPE_CLIENT_READ);
+        } else if (Boolean.FALSE.equals(dynamicClientRegistrar)) {
+            scopes.remove(SCOPE_CLIENT_CREATE);
+            scopes.remove(SCOPE_CLIENT_READ);
+        }
+        return scopes;
+    }
+
+    private List<String> currentScopeNames(String clientId) {
+        return scopeRepository.findAllByClientId(clientId).stream()
+                .map(OAuth2Scope::getScope)
+                .toList();
+    }
+
+    private void replaceScopes(String clientId, Set<String> scopes) {
+        List<OAuth2Scope> existingScopes = scopeRepository.findAllByClientId(clientId);
+        if (!existingScopes.isEmpty()) {
+            scopeRepository.deleteAll(existingScopes);
+        }
+        for (String scope : scopes) {
+            OAuth2Scope oAuth2Scope = new OAuth2Scope();
+            oAuth2Scope.setClientId(clientId);
+            oAuth2Scope.setScope(scope);
+            scopeRepository.save(oAuth2Scope);
+        }
+    }
+
+    private boolean isDynamicClientRegistrar(Collection<String> scopes) {
+        return scopes != null && scopes.contains(SCOPE_CLIENT_CREATE) && scopes.contains(SCOPE_CLIENT_READ);
+    }
+
+    private Set<String> parseCsv(String value) {
+        if (value == null || value.isBlank()) {
+            return Collections.emptySet();
+        }
+        return Arrays.stream(value.split(","))
+                .map(String::trim)
+                .filter(item -> !item.isEmpty())
+                .collect(Collectors.toSet());
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 }

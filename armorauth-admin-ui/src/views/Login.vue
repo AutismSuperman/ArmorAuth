@@ -45,23 +45,28 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
+import { loginAdmin } from '../api'
 
 const router = useRouter()
+const route = useRoute()
 const loading = ref(false)
 const form = reactive({ username: '', password: '' })
 
 const handleLogin = async () => {
+  if (loading.value) return
   loading.value = true
   try {
-    const token = btoa(form.username + ':' + form.password)
-    localStorage.setItem('admin_token', token)
-    message.success('登录成功')
-    router.push('/main')
+    const adminUser = await loginAdmin(form.username, form.password)
+    message.success(`登录成功：${adminUser.displayName || adminUser.username}`)
+    const redirect = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/main')
+      ? route.query.redirect
+      : '/main/home'
+    router.replace(redirect)
   } catch (e) {
-    message.error('登录失败: ' + e.message)
+    message.error(e.message || '登录失败')
   } finally {
     loading.value = false
   }

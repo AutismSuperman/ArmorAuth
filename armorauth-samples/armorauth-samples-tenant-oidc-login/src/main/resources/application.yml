@@ -1,0 +1,30 @@
+server:
+  port: ${ARMORAUTH_SAMPLE_PORT:8083}
+
+logging:
+  level:
+    org.springframework.web: trace
+    org.springframework.security: debug
+    org.springframework.security.oauth2: debug
+
+armorauth:
+  sample:
+    registration-id: tenant-demo
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          tenant-demo:
+            provider: tenant-demo
+            client-name: Tenant Demo Spring Boot OIDC Sample
+            client-id: ${ARMORAUTH_SAMPLE_CLIENT_ID:tenant-demo-spring}
+            client-secret: ${ARMORAUTH_SAMPLE_CLIENT_SECRET:secret}
+            redirect-uri: '{baseUrl}/login/oauth2/code/{registrationId}'
+            authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_basic
+            scope: openid,profile,email,message.read
+        provider:
+          tenant-demo:
+            issuer-uri: ${ARMORAUTH_SAMPLE_ISSUER:http://localhost:9000/t/demo}

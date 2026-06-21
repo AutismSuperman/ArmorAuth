@@ -53,6 +53,18 @@ public class OAuth2ClientSettings implements Serializable {
 
     private String signingAlgorithm;
 
+    @Column(name = "x509_certificate_subject_dn")
+    private String x509CertificateSubjectDN;
+
+    @Column(name = "dpop_enabled")
+    private Boolean dpopEnabled = false;
+
+    @Column(name = "dpop_required")
+    private Boolean dpopRequired = false;
+
+    @Column(name = "dpop_allowed_algorithms", length = 500)
+    private String dpopAllowedAlgorithms;
+
 
     @Override
     public boolean equals(Object o) {

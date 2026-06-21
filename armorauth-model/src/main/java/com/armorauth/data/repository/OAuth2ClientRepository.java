@@ -18,6 +18,8 @@ package com.armorauth.data.repository;
 import com.armorauth.data.entity.OAuth2Client;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -29,12 +31,19 @@ import java.util.Optional;
 @Repository
 public interface OAuth2ClientRepository extends JpaRepository<OAuth2Client, String> {
 
+    Page<OAuth2Client> findByTenantId(String tenantId, Pageable pageable);
 
     @EntityGraph(attributePaths = {
             "scopes",
             "clientSettings",
             "tokenSettings"})
     Optional<OAuth2Client> findOAuth2ClientByClientId(String clientId);
+
+    @EntityGraph(attributePaths = {
+            "scopes",
+            "clientSettings",
+            "tokenSettings"})
+    Optional<OAuth2Client> findOAuth2ClientByTenantIdAndClientId(String tenantId, String clientId);
 
 
     @EntityGraph(attributePaths = {
@@ -43,5 +52,10 @@ public interface OAuth2ClientRepository extends JpaRepository<OAuth2Client, Stri
             "tokenSettings"})
     Optional<OAuth2Client> findOAuth2ClientById(String id);
 
+    @EntityGraph(attributePaths = {
+            "scopes",
+            "clientSettings",
+            "tokenSettings"})
+    Optional<OAuth2Client> findOAuth2ClientByTenantIdAndId(String tenantId, String id);
 
 }

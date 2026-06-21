@@ -16,7 +16,8 @@
     </div>
 
     <a-table :dataSource="providers" :columns="columns" :loading="loading"
-             :pagination="pagination" @change="handleTableChange" row-key="id" size="middle">
+             :pagination="pagination" :scroll="{ x: 1900 }"
+             @change="handleTableChange" row-key="id" size="middle">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'type'">
           <a-tag :color="providerMeta(record.providerType).color" class="provider-tag">
@@ -673,12 +674,12 @@ const columns = [
   { title: '类型', key: 'type', width: 130 },
   { title: '来源', key: 'source', width: 120 },
   { title: 'Registration ID', dataIndex: 'registrationId', key: 'regId', width: 180 },
-  { title: 'Client ID', dataIndex: 'clientId', key: 'clientId', ellipsis: true },
+  { title: 'Client ID', dataIndex: 'clientId', key: 'clientId', width: 260, ellipsis: true },
   { title: '链接策略', dataIndex: 'linkingStrategy', key: 'strategy', width: 120 },
   { title: '顺序', dataIndex: 'displayOrder', key: 'order', width: 80 },
   { title: '登录页', key: 'displayOnLogin', width: 120 },
   { title: '状态', key: 'status', width: 100 },
-  { title: '操作', key: 'action', width: 330, fixed: 'right' }
+  { title: '操作', key: 'action', width: 620, fixed: 'right' }
 ]
 
 const checkItems = computed(() =>

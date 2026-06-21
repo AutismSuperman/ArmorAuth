@@ -17,7 +17,6 @@ package com.armorauth.data.repository;
 
 import com.armorauth.data.entity.OrganizationMember;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,4 +28,8 @@ public interface OrganizationMemberRepository extends JpaRepository<Organization
     List<OrganizationMember> findByUserId(String userId);
 
     Optional<OrganizationMember> findByOrgIdAndUserId(String orgId, String userId);
+
+    void deleteByOrgId(String orgId);
+
+    void deleteByUserId(String userId);
 }

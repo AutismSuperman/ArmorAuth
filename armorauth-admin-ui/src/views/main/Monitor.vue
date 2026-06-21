@@ -7,24 +7,24 @@
       </a-space>
     </div>
 
-    <a-row :gutter="16" style="margin-bottom: 20px">
-      <a-col :span="6">
-        <a-card><a-statistic title="登录成功" :value="stats.loginSuccess" /></a-card>
+    <a-row :gutter="[16, 16]" class="metric-grid">
+      <a-col :xs="24" :sm="12" :lg="6">
+        <a-card class="metric-card" :bordered="false"><a-statistic title="登录成功" :value="stats.loginSuccess" /></a-card>
       </a-col>
-      <a-col :span="6">
-        <a-card><a-statistic title="登录失败" :value="stats.loginFailure" :value-style="{ color: '#cf1322' }" /></a-card>
+      <a-col :xs="24" :sm="12" :lg="6">
+        <a-card class="metric-card" :bordered="false"><a-statistic title="登录失败" :value="stats.loginFailure" :value-style="{ color: '#cf1322' }" /></a-card>
       </a-col>
-      <a-col :span="6">
-        <a-card><a-statistic title="Token 签发" :value="stats.tokenIssued" /></a-card>
+      <a-col :xs="24" :sm="12" :lg="6">
+        <a-card class="metric-card" :bordered="false"><a-statistic title="Token 签发" :value="stats.tokenIssued" /></a-card>
       </a-col>
-      <a-col :span="6">
-        <a-card><a-statistic title="MFA 挑战" :value="stats.mfaChallenge" /></a-card>
+      <a-col :xs="24" :sm="12" :lg="6">
+        <a-card class="metric-card" :bordered="false"><a-statistic title="MFA 挑战" :value="stats.mfaChallenge" /></a-card>
       </a-col>
     </a-row>
 
     <a-card title="Token 签发统计">
       <a-table :dataSource="tokenStats" :columns="tokenColumns" :loading="loading"
-               row-key="id" size="small" :pagination="false">
+               row-key="id" size="small" :pagination="false" :scroll="{ x: 960 }">
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'count'">
             <a-tag color="blue">{{ record.count }}</a-tag>
@@ -49,7 +49,7 @@ const stats = reactive({ loginSuccess: 0, loginFailure: 0, tokenIssued: 0, mfaCh
 
 const tokenColumns = [
   { title: '日期', dataIndex: 'date', key: 'date', width: 120 },
-  { title: 'Client ID', dataIndex: 'clientId', key: 'clientId', ellipsis: true },
+  { title: 'Client ID', dataIndex: 'clientId', key: 'clientId', width: 260, ellipsis: true },
   { title: '授权类型', dataIndex: 'grantType', key: 'grantType', width: 160 },
   { title: 'Token 类型', dataIndex: 'tokenType', key: 'tokenType', width: 130 },
   { title: '签发次数', key: 'count', width: 100 },
@@ -86,4 +86,7 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
+.metric-grid {
+  width: 100%;
+}
 </style>

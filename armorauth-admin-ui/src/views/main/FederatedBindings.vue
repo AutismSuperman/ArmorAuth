@@ -19,7 +19,8 @@
     </div>
 
     <a-table :dataSource="bindings" :columns="columns" :loading="loading"
-             :pagination="pagination" @change="handleTableChange" row-key="id" size="middle">
+             :pagination="pagination" :scroll="{ x: 1320 }"
+             @change="handleTableChange" row-key="id" size="middle">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'localUser'">
           <div class="local-user">
@@ -140,10 +141,10 @@ const filters = reactive({ userId: '', registrationId: '' })
 const columns = [
   { title: '本地用户', key: 'localUser', width: 260 },
   { title: '身份源', dataIndex: 'registrationId', key: 'registrationId', width: 160 },
-  { title: 'Provider User ID', dataIndex: 'providerUserId', key: 'providerUserId', ellipsis: true },
+  { title: 'Provider User ID', dataIndex: 'providerUserId', key: 'providerUserId', width: 260, ellipsis: true },
   { title: 'Provider Username', dataIndex: 'providerUsername', key: 'providerUsername', width: 180 },
   { title: '时间', key: 'time', width: 230 },
-  { title: '操作', key: 'action', width: 120, fixed: 'right' }
+  { title: '操作', key: 'action', width: 180, fixed: 'right' }
 ]
 
 const fetchData = async () => {
@@ -255,7 +256,6 @@ onMounted(fetchData)
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  margin-bottom: 16px;
 }
 .local-user {
   min-width: 0;

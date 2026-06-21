@@ -38,7 +38,7 @@ public class OrganizationController {
     }
 
     @GetMapping({"/organizations", "/tenants/{tenantId}/organizations"})
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN', 'USER_ADMIN')")
     public ApiResponse<PageResponse<OrganizationDTO.Response>> listOrganizations(
             @PathVariable(required = false) String tenantId,
             @RequestParam(name = "page", defaultValue = "0") int page,
@@ -58,7 +58,7 @@ public class OrganizationController {
     }
 
     @GetMapping({"/organizations/{id}", "/tenants/{tenantId}/organizations/{id}"})
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN', 'USER_ADMIN')")
     public ApiResponse<OrganizationDTO.Response> getOrganization(@PathVariable String id) {
         return ApiResponse.ok(organizationService.getOrganization(id));
     }
@@ -91,14 +91,22 @@ public class OrganizationController {
     }
 
     @PostMapping({"/organizations/{id}/members", "/tenants/{tenantId}/organizations/{id}/members"})
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN', 'USER_ADMIN')")
     public ApiResponse<OrganizationDTO.MemberResponse> addMember(@PathVariable String id,
                                                                   @RequestBody OrganizationDTO.MemberRequest request) {
         return ApiResponse.ok(organizationService.addMember(id, request));
     }
 
+    @PutMapping({"/organizations/{id}/members/{userId}", "/tenants/{tenantId}/organizations/{id}/members/{userId}"})
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN', 'USER_ADMIN')")
+    public ApiResponse<OrganizationDTO.MemberResponse> updateMember(@PathVariable String id,
+                                                                     @PathVariable String userId,
+                                                                     @RequestBody OrganizationDTO.MemberRequest request) {
+        return ApiResponse.ok(organizationService.updateMember(id, userId, request));
+    }
+
     @DeleteMapping({"/organizations/{id}/members/{userId}", "/tenants/{tenantId}/organizations/{id}/members/{userId}"})
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN', 'USER_ADMIN')")
     public ApiResponse<Void> removeMember(@PathVariable String id, @PathVariable String userId) {
         organizationService.removeMember(id, userId);
         return ApiResponse.ok();

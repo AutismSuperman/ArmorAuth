@@ -38,6 +38,9 @@ import java.util.Optional;
 @Data
 public class ClientTransformUtil {
 
+    public static final String CLIENT_SETTING_DPOP_ENABLED = "settings.client.dpop-enabled";
+    public static final String CLIENT_SETTING_DPOP_REQUIRED = "settings.client.dpop-required";
+    public static final String CLIENT_SETTING_DPOP_ALLOWED_ALGORITHMS = "settings.client.dpop-allowed-algorithms";
 
     public static AuthorizationGrantType resolveAuthorizationGrantType(String authorizationGrantType) {
         if (AuthorizationGrantType.AUTHORIZATION_CODE.getValue().equals(authorizationGrantType)) {
@@ -58,6 +61,14 @@ public class ClientTransformUtil {
             return ClientAuthenticationMethod.CLIENT_SECRET_BASIC;
         } else if (ClientAuthenticationMethod.CLIENT_SECRET_POST.getValue().equals(clientAuthenticationMethod)) {
             return ClientAuthenticationMethod.CLIENT_SECRET_POST;
+        } else if (ClientAuthenticationMethod.CLIENT_SECRET_JWT.getValue().equals(clientAuthenticationMethod)) {
+            return ClientAuthenticationMethod.CLIENT_SECRET_JWT;
+        } else if (ClientAuthenticationMethod.PRIVATE_KEY_JWT.getValue().equals(clientAuthenticationMethod)) {
+            return ClientAuthenticationMethod.PRIVATE_KEY_JWT;
+        } else if (ClientAuthenticationMethod.TLS_CLIENT_AUTH.getValue().equals(clientAuthenticationMethod)) {
+            return ClientAuthenticationMethod.TLS_CLIENT_AUTH;
+        } else if (ClientAuthenticationMethod.SELF_SIGNED_TLS_CLIENT_AUTH.getValue().equals(clientAuthenticationMethod)) {
+            return ClientAuthenticationMethod.SELF_SIGNED_TLS_CLIENT_AUTH;
         } else if (ClientAuthenticationMethod.NONE.getValue().equals(clientAuthenticationMethod)) {
             return ClientAuthenticationMethod.NONE;
         }
@@ -81,10 +92,11 @@ public class ClientTransformUtil {
                 .accessTokenFormat(Optional.ofNullable(oAuth2TokenSettings.getTokenFormat())
                         .map(OAuth2TokenFormat::new)
                         .orElse(OAuth2TokenFormat.SELF_CONTAINED))
-                .reuseRefreshTokens(oAuth2TokenSettings.getReuseRefreshTokens())
+                .reuseRefreshTokens(Boolean.TRUE.equals(oAuth2TokenSettings.getReuseRefreshTokens()))
                 .idTokenSignatureAlgorithm(Optional.ofNullable(oAuth2TokenSettings.getIdTokenSignatureAlgorithm())
                         .map(SignatureAlgorithm::from)
                         .orElse(SignatureAlgorithm.RS256))
+                .x509CertificateBoundAccessTokens(Boolean.TRUE.equals(oAuth2TokenSettings.getX509CertificateBoundAccessTokens()))
                 .build();
     }
 
@@ -103,6 +115,7 @@ public class ClientTransformUtil {
         oAuth2TokenSettings.setTokenFormat(tokenSettings.getAccessTokenFormat().getValue());
         oAuth2TokenSettings.setReuseRefreshTokens(tokenSettings.isReuseRefreshTokens());
         oAuth2TokenSettings.setIdTokenSignatureAlgorithm(tokenSettings.getIdTokenSignatureAlgorithm().getName());
+        oAuth2TokenSettings.setX509CertificateBoundAccessTokens(tokenSettings.isX509CertificateBoundAccessTokens());
         return oAuth2TokenSettings;
     }
 
@@ -126,6 +139,15 @@ public class ClientTransformUtil {
         if (StringUtils.hasText(oAuth2ClientSettings.getJwkSetUrl())) {
             builder.jwkSetUrl(oAuth2ClientSettings.getJwkSetUrl());
         }
+        if (StringUtils.hasText(oAuth2ClientSettings.getX509CertificateSubjectDN())) {
+            builder.x509CertificateSubjectDN(oAuth2ClientSettings.getX509CertificateSubjectDN());
+        }
+        builder.setting(CLIENT_SETTING_DPOP_ENABLED, Boolean.TRUE.equals(oAuth2ClientSettings.getDpopEnabled()));
+        builder.setting(CLIENT_SETTING_DPOP_REQUIRED, Boolean.TRUE.equals(oAuth2ClientSettings.getDpopRequired()));
+        if (StringUtils.hasText(oAuth2ClientSettings.getDpopAllowedAlgorithms())) {
+            builder.setting(CLIENT_SETTING_DPOP_ALLOWED_ALGORITHMS,
+                    oAuth2ClientSettings.getDpopAllowedAlgorithms());
+        }
         return builder.build();
     }
 
@@ -141,6 +163,13 @@ public class ClientTransformUtil {
         oAuth2ClientSettings.setRequireProofKey(clientSettings.isRequireProofKey());
         oAuth2ClientSettings.setRequireAuthorizationConsent(clientSettings.isRequireAuthorizationConsent());
         oAuth2ClientSettings.setJwkSetUrl(clientSettings.getJwkSetUrl());
+        oAuth2ClientSettings.setX509CertificateSubjectDN(clientSettings.getX509CertificateSubjectDN());
+        oAuth2ClientSettings.setDpopEnabled(Boolean.TRUE.equals(
+                clientSettings.getSetting(CLIENT_SETTING_DPOP_ENABLED)));
+        oAuth2ClientSettings.setDpopRequired(Boolean.TRUE.equals(
+                clientSettings.getSetting(CLIENT_SETTING_DPOP_REQUIRED)));
+        oAuth2ClientSettings.setDpopAllowedAlgorithms(
+                clientSettings.getSetting(CLIENT_SETTING_DPOP_ALLOWED_ALGORITHMS));
         JwsAlgorithm algorithm = clientSettings.getTokenEndpointAuthenticationSigningAlgorithm();
         if (algorithm != null) {
             oAuth2ClientSettings.setSigningAlgorithm(algorithm.getName());

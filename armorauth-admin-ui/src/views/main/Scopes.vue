@@ -48,6 +48,7 @@
             :columns="columns"
             row-key="rowKey"
             size="middle"
+            :scroll="{ x: 780 }"
             :pagination="false">
             <template #bodyCell="{ column, record }">
               <template v-if="column.key === 'scope'">
@@ -129,8 +130,8 @@ const form = reactive({ clientId: undefined, scope: '', description: '' })
 
 const columns = [
   { title: 'Scope', dataIndex: 'scope', key: 'scope', width: 220 },
-  { title: '描述', dataIndex: 'description', key: 'description' },
-  { title: '操作', key: 'action', width: 140, fixed: 'right' }
+  { title: '描述', dataIndex: 'description', key: 'description', width: 360 },
+  { title: '操作', key: 'action', width: 160, fixed: 'right' }
 ]
 
 const normalizeRows = rows => rows.map(row => ({
@@ -274,7 +275,6 @@ onMounted(async () => {
   display: flex;
   gap: 8px;
   align-items: center;
-  margin-bottom: 16px;
 }
 
 .app-filter {
@@ -310,7 +310,6 @@ onMounted(async () => {
 .pagination-row {
   display: flex;
   justify-content: flex-end;
-  margin-top: 16px;
 }
 
 @media (max-width: 720px) {

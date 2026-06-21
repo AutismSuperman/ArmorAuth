@@ -112,11 +112,23 @@
               <a-avatar :size="32" class="aa-avatar">
                 {{ avatarLetter }}
               </a-avatar>
-              <span class="aa-username">管理员</span>
+              <span class="aa-username">{{ adminUser.displayName || adminUser.username || '管理员' }}</span>
               <DownOutlined style="font-size: 10px; color: #9ca3af" />
             </div>
             <template #overlay>
               <a-menu>
+                <a-menu-item key="profile" disabled>
+                  {{ adminUser.username || '未识别账号' }}
+                </a-menu-item>
+                <a-menu-item key="validate" @click="refreshSession">
+                  <template #icon><ReloadOutlined /></template>
+                  重新校验登录
+                </a-menu-item>
+                <a-menu-item key="settings" @click="router.push('/main/settings')">
+                  <template #icon><SettingOutlined /></template>
+                  账号与权限
+                </a-menu-item>
+                <a-menu-divider />
                 <a-menu-item key="logout" @click="handleLogout">
                   <template #icon><LogoutOutlined /></template>
                   退出登录
@@ -136,14 +148,16 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { message } from 'ant-design-vue'
 import {
   HomeOutlined, AppstoreOutlined, UserOutlined, SafetyOutlined,
   GlobalOutlined, DashboardOutlined, ApiOutlined, SettingOutlined,
   MenuFoldOutlined, MenuUnfoldOutlined, ReloadOutlined,
   LogoutOutlined, DownOutlined
 } from '@ant-design/icons-vue'
+import { clearAdminAuth, getAdminUser, validateAdminSession } from '../api'
 
 const route = useRoute()
 const router = useRouter()
@@ -152,6 +166,8 @@ const collapsed = ref(false)
 const selectedKeys = ref(['/main/home'])
 const openKeys = ref([])
 const routeKey = ref(0)
+const adminUser = ref(getAdminUser())
+let lastForbiddenToastAt = 0
 
 const submenuMap = {
   '/main/applications': 'app-management',
@@ -191,13 +207,7 @@ const pageTitleMap = {
 const currentPageTitle = computed(() => pageTitleMap[route.path] || '首页')
 
 const avatarLetter = computed(() => {
-  const token = localStorage.getItem('admin_token') || 'A'
-  try {
-    const decoded = atob(token)
-    return decoded.split(':')[0]?.charAt(0)?.toUpperCase() || 'A'
-  } catch {
-    return 'A'
-  }
+  return (adminUser.value.displayName || adminUser.value.username || 'A').charAt(0).toUpperCase()
 })
 
 watch(
@@ -223,10 +233,47 @@ const refreshPage = () => {
   routeKey.value++
 }
 
-const handleLogout = () => {
-  localStorage.removeItem('admin_token')
-  router.push('/login')
+const refreshSession = async () => {
+  try {
+    adminUser.value = await validateAdminSession()
+    message.success('登录状态有效')
+  } catch (e) {
+    message.error(e.message || '登录校验失败')
+    router.replace({ path: '/login', query: { redirect: route.fullPath } })
+  }
 }
+
+const handleAuthExpired = (event) => {
+  adminUser.value = getAdminUser()
+  message.warning(event.detail?.message || '登录已过期，请重新登录')
+  if (route.path !== '/login') {
+    router.replace({ path: '/login', query: { redirect: route.fullPath } })
+  }
+}
+
+const handleForbidden = (event) => {
+  const now = Date.now()
+  if (now - lastForbiddenToastAt < 1500) return
+  lastForbiddenToastAt = now
+  message.warning(event.detail?.message || '当前账号没有此操作权限')
+}
+
+const handleLogout = () => {
+  clearAdminAuth()
+  adminUser.value = getAdminUser()
+  router.replace('/login')
+}
+
+onMounted(() => {
+  adminUser.value = getAdminUser()
+  window.addEventListener('armorauth:auth-expired', handleAuthExpired)
+  window.addEventListener('armorauth:forbidden', handleForbidden)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('armorauth:auth-expired', handleAuthExpired)
+  window.removeEventListener('armorauth:forbidden', handleForbidden)
+})
 </script>
 
 <style scoped lang="scss">

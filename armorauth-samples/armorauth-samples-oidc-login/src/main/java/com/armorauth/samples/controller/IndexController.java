@@ -43,10 +43,15 @@ public class IndexController {
                         @AuthenticationPrincipal OAuth2User oauth2User) {
         model.addAttribute("userName", oauth2User.getName());
         model.addAttribute("clientName", authorizedClient.getClientRegistration().getClientName());
+        model.addAttribute("clientId", authorizedClient.getClientRegistration().getClientId());
         model.addAttribute("userAttributes", oauth2User.getAttributes());
         model.addAttribute("scopes",
                 StringUtils.collectionToCommaDelimitedString(authorizedClient.getClientRegistration().getScopes()));
         model.addAttribute("redirectUri", authorizedClient.getClientRegistration().getRedirectUri());
+        model.addAttribute("authorizationUri",
+                authorizedClient.getClientRegistration().getProviderDetails().getAuthorizationUri());
+        model.addAttribute("tokenUri", authorizedClient.getClientRegistration().getProviderDetails().getTokenUri());
+        model.addAttribute("jwkSetUri", authorizedClient.getClientRegistration().getProviderDetails().getJwkSetUri());
         return "index";
     }
 }

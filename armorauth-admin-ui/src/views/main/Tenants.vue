@@ -3,12 +3,31 @@
     <div class="page-header">
       <div>
         <h2>租户管理</h2>
-        <div class="page-subtitle">用户池、品牌配置和租户状态</div>
+        <div class="page-subtitle">用户池、品牌配置和组织边界</div>
       </div>
       <a-button type="primary" @click="showCreate">
         <template #icon><PlusOutlined /></template>
         创建租户
       </a-button>
+    </div>
+
+    <div class="tenant-summary">
+      <div class="summary-item">
+        <div class="summary-label">用户池</div>
+        <div class="summary-value">{{ pagination.total }}</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">当前页启用</div>
+        <div class="summary-value">{{ enabledTenantCount }}</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">自定义域名</div>
+        <div class="summary-value">{{ customDomainCount }}</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Path Issuer</div>
+        <div class="summary-value">{{ issuerEnabledCount }}</div>
+      </div>
     </div>
 
     <a-table
@@ -18,23 +37,36 @@
       :dataSource="tenants"
       :loading="loading"
       :pagination="pagination"
-      :scroll="{ x: 900 }"
+      :scroll="{ x: 1240 }"
       @change="handleTableChange"
       bordered>
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'tenantName'">
-          <div class="tenant-name">{{ record.tenantName }}</div>
+          <div class="tenant-title">
+            <a-tag color="blue">用户池</a-tag>
+            <span class="tenant-name">{{ record.tenantName }}</span>
+          </div>
           <div class="tenant-code">{{ record.tenantCode }}</div>
         </template>
         <template v-if="column.key === 'primaryColor'">
           <span class="color-swatch" :style="{ backgroundColor: record.primaryColor || '#d1d5db' }"></span>
           <span>{{ record.primaryColor || '-' }}</span>
         </template>
+        <template v-if="column.key === 'issuer'">
+          <a-space size="small" wrap>
+            <a-tag :color="record.pathIssuerEnabled ? 'green' : 'default'">
+              {{ record.pathIssuerEnabled ? '启用' : '关闭' }}
+            </a-tag>
+            <a-tag v-if="record.issuerPath" color="geekblue">{{ record.issuerPath }}</a-tag>
+          </a-space>
+          <div v-if="record.customDomainIssuer" class="tenant-code">{{ record.customDomainIssuer }}</div>
+        </template>
         <template v-if="column.key === 'enabled'">
           <a-switch :checked="record.enabled" size="small" @change="checked => handleStatus(record, checked)" />
         </template>
         <template v-if="column.key === 'action'">
           <a-space>
+            <a @click="viewOrganizations(record)">组织</a>
             <a @click="showEdit(record)">编辑</a>
             <a-popconfirm title="确认删除此租户？" ok-text="删除" cancel-text="取消" @confirm="handleDelete(record.id)">
               <a style="color: #ff4d4f">删除</a>
@@ -105,11 +137,13 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { computed, reactive, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { PlusOutlined } from '@ant-design/icons-vue'
 import { createTenant, deleteTenant, getTenants, updateTenant, updateTenantStatus } from '../../api'
 
+const router = useRouter()
 const tenants = ref([])
 const loading = ref(false)
 const modalVisible = ref(false)
@@ -132,13 +166,18 @@ const defaultForm = () => ({
 
 const form = reactive(defaultForm())
 
+const enabledTenantCount = computed(() => tenants.value.filter(item => item.enabled).length)
+const customDomainCount = computed(() => tenants.value.filter(item => item.customDomain).length)
+const issuerEnabledCount = computed(() => tenants.value.filter(item => item.pathIssuerEnabled).length)
+
 const columns = [
   { title: '租户', key: 'tenantName', width: 190 },
+  { title: 'Issuer', key: 'issuer', width: 210 },
   { title: '自定义域名', dataIndex: 'customDomain', key: 'customDomain', width: 190, ellipsis: true },
   { title: '主题色', key: 'primaryColor', width: 130 },
   { title: '状态', key: 'enabled', width: 90 },
   { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', width: 180 },
-  { title: '操作', key: 'action', width: 120, fixed: 'right' }
+  { title: '操作', key: 'action', width: 220, fixed: 'right' }
 ]
 
 const resetForm = () => Object.assign(form, defaultForm())
@@ -224,6 +263,10 @@ const handleStatus = async (record, enabled) => {
   }
 }
 
+const viewOrganizations = (record) => {
+  router.push({ path: '/main/organizations', query: { tenantId: record.id } })
+}
+
 const handleDelete = async (id) => {
   try {
     await deleteTenant(id)
@@ -238,11 +281,46 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
+.tenant-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.summary-item {
+  min-height: 76px;
+  padding: 14px 16px;
+  background: var(--aa-card-bg);
+  border: 1px solid var(--aa-border-light);
+  border-radius: var(--aa-radius);
+  box-shadow: var(--aa-shadow);
+}
+
+.summary-label {
+  color: var(--aa-text-secondary);
+  font-size: 13px;
+}
+
+.summary-value {
+  margin-top: 8px;
+  color: var(--aa-text-primary);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .page-subtitle,
 .tenant-code {
   margin-top: 6px;
   color: var(--aa-text-secondary);
   font-size: 13px;
+}
+
+.tenant-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .tenant-name {
@@ -275,6 +353,10 @@ onMounted(fetchData)
 }
 
 @media (max-width: 720px) {
+  .tenant-summary {
+    grid-template-columns: 1fr;
+  }
+
   .page-header {
     flex-direction: column;
   }

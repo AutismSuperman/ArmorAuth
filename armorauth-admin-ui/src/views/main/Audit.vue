@@ -13,7 +13,8 @@
     </div>
 
     <a-table :dataSource="events" :columns="columns" :loading="loading"
-             :pagination="pagination" @change="handleTableChange" row-key="id" size="middle">
+             :pagination="pagination" :scroll="{ x: 1360 }"
+             @change="handleTableChange" row-key="id" size="middle">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'type'">
           <a-tag :color="getEventColor(record.eventType)">{{ record.eventType }}</a-tag>
@@ -55,7 +56,7 @@ const columns = [
   { title: '操作者', dataIndex: 'principalName', key: 'principal', width: 150 },
   { title: '资源类型', dataIndex: 'resourceType', key: 'resource', width: 120 },
   { title: '资源ID', dataIndex: 'resourceId', key: 'resourceId', width: 200, ellipsis: true },
-  { title: '详情', key: 'detail', ellipsis: true },
+  { title: '详情', key: 'detail', width: 360, ellipsis: true },
   { title: 'IP', dataIndex: 'ipAddress', key: 'ip', width: 140 }
 ]
 

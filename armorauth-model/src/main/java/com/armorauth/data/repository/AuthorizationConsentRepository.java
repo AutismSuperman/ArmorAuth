@@ -29,7 +29,14 @@ public interface AuthorizationConsentRepository extends JpaRepository<Authorizat
 
     AuthorizationConsent findByPrincipalNameAndRegisteredClientId(String principalName, String registeredClientId);
 
+    AuthorizationConsent findByTenantIdAndPrincipalNameAndRegisteredClientId(String tenantId,
+                                                                             String principalName,
+                                                                             String registeredClientId);
+
     void deleteByPrincipalNameAndRegisteredClientId(String principalName, String registeredClientId);
+
+    void deleteByTenantIdAndPrincipalNameAndRegisteredClientId(String tenantId, String principalName,
+                                                               String registeredClientId);
 }
 
 

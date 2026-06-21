@@ -8,6 +8,10 @@ spring:
     active: mysql
   application:
     name: armorauth-server
+  data:
+    redis:
+      repositories:
+        enabled: false
   jpa:
     show-sql: true
     generate-ddl: false

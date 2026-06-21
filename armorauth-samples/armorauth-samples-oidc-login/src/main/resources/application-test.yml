@@ -1,3 +1,7 @@
+armorauth:
+  sample:
+    registration-id: autism-client-oidc
+
 spring:
   security:
     oauth2:
