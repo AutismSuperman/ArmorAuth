@@ -17,6 +17,14 @@
     <meta property="og:image" content="https://armorauth.wangfulin.com/assets/screenshots/hosted-login.png" />
     <title>ArmorAuth - 统一身份认证与授权平台</title>
     <link rel="icon" href="./assets/logo-mark.svg" type="image/svg+xml" />
+    <script>
+      (() => {
+        try {
+          const theme = localStorage.getItem('armorauth-theme');
+          if (theme === 'dark' || theme === 'light') document.documentElement.dataset.theme = theme;
+        } catch {}
+      })();
+    </script>
     <link rel="stylesheet" href="./assets/site.css" />
   </head>
   <body>
@@ -33,6 +41,12 @@
           <a href="./starter.html">Starter</a>
           <a href="https://github.com/AutismSuperman/armor-auth">GitHub</a>
         </nav>
+        <div class="top-actions" aria-label="Page tools">
+          <button class="theme-toggle" type="button" data-theme-toggle>
+            <span class="theme-icon" data-theme-icon aria-hidden="true">系</span>
+            <span data-theme-label>跟随系统</span>
+          </button>
+        </div>
       </div>
     </header>
 

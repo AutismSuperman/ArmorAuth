@@ -1,4 +1,58 @@
 (() => {
+  const themeKey = 'armorauth-theme';
+  const themeOrder = ['system', 'dark', 'light'];
+  const themeMeta = {
+    system: { label: '跟随系统', icon: '系' },
+    dark: { label: '深色', icon: '深' },
+    light: { label: '浅色', icon: '浅' }
+  };
+
+  const getStoredTheme = () => {
+    const stored = localStorage.getItem(themeKey);
+    return themeOrder.includes(stored) ? stored : 'system';
+  };
+
+  const applyTheme = (theme) => {
+    if (theme === 'system') {
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+
+    document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+      const meta = themeMeta[theme];
+      button.setAttribute('aria-label', `切换主题，当前：${meta.label}`);
+      button.setAttribute('title', `切换主题，当前：${meta.label}`);
+      button.querySelector('[data-theme-icon]').textContent = meta.icon;
+      button.querySelector('[data-theme-label]').textContent = meta.label;
+    });
+  };
+
+  const setTheme = (theme) => {
+    if (theme === 'system') {
+      localStorage.removeItem(themeKey);
+    } else {
+      localStorage.setItem(themeKey, theme);
+    }
+    applyTheme(theme);
+  };
+
+  applyTheme(getStoredTheme());
+
+  document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const current = getStoredTheme();
+      const next = themeOrder[(themeOrder.indexOf(current) + 1) % themeOrder.length];
+      setTheme(next);
+    });
+  });
+
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (getStoredTheme() === 'system') {
+      applyTheme('system');
+    }
+  });
+
   const sectionLinks = Array.from(document.querySelectorAll('.sidebar a[href^="#"], .toc a[href^="#"]'));
   const sectionIds = Array.from(new Set(sectionLinks.map((link) => decodeURIComponent(link.hash.slice(1))).filter(Boolean)));
   const sections = sectionIds.map((id) => document.getElementById(id)).filter(Boolean);

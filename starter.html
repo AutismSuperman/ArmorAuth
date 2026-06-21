@@ -9,6 +9,14 @@
     />
     <title>ArmorAuth Spring Boot Starter 使用指南</title>
     <link rel="icon" href="./assets/logo-mark.svg" type="image/svg+xml" />
+    <script>
+      (() => {
+        try {
+          const theme = localStorage.getItem('armorauth-theme');
+          if (theme === 'dark' || theme === 'light') document.documentElement.dataset.theme = theme;
+        } catch {}
+      })();
+    </script>
     <link rel="stylesheet" href="./assets/site.css" />
   </head>
   <body>
@@ -25,6 +33,12 @@
           <a class="active" href="./starter.html">Starter</a>
           <a href="https://github.com/AutismSuperman/armor-auth">GitHub</a>
         </nav>
+        <div class="top-actions" aria-label="Page tools">
+          <button class="theme-toggle" type="button" data-theme-toggle>
+            <span class="theme-icon" data-theme-icon aria-hidden="true">系</span>
+            <span data-theme-label>跟随系统</span>
+          </button>
+        </div>
       </div>
     </header>
 
