@@ -71,7 +71,7 @@ armorauth-server/target/armorauth-server-1.0.0.jar
 java -jar armorauth-server/target/armorauth-server-1.0.0.jar
 ```
 
-服务端会提供托管身份页面、OAuth/OIDC 标准端点和管理 API。
+服务端会在 `http://localhost:9000` 提供托管身份页面、OAuth/OIDC 标准端点和管理 API。
 
 如果只需要本地 H2 开发环境，可以使用 `local` profile：
 
@@ -87,7 +87,7 @@ npm install
 npm run dev
 ```
 
-Vite 开发服务器会把 API 请求代理到 ArmorAuth 服务端。
+Vite 启动后打开 `http://localhost:1080`。管理控制台会把 API 请求代理到 `localhost:9000` 的 ArmorAuth 服务端。
 
 ## 验证环境
 
@@ -102,7 +102,11 @@ curl http://localhost:9000/.well-known/openid-configuration
 
 ## 下一步
 
+- 阅读 [产品概览](product-overview.zh-CN.md)，了解能力边界和系统入口。
+- 按 [基础使用](basic-usage.zh-CN.md) 创建租户、应用和测试用户。
 - 在管理控制台配置第一个 OAuth/OIDC 应用。
+- 需要本地演示数据时启用 [开发种子 Profile](mock-system.zh-CN.md)。
+- 按 [Spring Boot Starter](spring-boot-starter.md) 接入一个 Spring Boot 业务服务。
 - 阅读 [操作手册](operation-manual.zh-CN.md)，了解日常管理流程。
 - 对外开放服务前阅读 [部署指南](deployment-guide.zh-CN.md)。
 - 阅读 [安全最佳实践](security-best-practices.md)，完成加固检查。

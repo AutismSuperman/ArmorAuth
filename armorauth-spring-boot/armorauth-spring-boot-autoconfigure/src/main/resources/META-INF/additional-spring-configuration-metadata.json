@@ -7,10 +7,130 @@
       "defaultValue": false
     },
     {
+      "name": "armorauth.resource-server.security-matcher",
+      "type": "java.lang.String",
+      "description": "Request matcher protected by the starter managed resource server security filter chain.",
+      "defaultValue": "/api/**"
+    },
+    {
+      "name": "armorauth.resource-server.permit-all",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Request patterns that remain public inside the resource server security matcher.",
+      "defaultValue": ["/api/public/**"]
+    },
+    {
+      "name": "armorauth.resource-server.csrf-enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether CSRF protection remains enabled for the starter managed resource server chain.",
+      "defaultValue": false
+    },
+    {
+      "name": "armorauth.resource-server.principal-claim",
+      "type": "java.lang.String",
+      "description": "JWT claim used as the Spring Security principal name.",
+      "defaultValue": "sub"
+    },
+    {
+      "name": "armorauth.resource-server.role-claims",
+      "type": "java.util.List<java.lang.String>",
+      "description": "JWT claims mapped to role authorities.",
+      "defaultValue": ["roles"]
+    },
+    {
+      "name": "armorauth.resource-server.scope-claims",
+      "type": "java.util.List<java.lang.String>",
+      "description": "JWT claims mapped to scope authorities.",
+      "defaultValue": ["scope", "scp"]
+    },
+    {
+      "name": "armorauth.resource-server.permission-claims",
+      "type": "java.util.List<java.lang.String>",
+      "description": "JWT claims mapped to permission authorities.",
+      "defaultValue": ["permissions"]
+    },
+    {
+      "name": "armorauth.resource-server.organization-role-claims",
+      "type": "java.util.List<java.lang.String>",
+      "description": "JWT claims mapped to organization role authorities.",
+      "defaultValue": ["org_roles"]
+    },
+    {
+      "name": "armorauth.resource-server.role-prefix",
+      "type": "java.lang.String",
+      "description": "Authority prefix for values from role claims.",
+      "defaultValue": "ROLE_"
+    },
+    {
+      "name": "armorauth.resource-server.scope-prefix",
+      "type": "java.lang.String",
+      "description": "Authority prefix for values from scope claims.",
+      "defaultValue": "SCOPE_"
+    },
+    {
+      "name": "armorauth.resource-server.permission-prefix",
+      "type": "java.lang.String",
+      "description": "Authority prefix for values from permission claims.",
+      "defaultValue": "PERMISSION_"
+    },
+    {
+      "name": "armorauth.resource-server.organization-role-prefix",
+      "type": "java.lang.String",
+      "description": "Authority prefix for values from organization role claims.",
+      "defaultValue": "ORG_ROLE_"
+    },
+    {
       "name": "armorauth.oidc-client.enabled",
       "type": "java.lang.Boolean",
       "description": "Enable ArmorAuth's default OIDC login security filter chain.",
       "defaultValue": false
+    },
+    {
+      "name": "armorauth.oidc-client.permit-all",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Request patterns that are public before OIDC login.",
+      "defaultValue": ["/", "/public/**"]
+    },
+    {
+      "name": "armorauth.oidc-client.csrf-enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether CSRF protection remains enabled for the starter managed OIDC client chain.",
+      "defaultValue": false
+    },
+    {
+      "name": "armorauth.oidc-client.default-success-url",
+      "type": "java.lang.String",
+      "description": "Optional default URL after OIDC login."
+    },
+    {
+      "name": "armorauth.oidc-client.logout-success-url",
+      "type": "java.lang.String",
+      "description": "Optional URL after logout."
+    },
+    {
+      "name": "armorauth.admin-client.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable the starter managed ArmorAuth Admin API RestClient.",
+      "defaultValue": false
+    },
+    {
+      "name": "armorauth.admin-client.base-url",
+      "type": "java.lang.String",
+      "description": "ArmorAuth server base URL used by the Admin API client."
+    },
+    {
+      "name": "armorauth.admin-client.username",
+      "type": "java.lang.String",
+      "description": "Admin username for Basic authentication."
+    },
+    {
+      "name": "armorauth.admin-client.password",
+      "type": "java.lang.String",
+      "description": "Admin password for Basic authentication."
+    },
+    {
+      "name": "armorauth.admin-client.bearer-token",
+      "type": "java.lang.String",
+      "description": "Bearer token for Admin API authentication. Takes precedence over username/password."
     }
   ]
 }

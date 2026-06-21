@@ -1,6 +1,6 @@
 # ArmorAuth Operation Manual
 
-This manual describes common administration workflows for a running ArmorAuth installation. It focuses on how operators manage the system, not on local demo scripts.
+This manual describes common administration workflows for a running ArmorAuth installation. It focuses on operator routines after the system is available. For first-time product usage, start with [Basic Usage](basic-usage.md).
 
 ## Operator Roles
 
@@ -21,6 +21,20 @@ After the first deployment:
 4. Verify the JWK table is populated and backed up.
 5. Review default applications, scopes, roles, permissions, and login policies.
 6. Confirm audit logging is enabled for administrative actions.
+
+## Common Day-One Workflow
+
+For a new environment, use this sequence:
+
+1. Confirm or create the default tenant.
+2. Create organizations only when they affect authorization, reporting, or administration.
+3. Create the first OAuth2/OIDC application and verify redirect URIs.
+4. Create test users, verify email and phone when those contact methods are used, and assign roles.
+5. Test hosted login and token issuance with a sample or relying application.
+6. Enable MFA for administrators and sensitive applications.
+7. Review sessions, audit logs, and token statistics after testing.
+
+Keep local development seed data separate from shared environments.
 
 ## Application Management
 

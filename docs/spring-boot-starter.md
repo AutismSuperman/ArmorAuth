@@ -2,13 +2,15 @@
 
 `armorauth-spring-boot-starter` is intended for relying Spring Boot services that need to integrate with ArmorAuth as an OAuth2/OIDC identity provider. It provides lightweight auto-configuration for resource servers and OIDC login clients without bringing in the full ArmorAuth authorization server implementation.
 
+For design boundaries and extension points, see [Spring Boot Starter Extension Spec](spring-boot-starter-extension-spec.md).
+
 ## Maven Dependency
 
 ```xml
 <dependency>
     <groupId>com.armorauth</groupId>
     <artifactId>armorauth-spring-boot-starter</artifactId>
-    <version>0.0.1</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -29,7 +31,35 @@ spring:
           issuer-uri: http://localhost:9000
 ```
 
-The default filter chain protects `/api/**`, permits `/api/public/**`, maps `roles` to `ROLE_*`, and maps `scope` to `SCOPE_*`.
+The default filter chain protects `/api/**`, permits `/api/public/**`, maps `roles` to `ROLE_*`, maps `scope`/`scp` to `SCOPE_*`, maps `permissions` to `PERMISSION_*`, and maps `org_roles` to `ORG_ROLE_*`.
+
+The defaults can be adjusted without replacing the whole filter chain:
+
+```yaml
+armorauth:
+  resource-server:
+    enabled: true
+    security-matcher: /api/**
+    permit-all:
+      - /api/public/**
+      - /api/health
+    csrf-enabled: false
+    principal-claim: preferred_username
+    role-claims:
+      - roles
+      - groups
+    scope-claims:
+      - scope
+      - scp
+    permission-claims:
+      - permissions
+    organization-role-claims:
+      - org_roles
+    role-prefix: ROLE_
+    scope-prefix: SCOPE_
+    permission-prefix: PERMISSION_
+    organization-role-prefix: ORG_ROLE_
+```
 
 Use `jwk-set-uri` instead of `issuer-uri` when the service cannot reach the issuer metadata endpoint:
 
@@ -69,6 +99,125 @@ spring:
 
 The default filter chain permits `/` and `/public/**`, requires authentication for other requests, enables OAuth2 login, and disables CSRF for simple service integration.
 
+It also supports lightweight login/logout tuning:
+
+```yaml
+armorauth:
+  oidc-client:
+    enabled: true
+    permit-all:
+      - /
+      - /public/**
+      - /assets/**
+    csrf-enabled: false
+    default-success-url: /dashboard
+    logout-success-url: /
+```
+
 ## Custom Security
 
-If the application defines its own `SecurityFilterChain`, ArmorAuth's default resource server or OIDC client filter chain backs off. If the application defines its own `JwtAuthenticationConverter`, the resource server auto-configuration uses the custom converter.
+If the application defines its own `JwtAuthenticationConverter`, the resource server auto-configuration uses the custom converter. If the application defines a bean named `resourceServerSecurityFilterChain` or `oidcClientSecurityFilterChain`, the corresponding starter managed chain backs off.
+
+For small changes, prefer customizers instead of replacing the whole chain:
+
+```java
+@Bean
+ArmorAuthResourceServerHttpSecurityCustomizer apiSecurity() {
+    return http -> http.exceptionHandling(ex -> ex.authenticationEntryPoint(customEntryPoint()));
+}
+
+@Bean
+ArmorAuthOidcClientHttpSecurityCustomizer loginSecurity() {
+    return http -> http.oauth2Login(oauth2 -> oauth2.failureHandler(customFailureHandler()));
+}
+
+@Bean
+ArmorAuthJwtAuthenticationConverterCustomizer jwtPrincipal() {
+    return converter -> converter.setPrincipalClaimName("preferred_username");
+}
+```
+
+## Current User Context
+
+The starter exposes `ArmorAuthCurrentUserResolver` so business code can read ArmorAuth claims consistently:
+
+```java
+@RestController
+class ProfileController {
+
+    private final ArmorAuthCurrentUserResolver currentUserResolver;
+
+    ProfileController(ArmorAuthCurrentUserResolver currentUserResolver) {
+        this.currentUserResolver = currentUserResolver;
+    }
+
+    @GetMapping("/api/me")
+    ArmorAuthCurrentUser me() {
+        return currentUserResolver.currentUser();
+    }
+}
+```
+
+The resolver reads `sub`, `preferred_username`, `tenant_id`, `org_ids`, `org_roles`, `roles`, `scope`/`scp`, and `permissions` from JWT or OIDC user attributes.
+
+## Admin API Client
+
+The starter can create a lightweight `RestClient` based Admin API client:
+
+```yaml
+armorauth:
+  admin-client:
+    enabled: true
+    base-url: http://localhost:9000
+    username: admin
+    password: admin123
+```
+
+Or use a bearer token:
+
+```yaml
+armorauth:
+  admin-client:
+    enabled: true
+    base-url: http://localhost:9000
+    bearer-token: ${ARMORAUTH_ADMIN_TOKEN}
+```
+
+```java
+@Service
+class ApplicationProvisioningService {
+
+    private final ArmorAuthAdminRestClient adminClient;
+
+    ApplicationProvisioningService(ArmorAuthAdminRestClient adminClient) {
+        this.adminClient = adminClient;
+    }
+
+    Map<String, Object> applications() {
+        return adminClient.listApplications(0, 20);
+    }
+}
+```
+
+Customize the underlying builder when you need proxy, timeout, tracing, or extra headers:
+
+```java
+@Bean
+ArmorAuthAdminRestClientCustomizer adminClientCustomizer() {
+    return builder -> builder.defaultHeader("X-Source", "billing-service");
+}
+```
+
+## Token Relay
+
+`ArmorAuthTokenRelayInterceptor` is exposed as a bean. Attach it only to `RestClient` instances that call trusted downstream services:
+
+```java
+@Bean
+RestClient downstreamClient(RestClient.Builder builder, ArmorAuthTokenRelayInterceptor tokenRelay) {
+    return builder
+            .baseUrl("http://orders-service")
+            .requestInterceptor(tokenRelay)
+            .build();
+}
+```

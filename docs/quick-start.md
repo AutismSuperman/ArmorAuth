@@ -71,7 +71,7 @@ Start the packaged server:
 java -jar armorauth-server/target/armorauth-server-1.0.0.jar
 ```
 
-The server exposes hosted identity pages, OAuth/OIDC protocol endpoints, and the admin API.
+The server exposes hosted identity pages, OAuth/OIDC protocol endpoints, and the admin API on `http://localhost:9000`.
 
 For local H2-based development you can use the `local` profile:
 
@@ -87,7 +87,7 @@ npm install
 npm run dev
 ```
 
-The Vite dev server proxies API calls to the ArmorAuth server.
+Open `http://localhost:1080` after the Vite dev server starts. It proxies API calls to the ArmorAuth server on `localhost:9000`.
 
 ## Verify The Environment
 
@@ -102,7 +102,11 @@ Default development seed data includes an administrator account for local evalua
 
 ## Next Steps
 
+- Review [Product Overview](product-overview.md) for capabilities and system surfaces.
+- Follow [Basic Usage](basic-usage.md) to create a tenant, application, and test user.
 - Configure the first OAuth/OIDC application in the admin console.
+- Use [Development Seed Profile](mock-system.md) when you need representative local demo data.
+- Integrate a relying Spring Boot service with [Spring Boot Starter](spring-boot-starter.md).
 - Review [Operation Manual](operation-manual.md) for administration workflows.
 - Review [Deployment Guide](deployment-guide.md) before exposing the service outside a local machine.
 - Review [Security Best Practices](security-best-practices.md) for hardening guidance.

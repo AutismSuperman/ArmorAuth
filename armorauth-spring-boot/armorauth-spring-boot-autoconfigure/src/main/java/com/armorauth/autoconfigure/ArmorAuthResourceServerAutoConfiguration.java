@@ -15,22 +15,21 @@
  */
 package com.armorauth.autoconfigure;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
+import com.armorauth.springboot.security.ArmorAuthJwtAuthenticationConverterCustomizer;
+import com.armorauth.springboot.security.ArmorAuthJwtGrantedAuthoritiesConverter;
+import com.armorauth.springboot.security.ArmorAuthResourceServerHttpSecurityCustomizer;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -45,58 +44,43 @@ import org.springframework.security.web.SecurityFilterChain;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Jwt.class, JwtAuthenticationConverter.class, SecurityFilterChain.class})
 @ConditionalOnProperty(prefix = "armorauth.resource-server", name = "enabled", havingValue = "true")
+@EnableConfigurationProperties(ArmorAuthResourceServerProperties.class)
 public class ArmorAuthResourceServerAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public JwtAuthenticationConverter armorAuthJwtAuthenticationConverter() {
+    public JwtAuthenticationConverter armorAuthJwtAuthenticationConverter(
+            ArmorAuthResourceServerProperties properties,
+            ObjectProvider<ArmorAuthJwtAuthenticationConverterCustomizer> customizers) {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(new RolesClaimJwtGrantedAuthoritiesConverter());
+        converter.setJwtGrantedAuthoritiesConverter(new ArmorAuthJwtGrantedAuthoritiesConverter(properties));
+        converter.setPrincipalClaimName(properties.getPrincipalClaim());
+        customizers.orderedStream().forEach(customizer -> customizer.customize(converter));
         return converter;
     }
 
     @Bean(name = "resourceServerSecurityFilterChain")
-    @ConditionalOnMissingBean(SecurityFilterChain.class)
+    @ConditionalOnMissingBean(name = "resourceServerSecurityFilterChain")
+    @Order(Ordered.HIGHEST_PRECEDENCE + 20)
     public SecurityFilterChain resourceServerSecurityFilterChain(
             HttpSecurity http,
-            JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
-        http.securityMatcher("/api/**")
+            JwtAuthenticationConverter jwtAuthenticationConverter,
+            ArmorAuthResourceServerProperties properties,
+            ObjectProvider<ArmorAuthResourceServerHttpSecurityCustomizer> customizers) throws Exception {
+        String[] permitAll = properties.getPermitAll() == null ? new String[0] : properties.getPermitAll().toArray(String[]::new);
+        http.securityMatcher(properties.getSecurityMatcher())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers(permitAll).permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
-                .csrf(AbstractHttpConfigurer::disable);
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)));
+        if (!properties.isCsrfEnabled()) {
+            http.csrf(AbstractHttpConfigurer::disable);
+        }
+        for (ArmorAuthResourceServerHttpSecurityCustomizer customizer : customizers.orderedStream().toList()) {
+            customizer.customize(http);
+        }
         return http.build();
     }
 
-    /**
-     * Maps ArmorAuth roles and scopes to Spring Security authorities.
-     */
-    public static class RolesClaimJwtGrantedAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
-
-        @Override
-        public Collection<GrantedAuthority> convert(Jwt jwt) {
-            Collection<GrantedAuthority> authorities = new ArrayList<>();
-
-            Object rolesClaim = jwt.getClaim("roles");
-            if (rolesClaim instanceof List<?> roles) {
-                for (Object role : roles) {
-                    if (role instanceof String roleValue) {
-                        authorities.add(new SimpleGrantedAuthority("ROLE_" + roleValue));
-                    }
-                }
-            }
-
-            String scope = jwt.getClaimAsString("scope");
-            if (scope != null) {
-                Arrays.stream(scope.split(" "))
-                        .filter(authority -> !authority.isBlank())
-                        .map(authority -> new SimpleGrantedAuthority("SCOPE_" + authority))
-                        .forEach(authorities::add);
-            }
-
-            return authorities;
-        }
-    }
 }

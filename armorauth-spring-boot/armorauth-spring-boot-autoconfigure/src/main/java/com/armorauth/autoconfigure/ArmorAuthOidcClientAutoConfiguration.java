@@ -15,13 +15,17 @@
  */
 package com.armorauth.autoconfigure;
 
+import com.armorauth.springboot.security.ArmorAuthOidcClientHttpSecurityCustomizer;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.Customizer;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -37,16 +41,36 @@ import org.springframework.security.web.SecurityFilterChain;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({ClientRegistrationRepository.class, SecurityFilterChain.class})
 @ConditionalOnProperty(prefix = "armorauth.oidc-client", name = "enabled", havingValue = "true")
+@EnableConfigurationProperties(ArmorAuthOidcClientProperties.class)
 public class ArmorAuthOidcClientAutoConfiguration {
 
     @Bean(name = "oidcClientSecurityFilterChain")
-    @ConditionalOnMissingBean(SecurityFilterChain.class)
-    public SecurityFilterChain oidcClientSecurityFilterChain(HttpSecurity http) throws Exception {
+    @ConditionalOnMissingBean(name = "oidcClientSecurityFilterChain")
+    @Order(Ordered.LOWEST_PRECEDENCE)
+    public SecurityFilterChain oidcClientSecurityFilterChain(
+            HttpSecurity http,
+            ArmorAuthOidcClientProperties properties,
+            ObjectProvider<ArmorAuthOidcClientHttpSecurityCustomizer> customizers) throws Exception {
+        String[] permitAll = properties.getPermitAll() == null ? new String[0] : properties.getPermitAll().toArray(String[]::new);
         http.authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/", "/public/**").permitAll()
+                        .requestMatchers(permitAll).permitAll()
                         .anyRequest().authenticated())
-                .oauth2Login(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable);
+                .oauth2Login(oauth2 -> {
+                    if (properties.getDefaultSuccessUrl() != null && !properties.getDefaultSuccessUrl().isBlank()) {
+                        oauth2.defaultSuccessUrl(properties.getDefaultSuccessUrl());
+                    }
+                })
+                .logout(logout -> {
+                    if (properties.getLogoutSuccessUrl() != null && !properties.getLogoutSuccessUrl().isBlank()) {
+                        logout.logoutSuccessUrl(properties.getLogoutSuccessUrl());
+                    }
+                });
+        if (!properties.isCsrfEnabled()) {
+            http.csrf(AbstractHttpConfigurer::disable);
+        }
+        for (ArmorAuthOidcClientHttpSecurityCustomizer customizer : customizers.orderedStream().toList()) {
+            customizer.customize(http);
+        }
         return http.build();
     }
 }

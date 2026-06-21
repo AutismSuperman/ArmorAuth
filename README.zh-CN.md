@@ -66,7 +66,7 @@ ArmorAuth 对外提供标准授权服务器端点，同时将运行状态落库�
 - 用户、租户、角色、组织、Token 信息的安全上下文工具。
 - JWT 权限映射与下游服务 Token Relay。
 
-详见 [Spring Boot Starter](docs/spring-boot-starter.md)。
+接入步骤详见 [Spring Boot Starter](docs/spring-boot-starter.md)，扩展点详见 [Spring Boot Starter 扩展规格](docs/spring-boot-starter-extension-spec.md)。
 
 ## 模块结构
 
@@ -98,15 +98,19 @@ ArmorAuth 对外提供标准授权服务器端点，同时将运行状态落库�
 
 | 文档 | 说明 |
 | --- | --- |
+| [产品概览](docs/product-overview.zh-CN.md) | 产品定位、核心能力和系统入口 |
 | [快速开始](docs/quick-start.zh-CN.md) | 本地构建和运行 ArmorAuth |
+| [基础使用](docs/basic-usage.zh-CN.md) | 租户、应用、用户、MFA 和账号中心的基础流程 |
 | [操作手册](docs/operation-manual.zh-CN.md) | 日常管理与运营流程 |
 | [部署指南](docs/deployment-guide.zh-CN.md) | 生产部署、反向代理、数据库、备份与安全配置 |
 | [API Reference](docs/api-reference.md) | 管理 API、账户 API 和协议相关 API |
 | [Spring Boot Starter](docs/spring-boot-starter.md) | 资源服务器、OIDC Login 与业务服务接入 |
+| [Spring Boot Starter 扩展规格](docs/spring-boot-starter-extension-spec.md) | Starter 扩展点、自动配置让位、当前用户上下文、Admin RestClient 和 Token Relay |
+| [OAuth2/OIDC 概念](docs/oauth2-oidc-concepts.md) | 接入应用需要理解的协议基础概念 |
 | [联合登录配置](docs/federation-config.md) | OAuth2/OIDC、SAML、LDAP 与 Provider 配置 |
 | [MFA 配置](docs/mfa-config.md) | MFA、TOTP、Passkey 与应用策略 |
 | [安全最佳实践](docs/security-best-practices.md) | 安全加固与检查清单 |
-| [项目状态](docs/IMPLEMENTATION_STATUS.zh-CN.md) | 当前能力状态与后续方向 |
+| [开发种子 Profile](docs/mock-system.zh-CN.md) | 本地开发、演示和 UI/API 探索用种子数据 |
 
 ## 环境要求
 

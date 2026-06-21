@@ -17,6 +17,7 @@ package com.armorauth.autoconfigure;
 
 import java.util.List;
 
+import com.armorauth.springboot.security.ArmorAuthJwtAuthenticationConverterCustomizer;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -24,13 +25,17 @@ import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -50,7 +55,7 @@ class ArmorAuthResourceServerAutoConfigurationTest {
     void createsJwtAuthenticationConverterWhenEnabled() {
         this.contextRunner
                 .withPropertyValues("armorauth.resource-server.enabled=true")
-                .withUserConfiguration(CustomSecurityFilterChainConfiguration.class)
+                .withUserConfiguration(NamedResourceServerSecurityFilterChainConfiguration.class)
                 .run(context -> {
                     assertThat(context).hasSingleBean(JwtAuthenticationConverter.class);
 
@@ -58,12 +63,44 @@ class ArmorAuthResourceServerAutoConfigurationTest {
                             .header("alg", "none")
                             .claim("roles", List.of("admin", "auditor"))
                             .claim("scope", "openid profile")
+                            .claim("permissions", List.of("message:read"))
+                            .claim("org_roles", "owner")
                             .build();
 
                     JwtAuthenticationConverter converter = context.getBean(JwtAuthenticationConverter.class);
                     assertThat(converter.convert(jwt).getAuthorities())
                             .extracting("authority")
-                            .contains("ROLE_admin", "ROLE_auditor", "SCOPE_openid", "SCOPE_profile");
+                            .contains("ROLE_admin", "ROLE_auditor", "SCOPE_openid", "SCOPE_profile",
+                                    "PERMISSION_message:read", "ORG_ROLE_owner");
+                });
+    }
+
+    @Test
+    void createsJwtAuthenticationConverterFromConfiguredClaims() {
+        this.contextRunner
+                .withPropertyValues(
+                        "armorauth.resource-server.enabled=true",
+                        "armorauth.resource-server.principal-claim=preferred_username",
+                        "armorauth.resource-server.role-claims[0]=groups",
+                        "armorauth.resource-server.scope-claims[0]=scp",
+                        "armorauth.resource-server.permission-prefix=PERM_")
+                .withUserConfiguration(NamedResourceServerSecurityFilterChainConfiguration.class)
+                .run(context -> {
+                    Jwt jwt = Jwt.withTokenValue("token")
+                            .header("alg", "none")
+                            .claim("preferred_username", "alice")
+                            .claim("groups", "admin operator")
+                            .claim("scp", List.of("profile", "message.read"))
+                            .claim("permissions", "invoice:read")
+                            .build();
+
+                    JwtAuthenticationConverter converter = context.getBean(JwtAuthenticationConverter.class);
+                    JwtAuthenticationToken authentication = (JwtAuthenticationToken) converter.convert(jwt);
+                    assertThat(authentication.getName()).isEqualTo("alice");
+                    assertThat(authentication.getAuthorities())
+                            .extracting("authority")
+                            .contains("ROLE_admin", "ROLE_operator", "SCOPE_profile", "SCOPE_message.read",
+                                    "PERM_invoice:read");
                 });
     }
 
@@ -75,6 +112,23 @@ class ArmorAuthResourceServerAutoConfigurationTest {
                 .run(context -> {
                     assertThat(context).hasSingleBean(SecurityFilterChain.class);
                     assertThat(context).hasBean("resourceServerSecurityFilterChain");
+                });
+    }
+
+    @Test
+    void appliesJwtAuthenticationConverterCustomizer() {
+        this.contextRunner
+                .withPropertyValues("armorauth.resource-server.enabled=true")
+                .withUserConfiguration(NamedResourceServerSecurityFilterChainConfiguration.class,
+                        JwtAuthenticationConverterCustomizerConfiguration.class)
+                .run(context -> {
+                    Jwt jwt = Jwt.withTokenValue("token")
+                            .header("alg", "none")
+                            .claim("username", "custom-user")
+                            .build();
+
+                    JwtAuthenticationConverter converter = context.getBean(JwtAuthenticationConverter.class);
+                    assertThat(converter.convert(jwt).getName()).isEqualTo("custom-user");
                 });
     }
 
@@ -91,13 +145,25 @@ class ArmorAuthResourceServerAutoConfigurationTest {
     }
 
     @Test
-    void backsOffFromCustomSecurityFilterChain() {
+    void createsDefaultSecurityFilterChainAlongsideOtherSecurityFilterChain() {
         this.contextRunner
                 .withPropertyValues("armorauth.resource-server.enabled=true")
-                .withUserConfiguration(CustomSecurityFilterChainConfiguration.class)
+                .withUserConfiguration(JwtDecoderConfiguration.class, CustomSecurityFilterChainConfiguration.class)
+                .run(context -> {
+                    assertThat(context).hasBean("resourceServerSecurityFilterChain");
+                    assertThat(context).hasBean("customSecurityFilterChain");
+                });
+    }
+
+    @Test
+    void backsOffFromNamedResourceServerSecurityFilterChain() {
+        this.contextRunner
+                .withPropertyValues("armorauth.resource-server.enabled=true")
+                .withUserConfiguration(NamedResourceServerSecurityFilterChainConfiguration.class)
                 .run(context -> {
                     assertThat(context).hasSingleBean(SecurityFilterChain.class);
-                    assertThat(context).doesNotHaveBean("resourceServerSecurityFilterChain");
+                    assertThat(context.getBean(SecurityFilterChain.class))
+                            .isSameAs(context.getBean("resourceServerSecurityFilterChain"));
                 });
     }
 
@@ -114,8 +180,27 @@ class ArmorAuthResourceServerAutoConfigurationTest {
     static class CustomSecurityFilterChainConfiguration {
 
         @Bean
+        @Order(Ordered.HIGHEST_PRECEDENCE + 10)
         SecurityFilterChain customSecurityFilterChain() {
+            return new DefaultSecurityFilterChain(new RegexRequestMatcher("/custom/.*", null));
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class NamedResourceServerSecurityFilterChainConfiguration {
+
+        @Bean(name = "resourceServerSecurityFilterChain")
+        SecurityFilterChain resourceServerSecurityFilterChain() {
             return new DefaultSecurityFilterChain(AnyRequestMatcher.INSTANCE);
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class JwtAuthenticationConverterCustomizerConfiguration {
+
+        @Bean
+        ArmorAuthJwtAuthenticationConverterCustomizer customizer() {
+            return converter -> converter.setPrincipalClaimName("username");
         }
     }
 
@@ -123,7 +208,7 @@ class ArmorAuthResourceServerAutoConfigurationTest {
     static class CustomJwtAuthenticationConverterConfiguration {
 
         @Bean
-        SecurityFilterChain customSecurityFilterChain() {
+        SecurityFilterChain resourceServerSecurityFilterChain() {
             return new DefaultSecurityFilterChain(AnyRequestMatcher.INSTANCE);
         }
 

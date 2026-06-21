@@ -66,7 +66,7 @@ The `armorauth-spring-boot-starter` module helps relying services integrate with
 - Security context helpers for user, tenant, role, organization, and token information.
 - JWT authority mapping and token relay support for downstream service calls.
 
-See [Spring Boot Starter](docs/spring-boot-starter.md) for integration details.
+See [Spring Boot Starter](docs/spring-boot-starter.md) for integration steps and [Spring Boot Starter Extension Spec](docs/spring-boot-starter-extension-spec.md) for extension points.
 
 ## Project Modules
 
@@ -98,15 +98,19 @@ The sample workspace includes Spring Boot and OAuth/OIDC clients for local integ
 
 | Document | Purpose |
 | --- | --- |
+| [Product Overview](docs/product-overview.md) | Product positioning, capabilities, and system surfaces |
 | [Quick Start](docs/quick-start.md) | Build and run ArmorAuth locally |
+| [Basic Usage](docs/basic-usage.md) | First tenant, application, user, MFA, and account-center workflows |
 | [Operation Manual](docs/operation-manual.md) | Day-to-day administration and operations |
 | [Deployment Guide](docs/deployment-guide.md) | Production deployment, proxy, database, backup, and security guidance |
 | [API Reference](docs/api-reference.md) | Admin API, account API, and protocol-adjacent API reference |
 | [Spring Boot Starter](docs/spring-boot-starter.md) | Resource Server, OIDC Login, and service integration |
+| [Spring Boot Starter Extension Spec](docs/spring-boot-starter-extension-spec.md) | Starter extension points, auto-configuration backoff, current-user context, Admin RestClient, and token relay |
+| [OAuth2/OIDC Concepts](docs/oauth2-oidc-concepts.md) | Protocol concepts for teams integrating relying applications |
 | [Federation Configuration](docs/federation-config.md) | OAuth2/OIDC, SAML, LDAP, and provider setup |
 | [MFA Configuration](docs/mfa-config.md) | MFA, TOTP, Passkey, and application policy setup |
 | [Security Best Practices](docs/security-best-practices.md) | Security checklist and hardening notes |
-| [Project Status](docs/IMPLEMENTATION_STATUS.md) | Current capability status and remaining work |
+| [Development Seed Profile](docs/mock-system.md) | Local development seed data for demos and UI/API exploration |
 
 ## Requirements
 
