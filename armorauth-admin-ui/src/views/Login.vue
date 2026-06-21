@@ -8,11 +8,7 @@
     <div class="login-card">
       <div class="login-brand">
         <div class="login-logo">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="currentColor" opacity="0.15"/>
-            <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-            <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <img src="/brand/logo-mark.svg" alt="ArmorAuth logo">
         </div>
         <h1>ArmorAuth</h1>
         <p class="login-subtitle">管理控制台</p>
@@ -148,18 +144,18 @@ const handleLogin = async () => {
 .login-logo {
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, #3b82f6, #6366f1);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 16px;
   box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
 
-  svg {
-    width: 32px;
-    height: 32px;
-    color: #fff;
+  img {
+    width: 46px;
+    height: 46px;
+    display: block;
   }
 }
 

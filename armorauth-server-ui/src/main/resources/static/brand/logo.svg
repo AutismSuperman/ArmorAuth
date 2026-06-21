@@ -1,10 +1,29 @@
 <svg width="960" height="280" viewBox="0 0 960 280" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="20" y="48" width="740" height="120" rx="28" fill="white"/>
-  <path d="M114 76L144 88V118C144 139 132 157 114 166C96 157 84 139 84 118V88L114 76Z" stroke="#2F64E1" stroke-width="8" stroke-linejoin="round"/>
-  <path d="M114 92V98" stroke="#2F64E1" stroke-width="4.5" stroke-linecap="round"/>
-  <path d="M105 100C107 96 110 94 114 94C118 94 121 96 123 100" stroke="#2F64E1" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M114 100C121 100 126 106 126 114C126 121 120 127 114 130C108 127 102 121 102 114C102 106 107 100 114 100Z" stroke="#2F64E1" stroke-width="4.5" stroke-linejoin="round"/>
-  <path d="M108 110C109 108 111 107 113 107" stroke="#2F64E1" stroke-width="3.5" stroke-linecap="round" opacity="0.85"/>
-  <text x="164" y="127" fill="#2F64E1" font-size="54" font-weight="700" font-family="'Segoe UI', 'Inter', Arial, sans-serif" letter-spacing="-1">ArmorAuth</text>
-  <text x="165" y="157" fill="#6F86C7" font-size="16" font-weight="600" font-family="'Segoe UI', 'Inter', Arial, sans-serif" letter-spacing="2.2">IDENTITY AUTHORIZATION FEDERATION</text>
+  <title>ArmorAuth</title>
+  <defs>
+    <linearGradient id="armor-gradient" x1="45" y1="20" x2="210" y2="230" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1F8BFF"/>
+      <stop offset="0.48" stop-color="#0D5BEF"/>
+      <stop offset="1" stop-color="#1537B8"/>
+    </linearGradient>
+    <linearGradient id="node-gradient" x1="62" y1="70" x2="194" y2="158" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#72F2FF"/>
+      <stop offset="1" stop-color="#20C8E8"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(54 42) scale(0.72)">
+    <path d="M128 18C159 39 189 50 218 57V116C218 171 183 216 128 238C73 216 38 171 38 116V57C67 50 97 39 128 18Z" fill="url(#armor-gradient)"/>
+    <path d="M128 47C151 62 174 70 196 76V116C196 158 170 192 128 211C86 192 60 158 60 116V76C82 70 105 62 128 47Z" stroke="white" stroke-width="12" stroke-linejoin="round"/>
+    <path d="M76 151C83 114 103 90 128 76C153 90 173 114 180 151" stroke="url(#node-gradient)" stroke-width="10" stroke-linecap="round"/>
+    <path d="M128 80L164 98V134C164 164 149 190 128 203C107 190 92 164 92 134V98L128 80Z" fill="white"/>
+    <path d="M128 112C113 112 101 124 101 139C101 148 106 156 113 161L108 187H148L143 161C150 156 155 148 155 139C155 124 143 112 128 112Z" fill="#0B4EC9"/>
+    <path d="M116 139L126 149L145 128" stroke="white" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="128" cy="76" r="18" fill="url(#node-gradient)" stroke="white" stroke-width="9"/>
+    <circle cx="75" cy="151" r="17" fill="url(#node-gradient)" stroke="white" stroke-width="9"/>
+    <circle cx="181" cy="151" r="17" fill="url(#node-gradient)" stroke="white" stroke-width="9"/>
+  </g>
+  <text x="262" y="127" font-size="58" font-weight="800" font-family="'Segoe UI', 'Inter', Arial, sans-serif" letter-spacing="0">
+    <tspan fill="#101828">Armor</tspan><tspan fill="#0D5BEF">Auth</tspan>
+  </text>
+  <text x="266" y="166" fill="#5A6B85" font-size="18" font-weight="700" font-family="'Segoe UI', 'Inter', Arial, sans-serif" letter-spacing="2.6">IDENTITY | AUTHORIZATION | FEDERATION</text>
 </svg>

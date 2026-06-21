@@ -11,11 +11,7 @@
     >
       <div class="aa-sidebar-logo" @click="$router.push('/main/home')">
         <div class="aa-logo-icon">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="currentColor" opacity="0.15"/>
-            <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-            <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <img src="/brand/logo-mark.svg" alt="ArmorAuth logo">
         </div>
         <transition name="fade">
           <span v-if="!collapsed" class="aa-logo-text">ArmorAuth</span>
@@ -332,17 +328,17 @@ onBeforeUnmount(() => {
 .aa-logo-icon {
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, #3b82f6, #6366f1);
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 
-  svg {
-    width: 20px;
-    height: 20px;
-    color: #fff;
+  img {
+    width: 28px;
+    height: 28px;
+    display: block;
   }
 }
 

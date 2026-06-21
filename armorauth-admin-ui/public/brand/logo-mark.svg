@@ -1,8 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
-  <rect x="20" y="20" width="216" height="216" rx="52" fill="white"/>
-  <path d="M128 56L180 78V128C180 164 159 196 128 212C97 196 76 164 76 128V78L128 56Z" stroke="#2F64E1" stroke-width="12" stroke-linejoin="round"/>
-  <path d="M128 86V98" stroke="#2F64E1" stroke-width="8" stroke-linecap="round"/>
-  <path d="M110 102C114 94 120 90 128 90C136 90 142 94 146 102" stroke="#2F64E1" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M128 102C142 102 154 114 154 130C154 145 142 159 128 166C114 159 102 145 102 130C102 114 114 102 128 102Z" stroke="#2F64E1" stroke-width="8" stroke-linejoin="round"/>
-  <path d="M115 122C118 117 122 114 127 114" stroke="#2F64E1" stroke-width="6" stroke-linecap="round" opacity="0.85"/>
+  <title>ArmorAuth</title>
+  <defs>
+    <linearGradient id="armor-gradient" x1="45" y1="20" x2="210" y2="230" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1F8BFF"/>
+      <stop offset="0.48" stop-color="#0D5BEF"/>
+      <stop offset="1" stop-color="#1537B8"/>
+    </linearGradient>
+    <linearGradient id="node-gradient" x1="62" y1="70" x2="194" y2="158" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#72F2FF"/>
+      <stop offset="1" stop-color="#20C8E8"/>
+    </linearGradient>
+  </defs>
+  <path d="M128 18C159 39 189 50 218 57V116C218 171 183 216 128 238C73 216 38 171 38 116V57C67 50 97 39 128 18Z" fill="url(#armor-gradient)"/>
+  <path d="M128 47C151 62 174 70 196 76V116C196 158 170 192 128 211C86 192 60 158 60 116V76C82 70 105 62 128 47Z" stroke="white" stroke-width="12" stroke-linejoin="round"/>
+  <path d="M76 151C83 114 103 90 128 76C153 90 173 114 180 151" stroke="url(#node-gradient)" stroke-width="10" stroke-linecap="round"/>
+  <path d="M128 80L164 98V134C164 164 149 190 128 203C107 190 92 164 92 134V98L128 80Z" fill="white"/>
+  <path d="M128 112C113 112 101 124 101 139C101 148 106 156 113 161L108 187H148L143 161C150 156 155 148 155 139C155 124 143 112 128 112Z" fill="#0B4EC9"/>
+  <path d="M116 139L126 149L145 128" stroke="white" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="128" cy="76" r="18" fill="url(#node-gradient)" stroke="white" stroke-width="9"/>
+  <circle cx="75" cy="151" r="17" fill="url(#node-gradient)" stroke="white" stroke-width="9"/>
+  <circle cx="181" cy="151" r="17" fill="url(#node-gradient)" stroke="white" stroke-width="9"/>
 </svg>
