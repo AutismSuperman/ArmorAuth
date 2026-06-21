@@ -42,10 +42,18 @@
           <a href="https://github.com/AutismSuperman/armor-auth">GitHub</a>
         </nav>
         <div class="top-actions" aria-label="Page tools">
-          <button class="theme-toggle" type="button" data-theme-toggle>
-            <span class="theme-icon" data-theme-icon aria-hidden="true">系</span>
-            <span data-theme-label>跟随系统</span>
-          </button>
+          <div class="theme-menu" data-theme-menu>
+            <button class="theme-toggle" type="button" data-theme-trigger aria-haspopup="menu" aria-expanded="false">
+              <span class="theme-icon" data-theme-icon aria-hidden="true">系</span>
+              <span data-theme-label>跟随系统</span>
+              <span class="theme-caret" aria-hidden="true">▾</span>
+            </button>
+            <div class="theme-dropdown" role="menu" data-theme-dropdown>
+              <button type="button" role="menuitemradio" data-theme-option="system">跟随系统</button>
+              <button type="button" role="menuitemradio" data-theme-option="light">浅色</button>
+              <button type="button" role="menuitemradio" data-theme-option="dark">深色</button>
+            </div>
+          </div>
         </div>
       </div>
     </header>
@@ -54,11 +62,11 @@
       <div class="home-shell">
         <section class="home-hero" aria-labelledby="home-title">
           <div class="home-copy">
-            <h1 id="home-title"><span class="gradient-title">ArmorAuth</span><br />自托管身份认证与授权平台</h1>
+            <h1 id="home-title"><span class="gradient-title">ArmorAuth</span><br />私有化统一身份平台</h1>
             <p class="home-subtitle">基于 Spring Security + Spring Authorization Server + OAuth2/OIDC</p>
             <p class="lead">
-              ArmorAuth 提供授权服务器、托管登录页、管理控制台、租户与组织、MFA、Passkey、联合登录、SCIM、Webhook
-              和 Spring Boot Starter 接入能力，适合私有化身份基础设施建设。
+              提供授权服务器、托管登录页、管理控制台、多租户、MFA、Passkey、联合登录、SCIM、Webhook
+              和 Spring Boot Starter，把身份认证、授权和账号安全收敛到一套可运营的平台里。
             </p>
             <div class="actions">
               <a class="button primary" href="./guide.html">开始使用</a>
@@ -67,10 +75,8 @@
               <a class="button" href="https://github.com/AutismSuperman/armor-auth">View on GitHub</a>
             </div>
           </div>
-          <div class="home-visual" aria-hidden="true">
-            <div class="home-mark">
-              <img src="./assets/logo-mark.svg" alt="" />
-            </div>
+          <div class="home-visual">
+            <img class="hero-illustration" src="./assets/illustrations/identity-hero.png" alt="ArmorAuth 身份平台插画" />
           </div>
         </section>
 
@@ -88,7 +94,7 @@
           <article class="home-card">
             <span class="home-card-icon">TS</span>
             <h3>多租户管理</h3>
-            <p>租户路径、issuer、应用归属、组织层级、角色、权限和成员关系。</p>
+            <p>用租户、组织和角色划分应用归属、访问边界与成员关系。</p>
           </article>
           <article class="home-card">
             <span class="home-card-icon">MF</span>
@@ -103,7 +109,7 @@
           <article class="home-card">
             <span class="home-card-icon">SB</span>
             <h3>Spring Boot Starter</h3>
-            <p>Resource Server、OIDC Login、当前用户上下文、Admin Client 和 Token Relay。</p>
+            <p>快速接入资源服务器、OIDC 登录、当前用户上下文、Admin Client 和 Token Relay。</p>
           </article>
         </section>
       </div>

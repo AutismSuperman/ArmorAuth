@@ -34,10 +34,18 @@
           <a href="https://github.com/AutismSuperman/armor-auth">GitHub</a>
         </nav>
         <div class="top-actions" aria-label="Page tools">
-          <button class="theme-toggle" type="button" data-theme-toggle>
-            <span class="theme-icon" data-theme-icon aria-hidden="true">系</span>
-            <span data-theme-label>跟随系统</span>
-          </button>
+          <div class="theme-menu" data-theme-menu>
+            <button class="theme-toggle" type="button" data-theme-trigger aria-haspopup="menu" aria-expanded="false">
+              <span class="theme-icon" data-theme-icon aria-hidden="true">系</span>
+              <span data-theme-label>跟随系统</span>
+              <span class="theme-caret" aria-hidden="true">▾</span>
+            </button>
+            <div class="theme-dropdown" role="menu" data-theme-dropdown>
+              <button type="button" role="menuitemradio" data-theme-option="system">跟随系统</button>
+              <button type="button" role="menuitemradio" data-theme-option="light">浅色</button>
+              <button type="button" role="menuitemradio" data-theme-option="dark">深色</button>
+            </div>
+          </div>
         </div>
       </div>
     </header>
@@ -78,8 +86,8 @@
           <div class="eyebrow">Self-hosted OAuth2 / OIDC platform</div>
           <h1><span class="gradient-title">ArmorAuth</span><br />统一身份认证与授权平台</h1>
           <p class="lead">
-            ArmorAuth 基于 Spring Security 与 Spring Authorization Server，面向私有化部署提供授权服务器、
-            托管登录页、管理控制台、租户与组织、MFA、Passkey、联合登录、SCIM、Webhook 和 Spring Boot Starter 接入能力。
+            基于 Spring Security 与 Spring Authorization Server，面向私有化部署提供标准协议端点、账号页面、
+            管理控制台和业务系统接入能力，让身份基础设施具备清晰的运营边界。
           </p>
           <div class="actions">
             <a class="button primary" href="./manual.html">阅读功能手册</a>
@@ -103,8 +111,8 @@
         <section class="doc-section" id="architecture">
           <h2>能力边界</h2>
           <p>
-            ArmorAuth 把协议端点、账号页面、管理控制台和业务服务接入拆成清晰模块。平台团队可以先部署授权服务器，
-            再通过管理台开通租户、应用、用户、身份源和安全策略，业务系统则通过标准 OAuth2/OIDC 或 Starter 接入。
+            ArmorAuth 将协议端点、账号页面、管理控制台和业务接入拆成独立模块。平台团队先稳定授权服务器和 issuer，
+            再通过管理台开通租户、应用、用户、身份源和安全策略，业务系统通过标准 OAuth2/OIDC 或 Starter 接入。
           </p>
           <div class="feature-grid">
             <article class="feature-card">

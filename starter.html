@@ -34,10 +34,18 @@
           <a href="https://github.com/AutismSuperman/armor-auth">GitHub</a>
         </nav>
         <div class="top-actions" aria-label="Page tools">
-          <button class="theme-toggle" type="button" data-theme-toggle>
-            <span class="theme-icon" data-theme-icon aria-hidden="true">系</span>
-            <span data-theme-label>跟随系统</span>
-          </button>
+          <div class="theme-menu" data-theme-menu>
+            <button class="theme-toggle" type="button" data-theme-trigger aria-haspopup="menu" aria-expanded="false">
+              <span class="theme-icon" data-theme-icon aria-hidden="true">系</span>
+              <span data-theme-label>跟随系统</span>
+              <span class="theme-caret" aria-hidden="true">▾</span>
+            </button>
+            <div class="theme-dropdown" role="menu" data-theme-dropdown>
+              <button type="button" role="menuitemradio" data-theme-option="system">跟随系统</button>
+              <button type="button" role="menuitemradio" data-theme-option="light">浅色</button>
+              <button type="button" role="menuitemradio" data-theme-option="dark">深色</button>
+            </div>
+          </div>
         </div>
       </div>
     </header>
@@ -77,14 +85,14 @@
           <div class="eyebrow">Spring Boot integration</div>
           <h1>Starter 使用指南</h1>
           <p class="lead">
-            `armorauth-spring-boot-starter` 面向接入方 Spring Boot 服务，提供资源服务器、OIDC Login、当前用户上下文、
-            Admin API Client 和 Token Relay，避免业务项目重复解析 Token 与 Claims。
+            为接入 ArmorAuth 的 Spring Boot 服务提供开箱即用的安全集成：校验访问令牌、接入 OIDC 登录、
+            读取当前用户上下文，并按需转发 Token 或调用管理 API。
           </p>
         </section>
 
         <section class="doc-section" id="dependency">
           <h2>添加依赖</h2>
-          <p>Starter 只面向业务服务，不引入授权服务器运行时模块。业务应用按需开启 Resource Server、OIDC Login 或 Admin Client。</p>
+          <p>Starter 只放在业务服务中使用，不带入授权服务器运行时。按业务场景开启 Resource Server、OIDC Login 或 Admin Client 即可。</p>
           <pre class="code-panel"><code>&lt;dependency&gt;
   &lt;groupId&gt;com.armorauth&lt;/groupId&gt;
   &lt;artifactId&gt;armorauth-spring-boot-starter&lt;/artifactId&gt;
@@ -95,7 +103,7 @@
         <section class="doc-section" id="resource-server">
           <h2>Resource Server</h2>
           <p>
-            适合 API 服务。默认保护 `/api/**`，放行 `/api/public/**`，并把 ArmorAuth 的角色、Scope、权限和组织角色映射为
+            适合 API 服务。默认保护 <code>/api/**</code>，放行 <code>/api/public/**</code>，并把 ArmorAuth 的角色、Scope、权限和组织角色映射为
             Spring Security authorities。
           </p>
           <div class="starter-grid">
@@ -103,8 +111,8 @@
               <h3>适用场景</h3>
               <ul class="check-list">
                 <li>业务 API 只需要校验 JWT，不需要托管登录页面。</li>
-                <li>通过 `issuer-uri` 或 `jwk-set-uri` 指向 ArmorAuth。</li>
-                <li>需要特殊放行路径时配置 `permit-all`。</li>
+                <li>通过 <code>issuer-uri</code> 或 <code>jwk-set-uri</code> 指向 ArmorAuth。</li>
+                <li>需要特殊放行路径时配置 <code>permit-all</code>。</li>
               </ul>
             </article>
             <pre class="code-panel"><code>armorauth:
@@ -126,7 +134,7 @@ spring:
 
         <section class="doc-section" id="oidc-login">
           <h2>OIDC Login</h2>
-          <p>适合传统 Web 服务或 BFF。Starter 创建默认登录过滤链，启用 `oauth2Login`，并允许配置登录成功页和退出页。</p>
+          <p>适合传统 Web 服务或 BFF。Starter 会创建登录过滤链，启用 <code>oauth2Login</code>，并支持配置登录成功页和退出页。</p>
           <pre class="code-panel"><code>armorauth:
   oidc-client:
     enabled: true
@@ -150,7 +158,7 @@ spring:
 
         <section class="doc-section" id="current-user">
           <h2>当前用户上下文</h2>
-          <p>`ArmorAuthCurrentUserResolver` 从 JWT 或 OIDC user attributes 读取用户、租户、组织、角色、Scope 和权限声明。</p>
+          <p><code>ArmorAuthCurrentUserResolver</code> 从 JWT 或 OIDC user attributes 中读取用户、租户、组织、角色、Scope 和权限声明。</p>
           <pre class="code-panel"><code>@RestController
 class ProfileController {
   private final ArmorAuthCurrentUserResolver currentUserResolver;
@@ -168,11 +176,11 @@ class ProfileController {
             <table class="config-table">
               <thead><tr><th>字段</th><th>来源 Claim</th><th>用途</th></tr></thead>
               <tbody>
-                <tr><td>subject / username</td><td>`sub`, `preferred_username`</td><td>当前登录用户</td></tr>
-                <tr><td>tenantId</td><td>`tenant_id`</td><td>租户感知业务隔离</td></tr>
-                <tr><td>organizationIds</td><td>`org_ids`</td><td>组织范围过滤</td></tr>
-                <tr><td>roles / permissions</td><td>`roles`, `permissions`</td><td>业务授权判断</td></tr>
-                <tr><td>scopes</td><td>`scope`, `scp`</td><td>API 访问范围</td></tr>
+                <tr><td>subject / username</td><td><code>sub</code>, <code>preferred_username</code></td><td>当前登录用户</td></tr>
+                <tr><td>tenantId</td><td><code>tenant_id</code></td><td>租户感知业务隔离</td></tr>
+                <tr><td>organizationIds</td><td><code>org_ids</code></td><td>组织范围过滤</td></tr>
+                <tr><td>roles / permissions</td><td><code>roles</code>, <code>permissions</code></td><td>业务授权判断</td></tr>
+                <tr><td>scopes</td><td><code>scope</code>, <code>scp</code></td><td>API 访问范围</td></tr>
               </tbody>
             </table>
           </div>
@@ -198,7 +206,7 @@ class ApplicationProvisioningService {
 
         <section class="doc-section" id="token-relay">
           <h2>Token Relay</h2>
-          <p>`ArmorAuthTokenRelayInterceptor` 只作为独立 Bean 暴露，建议只挂到可信下游服务的 `RestClient`，避免用户 Token 被转发到非受信目标。</p>
+          <p><code>ArmorAuthTokenRelayInterceptor</code> 以独立 Bean 暴露，建议只挂到可信下游服务的 <code>RestClient</code>，避免用户 Token 被转发到非受信目标。</p>
           <pre class="code-panel"><code>@Bean
 RestClient downstreamClient(RestClient.Builder builder,
                             ArmorAuthTokenRelayInterceptor tokenRelay) {

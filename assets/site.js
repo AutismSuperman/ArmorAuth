@@ -1,15 +1,27 @@
 (() => {
   const themeKey = 'armorauth-theme';
-  const themeOrder = ['system', 'dark', 'light'];
+  const themeOrder = ['system', 'light', 'dark'];
   const themeMeta = {
     system: { label: '跟随系统', icon: '系' },
-    dark: { label: '深色', icon: '深' },
-    light: { label: '浅色', icon: '浅' }
+    light: { label: '浅色', icon: '浅' },
+    dark: { label: '深色', icon: '深' }
   };
 
   const getStoredTheme = () => {
-    const stored = localStorage.getItem(themeKey);
-    return themeOrder.includes(stored) ? stored : 'system';
+    try {
+      const stored = localStorage.getItem(themeKey);
+      return themeOrder.includes(stored) ? stored : 'system';
+    } catch {
+      return 'system';
+    }
+  };
+
+  const closeThemeMenus = (exceptMenu) => {
+    document.querySelectorAll('[data-theme-menu]').forEach((menu) => {
+      if (menu === exceptMenu) return;
+      menu.classList.remove('is-open');
+      menu.querySelector('[data-theme-trigger]')?.setAttribute('aria-expanded', 'false');
+    });
   };
 
   const applyTheme = (theme) => {
@@ -19,32 +31,67 @@
       document.documentElement.setAttribute('data-theme', theme);
     }
 
-    document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+    document.querySelectorAll('[data-theme-trigger]').forEach((button) => {
       const meta = themeMeta[theme];
-      button.setAttribute('aria-label', `切换主题，当前：${meta.label}`);
-      button.setAttribute('title', `切换主题，当前：${meta.label}`);
+      button.setAttribute('aria-label', `选择主题，当前：${meta.label}`);
+      button.setAttribute('title', `选择主题，当前：${meta.label}`);
       button.querySelector('[data-theme-icon]').textContent = meta.icon;
       button.querySelector('[data-theme-label]').textContent = meta.label;
+    });
+
+    document.querySelectorAll('[data-theme-option]').forEach((option) => {
+      const active = option.dataset.themeOption === theme;
+      option.classList.toggle('active', active);
+      option.setAttribute('aria-checked', String(active));
     });
   };
 
   const setTheme = (theme) => {
-    if (theme === 'system') {
-      localStorage.removeItem(themeKey);
-    } else {
-      localStorage.setItem(themeKey, theme);
+    try {
+      if (theme === 'system') {
+        localStorage.removeItem(themeKey);
+      } else {
+        localStorage.setItem(themeKey, theme);
+      }
+    } catch {
+      // Theme still applies for the current page when storage is unavailable.
     }
     applyTheme(theme);
   };
 
   applyTheme(getStoredTheme());
 
-  document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const current = getStoredTheme();
-      const next = themeOrder[(themeOrder.indexOf(current) + 1) % themeOrder.length];
-      setTheme(next);
+  document.querySelectorAll('[data-theme-menu]').forEach((menu) => {
+    const trigger = menu.querySelector('[data-theme-trigger]');
+    const options = menu.querySelectorAll('[data-theme-option]');
+
+    trigger?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const shouldOpen = !menu.classList.contains('is-open');
+      closeThemeMenus(menu);
+      menu.classList.toggle('is-open', shouldOpen);
+      trigger.setAttribute('aria-expanded', String(shouldOpen));
     });
+
+    options.forEach((option) => {
+      option.addEventListener('click', () => {
+        setTheme(option.dataset.themeOption);
+        closeThemeMenus();
+        trigger?.focus();
+      });
+    });
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('[data-theme-menu]')) {
+      closeThemeMenus();
+    }
+  });
+
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeThemeMenus();
+    }
   });
 
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {

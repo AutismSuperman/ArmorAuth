@@ -34,10 +34,18 @@
           <a href="https://github.com/AutismSuperman/armor-auth">GitHub</a>
         </nav>
         <div class="top-actions" aria-label="Page tools">
-          <button class="theme-toggle" type="button" data-theme-toggle>
-            <span class="theme-icon" data-theme-icon aria-hidden="true">系</span>
-            <span data-theme-label>跟随系统</span>
-          </button>
+          <div class="theme-menu" data-theme-menu>
+            <button class="theme-toggle" type="button" data-theme-trigger aria-haspopup="menu" aria-expanded="false">
+              <span class="theme-icon" data-theme-icon aria-hidden="true">系</span>
+              <span data-theme-label>跟随系统</span>
+              <span class="theme-caret" aria-hidden="true">▾</span>
+            </button>
+            <div class="theme-dropdown" role="menu" data-theme-dropdown>
+              <button type="button" role="menuitemradio" data-theme-option="system">跟随系统</button>
+              <button type="button" role="menuitemradio" data-theme-option="light">浅色</button>
+              <button type="button" role="menuitemradio" data-theme-option="dark">深色</button>
+            </div>
+          </div>
         </div>
       </div>
     </header>
@@ -76,16 +84,16 @@
           <div class="eyebrow">Operator guide</div>
           <h1>功能操作手册</h1>
           <p class="lead">
-            面向管理员和平台工程团队，梳理 ArmorAuth 从租户建模、应用接入、用户管理到安全运营的常用操作路径。
+            面向管理员和平台工程团队，按日常运营路径说明租户建模、应用接入、用户资料、安全策略、身份源和审计事件。
           </p>
         </section>
 
         <section class="doc-section" id="tenant">
           <h2>租户与组织</h2>
-          <p>租户用于归集应用、用户、组织和租户感知路径。组织用于承载部门、业务单元或客户侧层级。</p>
+          <p>租户用于归集应用、用户、组织和租户感知路径。组织只在授权、报表或业务边界需要层级关系时使用。</p>
           <h3>操作建议</h3>
           <ul class="check-list">
-            <li>先创建稳定的租户编码，避免后续 issuer 或 `/t/{tenantCode}` 路径变化。</li>
+            <li>先创建稳定的租户编码，避免后续 issuer 或 <code>/t/{tenantCode}</code> 路径变化。</li>
             <li>只在组织会影响授权、报表或运营边界时创建层级组织。</li>
             <li>把组织成员角色和全局角色分开维护，避免高权限账号扩散。</li>
           </ul>
@@ -99,7 +107,7 @@
 
         <section class="doc-section" id="application">
           <h2>应用接入</h2>
-          <p>应用代表 OAuth2/OIDC Client。创建应用时需要选择租户、授权类型、认证方式、Scope、回调地址和安全策略。</p>
+          <p>应用就是 OAuth2/OIDC Client。创建时先确定所属租户，再配置授权类型、认证方式、Scope、回调地址和安全策略。</p>
           <h3>配置顺序</h3>
           <ul class="check-list">
             <li>浏览器和移动端优先使用 Authorization Code + PKCE。</li>
