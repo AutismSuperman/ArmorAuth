@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="ArmorAuth 指引：项目介绍、能力边界、页面截图和快速开始。"
+    />
+    <title>ArmorAuth 指引</title>
+    <link rel="icon" href="./assets/logo-mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./assets/site.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="./" aria-label="ArmorAuth home">
+          <img src="./assets/logo-mark.svg" alt="" />
+          <span>ArmorAuth<small>Guide</small></span>
+        </a>
+        <nav class="top-nav" aria-label="Primary">
+          <a href="./">首页</a>
+          <a class="active" href="./guide.html">指引</a>
+          <a href="./manual.html">功能手册</a>
+          <a href="./starter.html">Starter</a>
+          <a href="https://github.com/AutismSuperman/armor-auth">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="docs-layout">
+      <aside class="sidebar" aria-label="Guide navigation">
+        <div class="sidebar-title">
+          <img src="./assets/logo-mark.svg" alt="" />
+          <span>ArmorAuth</span>
+        </div>
+        <nav>
+          <div class="nav-group">
+            <strong>指引</strong>
+            <a class="active" href="#intro">介绍</a>
+            <a href="#features">特性</a>
+            <a href="#architecture">能力边界</a>
+            <a href="#screenshots">页面截图</a>
+            <a href="#quickstart">快速开始</a>
+          </div>
+          <div class="nav-group">
+            <strong>使用</strong>
+            <a href="./manual.html">功能操作手册</a>
+            <a href="./starter.html">Spring Boot Starter</a>
+          </div>
+          <div class="nav-group">
+            <strong>资源</strong>
+            <a href="https://github.com/AutismSuperman/armor-auth">项目地址</a>
+            <a href="https://github.com/AutismSuperman/armor-auth/tree/main/armorauth-samples">示例工程</a>
+          </div>
+        </nav>
+      </aside>
+
+      <main class="docs-main">
+        <section class="doc-hero" id="intro">
+          <div class="doc-logo">
+            <img src="./assets/logo-mark.svg" alt="ArmorAuth logo" />
+          </div>
+          <div class="eyebrow">Self-hosted OAuth2 / OIDC platform</div>
+          <h1><span class="gradient-title">ArmorAuth</span><br />统一身份认证与授权平台</h1>
+          <p class="lead">
+            ArmorAuth 基于 Spring Security 与 Spring Authorization Server，面向私有化部署提供授权服务器、
+            托管登录页、管理控制台、租户与组织、MFA、Passkey、联合登录、SCIM、Webhook 和 Spring Boot Starter 接入能力。
+          </p>
+          <div class="actions">
+            <a class="button primary" href="./manual.html">阅读功能手册</a>
+            <a class="button" href="./starter.html">查看 Starter</a>
+            <a class="button" href="https://github.com/AutismSuperman/armor-auth">GitHub 源码</a>
+          </div>
+        </section>
+
+        <section class="doc-section" id="features">
+          <h2>特性</h2>
+          <ul class="feature-list">
+            <li><strong>OAuth2/OIDC 授权服务器：</strong>覆盖授权码、设备码、刷新令牌、发现端点、JWKS、OIDC UserInfo 和 Logout。</li>
+            <li><strong>托管身份页面：</strong>登录、授权确认、设备激活、联合身份确认、账号中心和 MFA 绑定流程由服务端统一托管。</li>
+            <li><strong>租户与组织：</strong>支持租户路径、issuer、应用归属、组织层级、角色、权限和成员关系。</li>
+            <li><strong>账号安全：</strong>支持密码、图形验证码、短信验证码、TOTP、Passkey/WebAuthn、MFA 策略、恢复码和联系方式验证。</li>
+            <li><strong>联合身份：</strong>支持 OAuth2/OIDC、SAML、LDAP/AD 以及常见社交和企业 Provider 的统一接入。</li>
+            <li><strong>Spring Boot Starter：</strong>为业务服务提供 Resource Server、OIDC Login、当前用户上下文、Admin Client 和 Token Relay。</li>
+          </ul>
+        </section>
+
+        <section class="doc-section" id="architecture">
+          <h2>能力边界</h2>
+          <p>
+            ArmorAuth 把协议端点、账号页面、管理控制台和业务服务接入拆成清晰模块。平台团队可以先部署授权服务器，
+            再通过管理台开通租户、应用、用户、身份源和安全策略，业务系统则通过标准 OAuth2/OIDC 或 Starter 接入。
+          </p>
+          <div class="feature-grid">
+            <article class="feature-card">
+              <span class="card-kicker">AUTH</span>
+              <h3>授权服务器</h3>
+              <p>协议端点、Client、授权、同意、Token、JWK 和 OIDC 元数据集中管理。</p>
+            </article>
+            <article class="feature-card">
+              <span class="card-kicker">ADMIN</span>
+              <h3>管理控制台</h3>
+              <p>应用、Scope、用户、租户、组织、身份源、策略、审计和 Webhook 的运营入口。</p>
+            </article>
+            <article class="feature-card">
+              <span class="card-kicker">BOOT</span>
+              <h3>业务接入</h3>
+              <p>Spring Boot 服务可快速启用资源服务器、登录客户端、当前用户上下文和下游 Token 转发。</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="doc-section" id="screenshots">
+          <h2>页面截图</h2>
+          <p>截图来自本地运行的 ArmorAuth 服务端和管理控制台，用于展示真实操作入口和信息密度。</p>
+          <div class="image-grid">
+            <figure class="article-image">
+              <a class="image-link" href="./assets/screenshots/hosted-login.png">
+                <img src="./assets/screenshots/hosted-login.png" alt="ArmorAuth hosted login page screenshot" />
+              </a>
+              <figcaption><strong>托管登录页：</strong>密码、验证码、短信、Passkey 与联合登录入口。</figcaption>
+            </figure>
+            <figure class="article-image">
+              <a class="image-link" href="./assets/screenshots/admin-applications.png">
+                <img src="./assets/screenshots/admin-applications.png" alt="ArmorAuth application management list" />
+              </a>
+              <figcaption><strong>应用管理：</strong>Client、租户、授权类型、端点详情、MFA。</figcaption>
+            </figure>
+            <figure class="article-image">
+              <a class="image-link" href="./assets/screenshots/admin-users.png">
+                <img src="./assets/screenshots/admin-users.png" alt="ArmorAuth OAuth user management list" />
+              </a>
+              <figcaption><strong>OAuth 用户：</strong>联系方式验证、角色和租户归属。</figcaption>
+            </figure>
+            <figure class="article-image">
+              <a class="image-link" href="./assets/screenshots/admin-tenants.png">
+                <img src="./assets/screenshots/admin-tenants.png" alt="ArmorAuth tenant management list" />
+              </a>
+              <figcaption><strong>租户管理：</strong>租户编码、域名、路径 issuer 和启停状态。</figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <section class="doc-section" id="quickstart">
+          <h2>快速开始</h2>
+          <p>本地评估需要 JDK、Maven、Node.js 和数据库。生产环境建议配置稳定 issuer、HTTPS、MySQL、加密密钥和备份策略。</p>
+          <pre class="code-panel"><code>mvn -pl armorauth-server -am package -DskipTests
+java -jar armorauth-server/target/armorauth-server-1.0.0.jar
+
+cd armorauth-admin-ui
+npm install
+npm run dev</code></pre>
+          <div class="doc-links">
+            <a class="doc-card" href="./manual.html">
+              <h3>功能操作手册</h3>
+              <p>租户、应用、用户、MFA、身份源、审计和 Webhook 的操作路径。</p>
+            </a>
+            <a class="doc-card" href="./starter.html">
+              <h3>Spring Boot Starter</h3>
+              <p>Resource Server、OIDC Login、Admin Client、当前用户上下文和 Token Relay。</p>
+            </a>
+            <a class="doc-card" href="https://github.com/AutismSuperman/armor-auth">
+              <h3>GitHub 仓库</h3>
+              <p>查看源码、README、示例工程、API 文档和部署说明。</p>
+            </a>
+          </div>
+        </section>
+      </main>
+
+      <aside class="toc" aria-label="On this page">
+        <strong>On this page</strong>
+        <a href="#intro">简介</a>
+        <a href="#features">特性</a>
+        <a href="#architecture">能力边界</a>
+        <a href="#screenshots">页面截图</a>
+        <a href="#quickstart">快速开始</a>
+      </aside>
+    </div>
+
+    <footer class="site-footer">
+      <span>ArmorAuth 指引</span>
+      <a href="./">返回首页</a>
+    </footer>
+    <script src="./assets/site.js" defer></script>
+  </body>
+</html>

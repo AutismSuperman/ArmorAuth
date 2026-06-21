@@ -1,9 +1,13 @@
-# ArmorAuth GitHub Pages
+# ArmorAuth Pages
 
-This branch publishes the static project landing page for:
+This branch publishes the ArmorAuth documentation site for `armorauth.wangfulin.com`.
 
-```text
-https://armorauth.wangfulin.com/
-```
+The site is intentionally static and contains:
 
-The custom domain is configured through the `CNAME` file. Configure DNS to point the domain to GitHub Pages after the branch is enabled in repository settings.
+- `index.html`: product landing page for ArmorAuth.
+- `guide.html`: project guide, capability overview, screenshots, and quick start.
+- `manual.html`: product operation manual for tenant, application, user, MFA, federation, audit, and webhook workflows.
+- `starter.html`: Spring Boot Starter usage guide for Resource Server, OIDC Login, current user context, Admin Client, Token Relay, and extension points.
+- `assets/`: logo, screenshots, and shared styling.
+
+GitHub Pages serves this branch from the repository root. Keep `CNAME` as `armorauth.wangfulin.com`.

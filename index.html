@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="ArmorAuth is a self-hosted identity, authentication, and authorization platform built on Spring Security and Spring Authorization Server."
+      content="ArmorAuth 是基于 Spring Security 与 Spring Authorization Server 的自托管 OAuth2/OIDC 统一身份认证与授权平台。"
     />
     <meta property="og:title" content="ArmorAuth" />
     <meta
@@ -14,518 +14,91 @@
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://armorauth.wangfulin.com/" />
-    <meta property="og:image" content="https://armorauth.wangfulin.com/assets/login-zh-CN.png" />
-    <title>ArmorAuth - Unified identity and authorization</title>
+    <meta property="og:image" content="https://armorauth.wangfulin.com/assets/screenshots/hosted-login.png" />
+    <title>ArmorAuth - 统一身份认证与授权平台</title>
     <link rel="icon" href="./assets/logo-mark.svg" type="image/svg+xml" />
-    <style>
-      :root {
-        color-scheme: light;
-        --bg: #eef3f8;
-        --panel: #ffffff;
-        --ink: #101828;
-        --muted: #5f6b7a;
-        --line: #d9e2ec;
-        --blue: #2563eb;
-        --cyan: #0ea5e9;
-        --green: #16a34a;
-        --shadow: 0 24px 70px rgba(24, 39, 75, 0.14);
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        font-family:
-          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          "PingFang SC", "Microsoft YaHei", sans-serif;
-        color: var(--ink);
-        background:
-          linear-gradient(rgba(37, 99, 235, 0.05) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(37, 99, 235, 0.05) 1px, transparent 1px), var(--bg);
-        background-size: 28px 28px;
-      }
-
-      a {
-        color: inherit;
-        text-decoration: none;
-      }
-
-      .page {
-        width: min(1180px, calc(100% - 40px));
-        margin: 0 auto;
-      }
-
-      .nav {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 28px 0;
-      }
-
-      .brand {
-        display: inline-flex;
-        align-items: center;
-        gap: 14px;
-        font-weight: 800;
-        letter-spacing: 0;
-      }
-
-      .brand img {
-        width: 168px;
-        height: auto;
-        display: block;
-      }
-
-      .nav-links {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        color: var(--muted);
-        font-size: 15px;
-      }
-
-      .nav-links a:hover {
-        color: var(--blue);
-      }
-
-      .hero {
-        display: grid;
-        grid-template-columns: minmax(0, 0.92fr) minmax(460px, 1.08fr);
-        gap: 34px;
-        align-items: center;
-        min-height: calc(100vh - 110px);
-        padding: 22px 0 70px;
-      }
-
-      .eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 12px;
-        border: 1px solid rgba(37, 99, 235, 0.18);
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.8);
-        color: #1d4ed8;
-        font-size: 14px;
-        font-weight: 700;
-      }
-
-      h1 {
-        margin: 24px 0 18px;
-        max-width: 700px;
-        font-size: clamp(46px, 6vw, 78px);
-        line-height: 0.98;
-        letter-spacing: 0;
-      }
-
-      .summary {
-        max-width: 670px;
-        margin: 0;
-        color: var(--muted);
-        font-size: 19px;
-        line-height: 1.72;
-      }
-
-      .actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 14px;
-        margin-top: 30px;
-      }
-
-      .button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 48px;
-        padding: 0 22px;
-        border-radius: 8px;
-        border: 1px solid var(--line);
-        background: var(--panel);
-        color: var(--ink);
-        font-weight: 800;
-        box-shadow: 0 8px 20px rgba(24, 39, 75, 0.08);
-      }
-
-      .button.primary {
-        border-color: var(--blue);
-        background: var(--blue);
-        color: #ffffff;
-      }
-
-      .metrics {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-        margin-top: 34px;
-        max-width: 720px;
-      }
-
-      .metric {
-        padding: 16px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.86);
-      }
-
-      .metric strong {
-        display: block;
-        margin-bottom: 4px;
-        font-size: 20px;
-      }
-
-      .metric span {
-        color: var(--muted);
-        font-size: 13px;
-      }
-
-      .preview {
-        position: relative;
-        padding: 18px;
-        border-radius: 18px;
-        background: rgba(255, 255, 255, 0.7);
-        box-shadow: var(--shadow);
-      }
-
-      .preview img {
-        display: block;
-        width: 100%;
-        border-radius: 12px;
-        border: 1px solid rgba(16, 24, 40, 0.08);
-      }
-
-      .floating {
-        position: absolute;
-        left: -20px;
-        bottom: 28px;
-        width: min(360px, 74%);
-        padding: 18px;
-        border: 1px solid rgba(14, 165, 233, 0.22);
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.94);
-        box-shadow: 0 18px 42px rgba(15, 23, 42, 0.16);
-      }
-
-      .floating strong {
-        display: block;
-        margin-bottom: 6px;
-      }
-
-      .floating span {
-        color: var(--muted);
-        font-size: 14px;
-        line-height: 1.55;
-      }
-
-      section {
-        padding: 58px 0;
-      }
-
-      .section-head {
-        display: flex;
-        align-items: end;
-        justify-content: space-between;
-        gap: 26px;
-        margin-bottom: 22px;
-      }
-
-      h2 {
-        margin: 0;
-        font-size: clamp(28px, 3vw, 42px);
-        letter-spacing: 0;
-      }
-
-      .section-head p {
-        max-width: 520px;
-        margin: 0;
-        color: var(--muted);
-        line-height: 1.7;
-      }
-
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-      }
-
-      .card {
-        min-height: 190px;
-        padding: 22px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: var(--panel);
-        box-shadow: 0 10px 28px rgba(24, 39, 75, 0.06);
-      }
-
-      .icon {
-        width: 42px;
-        height: 42px;
-        display: inline-grid;
-        place-items: center;
-        border-radius: 10px;
-        margin-bottom: 16px;
-        color: #ffffff;
-        font-weight: 900;
-      }
-
-      .icon.blue {
-        background: var(--blue);
-      }
-
-      .icon.cyan {
-        background: var(--cyan);
-      }
-
-      .icon.green {
-        background: var(--green);
-      }
-
-      .card h3 {
-        margin: 0 0 10px;
-        font-size: 20px;
-      }
-
-      .card p {
-        margin: 0;
-        color: var(--muted);
-        line-height: 1.65;
-      }
-
-      .flow {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 14px;
-      }
-
-      .step {
-        padding: 20px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.9);
-      }
-
-      .step span {
-        color: var(--blue);
-        font-weight: 900;
-      }
-
-      .step strong {
-        display: block;
-        margin: 10px 0 8px;
-        font-size: 18px;
-      }
-
-      .step p {
-        margin: 0;
-        color: var(--muted);
-        line-height: 1.58;
-      }
-
-      .code {
-        overflow-x: auto;
-        padding: 20px;
-        border-radius: 8px;
-        background: #101828;
-        color: #dbeafe;
-        font-size: 14px;
-        line-height: 1.7;
-      }
-
-      footer {
-        display: flex;
-        justify-content: space-between;
-        gap: 24px;
-        padding: 36px 0 46px;
-        color: var(--muted);
-        border-top: 1px solid var(--line);
-      }
-
-      footer a {
-        color: var(--ink);
-        font-weight: 700;
-      }
-
-      @media (max-width: 980px) {
-        .hero,
-        .grid,
-        .flow {
-          grid-template-columns: 1fr;
-        }
-
-        .hero {
-          min-height: auto;
-        }
-
-        .preview {
-          order: -1;
-        }
-
-        .floating {
-          position: static;
-          width: 100%;
-          margin-top: 12px;
-        }
-
-        .section-head,
-        footer {
-          align-items: start;
-          flex-direction: column;
-        }
-      }
-
-      @media (max-width: 640px) {
-        .page {
-          width: min(100% - 24px, 1180px);
-        }
-
-        .nav,
-        .nav-links,
-        .actions,
-        .metrics {
-          align-items: stretch;
-          flex-direction: column;
-        }
-
-        .nav-links {
-          display: none;
-        }
-
-        .metrics {
-          display: grid;
-          grid-template-columns: 1fr;
-        }
-
-        h1 {
-          font-size: 44px;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="./assets/site.css" />
   </head>
   <body>
-    <header class="page nav" aria-label="Site navigation">
-      <a class="brand" href="./" aria-label="ArmorAuth home">
-        <img src="./assets/logo.svg" alt="ArmorAuth" />
-      </a>
-      <nav class="nav-links" aria-label="Primary">
-        <a href="#features">功能</a>
-        <a href="#start">接入</a>
-        <a href="https://github.com/AutismSuperman/armor-auth">GitHub</a>
-      </nav>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="./" aria-label="ArmorAuth home">
+          <img src="./assets/logo-mark.svg" alt="" />
+          <span>ArmorAuth<small>Identity and authorization platform</small></span>
+        </a>
+        <nav class="top-nav" aria-label="Primary">
+          <a class="active" href="./">首页</a>
+          <a href="./guide.html">指引</a>
+          <a href="./manual.html">功能手册</a>
+          <a href="./starter.html">Starter</a>
+          <a href="https://github.com/AutismSuperman/armor-auth">GitHub</a>
+        </nav>
+      </div>
     </header>
 
-    <main class="page">
-      <section class="hero">
-        <div>
-          <div class="eyebrow">Self-hosted OAuth2 / OIDC platform</div>
-          <h1>统一身份认证与授权平台</h1>
-          <p class="summary">
-            ArmorAuth 基于 Spring Security 与 Spring Authorization Server，
-            提供授权服务器、托管登录页、管理控制台、租户与组织、MFA、Passkey、
-            联合登录、SCIM、Webhook 和 Spring Boot Starter 接入能力。
-          </p>
-          <div class="actions">
-            <a class="button primary" href="https://github.com/AutismSuperman/armor-auth">查看源码</a>
-            <a class="button" href="https://github.com/AutismSuperman/armor-auth#quick-start">快速开始</a>
+    <main class="home-page">
+      <div class="home-shell">
+        <section class="home-hero" aria-labelledby="home-title">
+          <div class="home-copy">
+            <h1 id="home-title"><span class="gradient-title">ArmorAuth</span><br />自托管身份认证与授权平台</h1>
+            <p class="home-subtitle">基于 Spring Security + Spring Authorization Server + OAuth2/OIDC</p>
+            <p class="lead">
+              ArmorAuth 提供授权服务器、托管登录页、管理控制台、租户与组织、MFA、Passkey、联合登录、SCIM、Webhook
+              和 Spring Boot Starter 接入能力，适合私有化身份基础设施建设。
+            </p>
+            <div class="actions">
+              <a class="button primary" href="./guide.html">开始使用</a>
+              <a class="button" href="./manual.html">功能手册</a>
+              <a class="button" href="./starter.html">Starter 接入</a>
+              <a class="button" href="https://github.com/AutismSuperman/armor-auth">View on GitHub</a>
+            </div>
           </div>
-          <div class="metrics" aria-label="Capability summary">
-            <div class="metric"><strong>OAuth2/OIDC</strong><span>授权码、设备码、刷新、发现、JWKS</span></div>
-            <div class="metric"><strong>Multi-tenant</strong><span>租户路径、组织、角色与权限</span></div>
-            <div class="metric"><strong>Spring Boot</strong><span>Resource Server、OIDC Login、Token Relay</span></div>
+          <div class="home-visual" aria-hidden="true">
+            <div class="home-mark">
+              <img src="./assets/logo-mark.svg" alt="" />
+            </div>
           </div>
-        </div>
-        <div class="preview">
-          <img src="./assets/login-zh-CN.png" alt="ArmorAuth hosted login page screenshot" />
-          <div class="floating">
-            <strong>Hosted identity pages</strong>
-            <span>登录、授权确认、MFA、设备激活、账号中心和联合身份确认页面由服务端统一托管。</span>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="features">
-        <div class="section-head">
-          <h2>面向私有化部署的完整身份基础设施</h2>
-          <p>
-            从协议端点到管理后台，从账号安全到业务服务接入，ArmorAuth 将身份平台常用能力收敛在一个可审查、可扩展的 Spring 代码库中。
-          </p>
-        </div>
-        <div class="grid">
-          <article class="card">
-            <div class="icon blue">A</div>
-            <h3>授权服务器</h3>
-            <p>支持 OAuth2/OIDC 标准端点，持久化 Client、授权、同意、JWK 和用户数据，适合自托管认证中心。</p>
+        <section class="home-cards" aria-label="ArmorAuth capability cards">
+          <article class="home-card">
+            <span class="home-card-icon">OA</span>
+            <h3>OAuth2/OIDC</h3>
+            <p>授权码、设备码、刷新令牌、发现端点、JWKS、OIDC UserInfo 和 Logout。</p>
           </article>
-          <article class="card">
-            <div class="icon cyan">S</div>
-            <h3>账号安全</h3>
-            <p>覆盖密码、验证码、TOTP、Passkey/WebAuthn、MFA 策略、联系方式验证和会话管理。</p>
+          <article class="home-card">
+            <span class="home-card-icon">UI</span>
+            <h3>托管身份页面</h3>
+            <p>登录、授权确认、设备激活、联合身份确认、账号中心和 MFA 绑定流程统一托管。</p>
           </article>
-          <article class="card">
-            <div class="icon green">F</div>
+          <article class="home-card">
+            <span class="home-card-icon">TS</span>
+            <h3>多租户管理</h3>
+            <p>租户路径、issuer、应用归属、组织层级、角色、权限和成员关系。</p>
+          </article>
+          <article class="home-card">
+            <span class="home-card-icon">MF</span>
+            <h3>MFA / Passkey</h3>
+            <p>TOTP、Passkey/WebAuthn、短信验证码、恢复码、会话管理和联系方式验证。</p>
+          </article>
+          <article class="home-card">
+            <span class="home-card-icon">ID</span>
             <h3>联合身份</h3>
-            <p>支持 OAuth2/OIDC、SAML、LDAP/AD 和常见社交/企业 Provider，提供外部账号绑定流程。</p>
+            <p>OAuth2/OIDC、SAML、LDAP/AD 和常见社交/企业 Provider 的统一接入。</p>
           </article>
-          <article class="card">
-            <div class="icon blue">T</div>
-            <h3>租户与组织</h3>
-            <p>用租户、组织、角色和权限承载平台化、SaaS 化或企业内部多组织管理场景。</p>
+          <article class="home-card">
+            <span class="home-card-icon">SB</span>
+            <h3>Spring Boot Starter</h3>
+            <p>Resource Server、OIDC Login、当前用户上下文、Admin Client 和 Token Relay。</p>
           </article>
-          <article class="card">
-            <div class="icon cyan">O</div>
-            <h3>运营控制台</h3>
-            <p>管理应用、Scope、用户、身份源、登录策略、审计、Webhook、Token 统计和 JWK 元数据。</p>
-          </article>
-          <article class="card">
-            <div class="icon green">B</div>
-            <h3>Spring Boot 接入</h3>
-            <p>Starter 提供资源服务器、OIDC Login、当前用户上下文、Admin API Client 和 Token Relay。</p>
-          </article>
-        </div>
-      </section>
-
-      <section id="start">
-        <div class="section-head">
-          <h2>从源码到接入应用</h2>
-          <p>本地评估只需要 JDK、Maven、Node.js 和数据库。生产环境建议配置稳定 issuer、HTTPS、MySQL、加密密钥和备份策略。</p>
-        </div>
-        <div class="flow">
-          <div class="step">
-            <span>01</span>
-            <strong>启动服务端</strong>
-            <p>构建 `armorauth-server`，启动后提供登录页、协议端点和管理 API。</p>
-          </div>
-          <div class="step">
-            <span>02</span>
-            <strong>打开管理台</strong>
-            <p>在管理控制台创建租户、应用、用户、组织、身份源和登录策略。</p>
-          </div>
-          <div class="step">
-            <span>03</span>
-            <strong>配置客户端</strong>
-            <p>为业务应用选择授权类型、回调地址、Scope、MFA 策略和认证方式。</p>
-          </div>
-          <div class="step">
-            <span>04</span>
-            <strong>接入业务服务</strong>
-            <p>使用标准 OAuth2/OIDC 或 Spring Boot Starter 验证 Token 并读取用户上下文。</p>
-          </div>
-        </div>
-        <pre class="code"><code>mvn -pl armorauth-server -am package -DskipTests
-java -jar armorauth-server/target/armorauth-server-1.0.0.jar
-
-cd armorauth-admin-ui
-npm install
-npm run dev</code></pre>
-      </section>
+        </section>
+      </div>
     </main>
 
-    <footer class="page">
+    <footer class="site-footer">
       <span>ArmorAuth - Unified identity and authorization platform</span>
-      <span>
-        <a href="https://github.com/AutismSuperman/armor-auth">GitHub</a>
-      </span>
+      <a href="https://github.com/AutismSuperman/armor-auth">GitHub</a>
     </footer>
+    <script src="./assets/site.js" defer></script>
   </body>
 </html>

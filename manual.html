@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="ArmorAuth 功能操作手册：租户、应用、用户、MFA、身份源、审计、Webhook 和安全运营流程。"
+    />
+    <title>ArmorAuth 功能操作手册</title>
+    <link rel="icon" href="./assets/logo-mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./assets/site.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="./" aria-label="ArmorAuth home">
+          <img src="./assets/logo-mark.svg" alt="" />
+          <span>ArmorAuth<small>Operator guide</small></span>
+        </a>
+        <nav class="top-nav" aria-label="Primary">
+          <a href="./">首页</a>
+          <a href="./guide.html">指引</a>
+          <a class="active" href="./manual.html">功能手册</a>
+          <a href="./starter.html">Starter</a>
+          <a href="https://github.com/AutismSuperman/armor-auth">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="docs-layout">
+      <aside class="sidebar" aria-label="Manual navigation">
+        <div class="sidebar-title">
+          <img src="./assets/logo-mark.svg" alt="" />
+          <span>操作手册</span>
+        </div>
+        <nav>
+          <div class="nav-group">
+            <strong>功能</strong>
+            <a class="active" href="#overview">介绍</a>
+            <a href="#tenant">租户与组织</a>
+            <a href="#application">应用接入</a>
+            <a href="#user">用户与联系方式</a>
+            <a href="#security">MFA 与安全</a>
+            <a href="#federation">身份源</a>
+            <a href="#operation">审计与 Webhook</a>
+          </div>
+          <div class="nav-group">
+            <strong>继续阅读</strong>
+            <a href="./starter.html">Spring Boot Starter</a>
+            <a href="./guide.html">项目指引</a>
+            <a href="./">首页</a>
+          </div>
+        </nav>
+      </aside>
+
+      <main class="docs-main">
+        <section class="doc-hero" id="overview">
+          <div class="doc-logo">
+            <img src="./assets/logo-mark.svg" alt="ArmorAuth logo" />
+          </div>
+          <div class="eyebrow">Operator guide</div>
+          <h1>功能操作手册</h1>
+          <p class="lead">
+            面向管理员和平台工程团队，梳理 ArmorAuth 从租户建模、应用接入、用户管理到安全运营的常用操作路径。
+          </p>
+        </section>
+
+        <section class="doc-section" id="tenant">
+          <h2>租户与组织</h2>
+          <p>租户用于归集应用、用户、组织和租户感知路径。组织用于承载部门、业务单元或客户侧层级。</p>
+          <h3>操作建议</h3>
+          <ul class="check-list">
+            <li>先创建稳定的租户编码，避免后续 issuer 或 `/t/{tenantCode}` 路径变化。</li>
+            <li>只在组织会影响授权、报表或运营边界时创建层级组织。</li>
+            <li>把组织成员角色和全局角色分开维护，避免高权限账号扩散。</li>
+          </ul>
+          <figure class="article-image">
+            <a class="image-link" href="./assets/screenshots/admin-tenants.png">
+              <img src="./assets/screenshots/admin-tenants.png" alt="Tenant management screenshot" />
+            </a>
+            <figcaption><strong>租户管理：</strong>租户编码、域名、路径 issuer 和启停状态。点击图片可放大查看。</figcaption>
+          </figure>
+        </section>
+
+        <section class="doc-section" id="application">
+          <h2>应用接入</h2>
+          <p>应用代表 OAuth2/OIDC Client。创建应用时需要选择租户、授权类型、认证方式、Scope、回调地址和安全策略。</p>
+          <h3>配置顺序</h3>
+          <ul class="check-list">
+            <li>浏览器和移动端优先使用 Authorization Code + PKCE。</li>
+            <li>服务间调用使用 Client Credentials，并限制最小 Scope。</li>
+            <li>敏感应用开启应用级 MFA，并在端点详情里复制 discovery、token、JWKS 等 URL。</li>
+          </ul>
+          <figure class="article-image">
+            <a class="image-link" href="./assets/screenshots/admin-applications.png">
+              <img src="./assets/screenshots/admin-applications.png" alt="Application management screenshot" />
+            </a>
+            <figcaption><strong>应用列表：</strong>Client ID、租户、认证方式、授权类型、DPoP、MFA。点击图片可放大查看。</figcaption>
+          </figure>
+        </section>
+
+        <section class="doc-section" id="user">
+          <h2>用户与联系方式</h2>
+          <p>
+            本地用户可以手动创建，也可以通过 SCIM 或联合登录进入系统。邮箱和手机号建议先验证，再用于登录、找回或 MFA。
+          </p>
+          <h3>联系方式验证</h3>
+          <ul class="check-list">
+            <li>维护用户名、显示名称、手机号和邮箱等基础身份信息。</li>
+            <li>验证邮箱/手机号后再让它们参与账号恢复或一次性验证码登录。</li>
+            <li>需要保留审计历史时，优先禁用用户而不是删除用户。</li>
+          </ul>
+          <figure class="article-image">
+            <a class="image-link" href="./assets/screenshots/admin-users.png">
+              <img src="./assets/screenshots/admin-users.png" alt="OAuth user management screenshot" />
+            </a>
+            <figcaption><strong>OAuth 用户：</strong>联系方式验证状态、角色和租户归属。点击图片可放大查看。</figcaption>
+          </figure>
+        </section>
+
+        <section class="doc-section" id="security">
+          <h2>MFA 与账号安全</h2>
+          <p>
+            ArmorAuth 同时支持平台策略和用户自助账号安全。管理员可以在应用、角色或登录策略层面要求 MFA；
+            用户登录后可以在账号中心绑定 Authenticator app、Passkey 或维护联系方式。
+          </p>
+          <div class="pill-row">
+            <span class="pill">TOTP Authenticator</span>
+            <span class="pill">Passkey / WebAuthn</span>
+            <span class="pill">短信验证码</span>
+            <span class="pill">恢复码流程</span>
+            <span class="pill">会话查看</span>
+          </div>
+          <ul class="check-list">
+            <li>管理员账号和高风险应用应优先开启 MFA。</li>
+            <li>强制 MFA 前需要准备恢复流程，避免用户因设备丢失无法登录。</li>
+            <li>审计登录失败和 MFA 失败事件，识别异常登录行为。</li>
+          </ul>
+        </section>
+
+        <section class="doc-section" id="federation">
+          <h2>身份源与联合登录</h2>
+          <p>
+            身份源支持 OAuth2/OIDC、SAML、LDAP/AD 以及内置社交和企业 Provider。启用身份源前，应先完成元数据、密钥、
+            属性映射和绑定策略配置。
+          </p>
+          <ul class="check-list">
+            <li>OAuth2/OIDC Provider 需要 issuer、authorization、token、userinfo、JWK 和 Scope。</li>
+            <li>SAML Provider 需要元数据、ACS、证书和 NameID/属性映射。</li>
+            <li>LDAP/AD 需要 bind 凭据、搜索 base、过滤器、组映射和 TLS 策略。</li>
+            <li>外部账号绑定不应自动删除本地用户，解绑和重绑要保留审计轨迹。</li>
+          </ul>
+        </section>
+
+        <section class="doc-section" id="operation">
+          <h2>审计、Webhook 与运维</h2>
+          <p>
+            生产环境需要持续关注登录、Token、配置变更、身份源、Webhook 和密钥状态。高风险变更应关联操作人、时间和工单。
+          </p>
+          <div class="feature-grid">
+            <article class="feature-card">
+              <span class="card-kicker">AUDIT</span>
+              <h3>审计日志</h3>
+              <p>查看管理操作、登录失败、策略变更和身份源变更。</p>
+            </article>
+            <article class="feature-card">
+              <span class="card-kicker">HOOK</span>
+              <h3>Webhook</h3>
+              <p>对外投递账号、应用和安全事件，接收方必须校验签名。</p>
+            </article>
+            <article class="feature-card">
+              <span class="card-kicker">KEY</span>
+              <h3>JWK 与 Secret</h3>
+              <p>备份 JWK 表和加密 key，轮换时保留旧 key 到迁移完成。</p>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <aside class="toc" aria-label="On this page">
+        <strong>On this page</strong>
+        <a href="#overview">介绍</a>
+        <a href="#tenant">租户与组织</a>
+        <a href="#application">应用接入</a>
+        <a href="#user">用户与联系方式</a>
+        <a href="#security">MFA 与安全</a>
+        <a href="#federation">身份源</a>
+        <a href="#operation">审计与 Webhook</a>
+      </aside>
+    </div>
+
+    <footer class="site-footer">
+      <span>ArmorAuth 功能操作手册</span>
+      <a href="./starter.html">继续阅读 Spring Boot Starter</a>
+    </footer>
+    <script src="./assets/site.js" defer></script>
+  </body>
+</html>
