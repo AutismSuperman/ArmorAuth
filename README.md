@@ -6,67 +6,114 @@
 
 [简体中文](README.zh-CN.md)
 
-ArmorAuth is an open source identity and authorization platform built on Spring Security and Spring Authorization Server. It provides a self-hosted authorization server, an admin API, an admin console, and hosted authentication pages for teams that need private deployment, OAuth 2.0 / OpenID Connect compatibility, and extensible identity workflows.
+ArmorAuth is a self-hosted identity, authentication, and authorization platform built on Spring Security and Spring Authorization Server. It packages a production-oriented OAuth 2.0 / OpenID Connect authorization server, hosted sign-in pages, an admin API, a Vue admin console, Spring Boot integration starters, and runnable samples in one Java/Spring codebase.
 
-The project is designed for product teams and platform engineers who want a clear Java/Spring codebase rather than a black-box identity service.
+Current version: `1.0.0`
 
-## Highlights
+![ArmorAuth hosted login](./docs/images/armorauth-login-en.png)
+
+## What ArmorAuth Provides
+
+ArmorAuth is designed for teams that need private deployment and full control over their identity infrastructure without giving up standard protocol compatibility.
 
 - OAuth 2.0 and OpenID Connect authorization server based on Spring Authorization Server.
-- Hosted login, consent, MFA, device activation, and federated identity confirmation pages.
-- Admin API and Vue admin console for applications, users, roles, permissions, organizations, identity providers, login policies, audit data, webhooks, and token statistics.
-- Persistent JWK storage and encrypted-at-rest secrets for identity providers, webhooks, TOTP data, and signing keys.
-- Local authentication, captcha login, MFA, TOTP, Passkey/WebAuthn, and passwordless sign-in flows.
-- Federated identity support for OAuth2/OIDC providers, SAML SP flows, LDAP/AD bind login, and account linking.
-- SCIM 2.0 provisioning, webhook delivery, Java SPI actions, and authorization check APIs.
-- Flyway-managed schema migrations for repeatable deployment.
+- Hosted user-facing pages for sign-in, consent, MFA challenge, device activation, account activation result, and federated account confirmation.
+- Admin REST API and Vue 3 admin console for operating applications, users, organizations, tenants, identity providers, policies, sessions, keys, audit logs, webhooks, and token statistics.
+- Multi-tenant issuer support with tenant-aware paths such as `/t/{tenantCode}`.
+- Persistent JWK storage and database-backed authorization, consent, registered client, user, tenant, organization, and identity provider data.
+- Secret protection for sensitive data such as identity provider secrets, webhook secrets, TOTP material, and signing keys.
 
-## Architecture
+## Authentication Experience
+
+The hosted login flow is built to cover common consumer, enterprise, and internal-platform access patterns.
+
+- Password login with remember-me session support.
+- Graphic captcha and SMS one-time-code login flows.
+- MFA with TOTP authenticator factors and recovery-code-oriented account security flows.
+- Passkey / WebAuthn passwordless sign-in.
+- Federated sign-in through OAuth2/OIDC, SAML, LDAP/AD, and built-in social or enterprise providers.
+- External account linking and confirmation pages for safely binding federated identities to local users.
+
+## Authorization And Protocol Features
+
+ArmorAuth exposes standard authorization-server endpoints while keeping operational state in your database.
+
+- Authorization Code, Client Credentials, Refresh Token, Device Authorization, introspection, revocation, discovery, JWKS, and OIDC logout surfaces.
+- Tenant-aware issuer and token customization.
+- Organization-aware ID token and access-token claims such as `tenant_id`, `roles`, `org_ids`, and `org_roles`.
+- Optional Dynamic Client Registration and DPoP-related application configuration surfaces.
+- SCIM 2.0 user and group provisioning endpoints.
+- Authorization-check APIs for application services that need centralized permission decisions.
+
+## Admin Console
+
+The admin console is the operational surface for ArmorAuth.
+
+- Application management: clients, redirect URIs, grant types, authentication methods, scopes, DPoP, MFA policy, and endpoint details.
+- User management: account status, profile data, phone/email verification state, roles, and organization membership.
+- Tenant and organization management: tenant code, name, branding, domain, status, hierarchical organizations, and member roles.
+- Identity providers: OAuth2/OIDC, SAML, LDAP, and built-in providers such as WeChat, WeCom, DingTalk, Feishu, Alipay, QQ, and Gitee.
+- Security operations: login policies, sessions, secret protection, JWK keys, MFA/account factors, and Passkey support.
+- Observability and integration: audit logs, token statistics, webhooks, and provider/account binding views.
+
+## Spring Boot Integration
+
+The `armorauth-spring-boot-starter` module helps relying services integrate with ArmorAuth using Spring Boot conventions.
+
+- Resource Server auto-configuration.
+- OIDC Login auto-configuration.
+- Admin API client auto-configuration.
+- Security context helpers for user, tenant, role, organization, and token information.
+- JWT authority mapping and token relay support for downstream service calls.
+
+See [Spring Boot Starter](docs/spring-boot-starter.md) for integration details.
+
+## Project Modules
 
 | Module | Purpose |
 | --- | --- |
 | `armorauth-common` | Shared response, exception, validation, and audit context utilities |
 | `armorauth-model` | JPA entities and repositories |
-| `armorauth-core` | Authorization server, authentication, MFA, JWK, secret protection, and persistence adapters |
+| `armorauth-core` | Authorization server, authentication, MFA, JWK, tenant, secret protection, and persistence adapters |
 | `armorauth-federation` | Federated login orchestration, account confirmation, and provider SPI |
-| `armorauth-federation-providers` | Built-in provider integrations and metadata |
-| `armorauth-admin` | Admin REST API |
-| `armorauth-admin-ui` | Vue 3 admin console |
-| `armorauth-server-ui` | Hosted identity pages and static assets |
-| `armorauth-server` | Runnable Spring Boot server |
-| `armorauth-spring-boot-autoconfigure` | Lightweight auto-configuration for relying Spring Boot services |
-| `armorauth-spring-boot-starter` | Starter dependency for Resource Server and OIDC Login integration |
-| `armorauth-samples` | Integration samples for OAuth/OIDC clients |
+| `armorauth-federation-providers` | Built-in provider integrations and provider metadata |
+| `armorauth-admin` | Admin, account, SCIM, audit, webhook, and operation REST APIs |
+| `armorauth-admin-ui` | Vue 3 management console, served locally by Vite during development |
+| `armorauth-server-ui` | Hosted identity pages, styles, scripts, and brand assets |
+| `armorauth-server` | Runnable Spring Boot application, default port `9000` |
+| `armorauth-spring-boot` | Starter, auto-configuration, and extension support for relying services |
+| `armorauth-samples` | Spring Boot and OAuth/OIDC client samples |
 
-## User-Facing Surfaces
+## Samples
 
-- Hosted identity pages: login, authorization consent, MFA, device activation, activation result, federated account confirmation.
-- Admin console: application management, user management, identity providers, login policies, federated bindings, monitoring, and operational views.
-- Admin API: stable management surface under `/api/admin/v1`.
-- Account API: self-service factor management under `/api/account/v1`.
-- Standard protocol endpoints: OAuth 2.0, OpenID Connect discovery, JWKS, token, introspection, revocation, logout, and device authorization.
+The sample workspace includes Spring Boot and OAuth/OIDC clients for local integration testing:
+
+- OIDC Login sample.
+- Tenant-aware OIDC Login sample.
+- Spring Boot PKCE sample.
+- OAuth2 client sample.
+- PKCE client sample.
 
 ## Documentation
 
 | Document | Purpose |
 | --- | --- |
-| [Quick Start](docs/quick-start.md) | Build and run ArmorAuth for local development |
-| [Operation Manual](docs/operation-manual.md) | Day-to-day administration and operational workflows |
+| [Quick Start](docs/quick-start.md) | Build and run ArmorAuth locally |
+| [Operation Manual](docs/operation-manual.md) | Day-to-day administration and operations |
 | [Deployment Guide](docs/deployment-guide.md) | Production deployment, proxy, database, backup, and security guidance |
-| [API Reference](docs/api-reference.md) | Admin API and account API reference |
-| [Spring Boot Starter](docs/spring-boot-starter.md) | Resource Server and OIDC Login integration for relying Spring Boot services |
-| [Federation Configuration](docs/federation-config.md) | OAuth2/OIDC, SAML, and LDAP identity provider setup |
+| [API Reference](docs/api-reference.md) | Admin API, account API, and protocol-adjacent API reference |
+| [Spring Boot Starter](docs/spring-boot-starter.md) | Resource Server, OIDC Login, and service integration |
+| [Federation Configuration](docs/federation-config.md) | OAuth2/OIDC, SAML, LDAP, and provider setup |
 | [MFA Configuration](docs/mfa-config.md) | MFA, TOTP, Passkey, and application policy setup |
 | [Security Best Practices](docs/security-best-practices.md) | Security checklist and hardening notes |
-| [Roadmap](docs/ROADMAP.md) | Product direction and implementation phases |
-| [Project Status](docs/IMPLEMENTATION_STATUS.md) | Current capability status and follow-up areas |
+| [Project Status](docs/IMPLEMENTATION_STATUS.md) | Current capability status and remaining work |
 
 ## Requirements
 
 - JDK 21+
 - Maven 3.9+
 - MySQL 8.0+ for shared or production-like environments
-- Node.js 18+ when working on the admin console
+- Node.js 18+ for admin console development
 
 ## Build From Source
 
@@ -77,20 +124,28 @@ mvn -pl armorauth-server -am package -DskipTests
 The runnable server artifact is produced at:
 
 ```text
-armorauth-server/target/armorauth-server-0.0.1.jar
+armorauth-server/target/armorauth-server-1.0.0.jar
 ```
 
-See [Quick Start](docs/quick-start.md) for the local development flow and [Deployment Guide](docs/deployment-guide.md) for production configuration.
+Run it with:
+
+```bash
+java -jar armorauth-server/target/armorauth-server-1.0.0.jar
+```
+
+The admin console development server runs on port `1080` and proxies API requests to `localhost:9000`:
+
+```bash
+cd armorauth-admin-ui
+npm install
+npm run dev
+```
 
 ## Security Notes
 
-ArmorAuth stores signing keys and sensitive integration secrets in the database. Production environments must provide stable cryptographic keys, a stable issuer URL, HTTPS-only cookies, controlled admin access, and database backup procedures that include the JWK table and crypto key material.
+ArmorAuth stores signing keys and sensitive integration secrets in the database. Production deployments should use stable encryption keys, a stable issuer URL, HTTPS-only cookies, restricted admin access, and database backups that include JWK and secret-protection data.
 
-Default development credentials and built-in seed data are for local development only.
-
-## Project Status
-
-ArmorAuth is under active development. The current codebase includes the main identity, administration, federation, MFA, webhook, SCIM, and authorization-check capabilities needed for private deployment evaluation. Remaining work focuses on hardening, packaging, SDKs, starter ergonomics, enterprise federation depth, and broader deployment automation.
+Default development credentials and seed data are for local development only.
 
 ## License
 

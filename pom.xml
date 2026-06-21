@@ -22,7 +22,7 @@
     <properties>
         <resource.delimiter>@</resource.delimiter>
         <!-- revision -->
-        <revision>0.0.1</revision>
+        <revision>1.0.0</revision>
         <!-- Tool -->
         <nimbus-jose-jwt.version>9.31</nimbus-jose-jwt.version>
         <commons-collections4.version>4.4</commons-collections4.version>

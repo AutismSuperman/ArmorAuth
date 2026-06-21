@@ -60,7 +60,7 @@ mvn -pl armorauth-server -am package -DskipTests
 构建产物：
 
 ```text
-armorauth-server/target/armorauth-server-0.0.1.jar
+armorauth-server/target/armorauth-server-1.0.0.jar
 ```
 
 ## 启动服务端
@@ -68,7 +68,7 @@ armorauth-server/target/armorauth-server-0.0.1.jar
 启动打包后的服务端：
 
 ```bash
-java -jar armorauth-server/target/armorauth-server-0.0.1.jar
+java -jar armorauth-server/target/armorauth-server-1.0.0.jar
 ```
 
 服务端会提供托管身份页面、OAuth/OIDC 标准端点和管理 API。
@@ -76,7 +76,7 @@ java -jar armorauth-server/target/armorauth-server-0.0.1.jar
 如果只需要本地 H2 开发环境，可以使用 `local` profile：
 
 ```bash
-java -jar armorauth-server/target/armorauth-server-0.0.1.jar --spring.profiles.active=local
+java -jar armorauth-server/target/armorauth-server-1.0.0.jar --spring.profiles.active=local
 ```
 
 ## 启动管理控制台

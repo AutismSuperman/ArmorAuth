@@ -60,7 +60,7 @@ mvn -pl armorauth-server -am package -DskipTests
 The server jar is created at:
 
 ```text
-armorauth-server/target/armorauth-server-0.0.1.jar
+armorauth-server/target/armorauth-server-1.0.0.jar
 ```
 
 ## Run The Server
@@ -68,7 +68,7 @@ armorauth-server/target/armorauth-server-0.0.1.jar
 Start the packaged server:
 
 ```bash
-java -jar armorauth-server/target/armorauth-server-0.0.1.jar
+java -jar armorauth-server/target/armorauth-server-1.0.0.jar
 ```
 
 The server exposes hosted identity pages, OAuth/OIDC protocol endpoints, and the admin API.
@@ -76,7 +76,7 @@ The server exposes hosted identity pages, OAuth/OIDC protocol endpoints, and the
 For local H2-based development you can use the `local` profile:
 
 ```bash
-java -jar armorauth-server/target/armorauth-server-0.0.1.jar --spring.profiles.active=local
+java -jar armorauth-server/target/armorauth-server-1.0.0.jar --spring.profiles.active=local
 ```
 
 ## Run The Admin Console
