@@ -6,9 +6,9 @@
     <title>账号确认 - ArmorAuth</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
-    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026052408">
+    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026062112">
 </head>
-<body class="authing-login-page identity-page" data-page-title-key="page.federatedConfirm.title">
+<body class="authing-login-page identity-page google-login-page auth-flow-page" data-page-title-key="page.federatedConfirm.title">
 <div class="page-shell">
     <main class="login-product-shell is-wide">
         <section class="login-visual-panel" data-visual="federated">
@@ -172,6 +172,6 @@
         </div>
     </footer>
 </div>
-<script src="/assets/armorauth-ui.js?v=2026052404"></script>
+<script src="/assets/armorauth-ui.js?v=2026062113"></script>
 </body>
 </html>

@@ -2890,6 +2890,304 @@ body.identity-page[data-theme="dark"] {
     display: block;
 }
 
+.identity-page .login-card .meta-block-compact {
+    padding: 14px;
+    gap: 6px;
+    font-size: 0.84rem;
+}
+
+.account-security-panel {
+    display: grid;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--authing-border);
+    border-radius: 8px;
+    background: var(--authing-card);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+.account-security-head,
+.security-toggle-row,
+.factor-item,
+.security-actions-inline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.account-security-head > div,
+.security-toggle-row > span,
+.factor-copy {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.account-security-head strong,
+.security-toggle-row strong,
+.totp-setup-head strong,
+.recovery-code-panel strong {
+    color: var(--authing-ink);
+    font-size: 0.94rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.account-security-head span,
+.security-toggle-row small,
+.factor-copy span,
+.totp-setup-head span,
+.recovery-code-panel span {
+    color: var(--authing-muted);
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.account-security-badge {
+    flex: 0 0 auto;
+    min-height: 26px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: rgba(22, 163, 74, 0.12);
+    color: var(--success);
+    font-size: 0.76rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.account-security-badge.is-muted {
+    background: var(--authing-soft);
+    color: var(--authing-muted);
+}
+
+.account-security-badge.is-warning {
+    background: rgba(217, 119, 6, 0.12);
+    color: var(--warning);
+}
+
+.account-security-badge.is-danger {
+    background: rgba(220, 38, 38, 0.12);
+    color: var(--danger);
+}
+
+.security-toggle-row {
+    align-items: flex-start;
+    padding: 12px;
+    border: 1px solid var(--authing-border);
+    border-radius: 8px;
+    background: var(--authing-soft);
+}
+
+.security-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    flex: 0 0 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: #9ca3af;
+    cursor: pointer;
+    transition: background 0.18s ease, opacity 0.18s ease;
+}
+
+.security-switch span {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.24);
+    transition: transform 0.18s ease;
+}
+
+.security-switch[aria-pressed="true"] {
+    background: var(--authing-blue);
+}
+
+.security-switch[aria-pressed="true"] span {
+    transform: translateX(20px);
+}
+
+.security-switch:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+}
+
+.factor-list {
+    display: grid;
+    gap: 8px;
+    max-height: 160px;
+    overflow: auto;
+    padding-right: 2px;
+}
+
+.factor-empty,
+.factor-item {
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid var(--authing-border);
+    border-radius: 8px;
+    background: var(--authing-soft);
+}
+
+.factor-empty {
+    color: var(--authing-muted);
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.factor-item {
+    background: var(--authing-card);
+}
+
+.factor-copy strong {
+    color: var(--authing-ink);
+    font-size: 0.85rem;
+}
+
+.factor-status {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    min-height: 22px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: var(--authing-soft);
+    color: var(--authing-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.factor-status.is-ready {
+    background: rgba(22, 163, 74, 0.12);
+    color: var(--success);
+}
+
+.factor-delete {
+    flex: 0 0 auto;
+    min-height: 30px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--danger);
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.factor-delete:hover {
+    background: rgba(220, 38, 38, 0.1);
+}
+
+.security-actions-inline {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.button.button-compact {
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: 0.82rem;
+}
+
+.totp-setup-panel {
+    display: grid;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid #a9b9f4;
+    border-radius: 8px;
+    background: #f7faff;
+}
+
+body.identity-page[data-theme="dark"] .totp-setup-panel {
+    background: #111a2c;
+}
+
+.totp-setup-panel[hidden],
+.recovery-code-panel[hidden] {
+    display: none;
+}
+
+.totp-setup-head,
+.recovery-code-panel {
+    display: grid;
+    gap: 5px;
+}
+
+.copy-field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 7px;
+    align-items: center;
+}
+
+.copy-field label {
+    grid-column: 1 / -1;
+    color: var(--authing-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.copy-field code {
+    min-width: 0;
+    min-height: 34px;
+    display: block;
+    overflow: auto hidden;
+    padding: 8px 10px;
+    border: 1px solid var(--authing-border);
+    border-radius: 6px;
+    background: var(--authing-card);
+    color: var(--authing-ink);
+    font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+    font-size: 0.76rem;
+    white-space: nowrap;
+}
+
+.copy-field button {
+    min-height: 34px;
+    padding: 0 10px;
+    border: 1px solid var(--authing-border);
+    border-radius: 6px;
+    background: var(--authing-card);
+    color: var(--authing-blue);
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.compact-field {
+    gap: 6px;
+}
+
+.compact-field input {
+    min-height: 40px;
+}
+
+.recovery-code-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+    gap: 6px;
+}
+
+.recovery-code-grid code {
+    display: block;
+    padding: 7px 8px;
+    border: 1px solid var(--authing-border);
+    border-radius: 6px;
+    background: var(--authing-card);
+    color: var(--authing-ink);
+    text-align: center;
+    font-size: 0.78rem;
+}
+
 .identity-page .compact-title {
     gap: 6px;
 }
@@ -3303,5 +3601,1841 @@ body.identity-page[data-theme="dark"] .provider-link:hover {
 
     .identity-page .provider-list {
         grid-template-columns: repeat(auto-fit, minmax(44px, 44px));
+    }
+}
+
+/* Google-account inspired sign-in and account home */
+body.google-login-page,
+body.google-account-page {
+    --google-bg: #1f1f1f;
+    --google-surface: #0e0f10;
+    --google-surface-2: #282a2d;
+    --google-line: #5f6368;
+    --google-text: #e8eaed;
+    --google-muted: #bdc1c6;
+    --google-blue: #a8c7fa;
+    --google-blue-solid: #8ab4f8;
+    --google-blue-active: #0b57d0;
+    --authing-blue: var(--google-blue-solid);
+    --authing-blue-hover: #aecbfa;
+    --authing-ink: var(--google-text);
+    --authing-muted: var(--google-muted);
+    --authing-border: var(--google-line);
+    --authing-soft: #202124;
+    --authing-card: var(--google-surface);
+    color: var(--google-text);
+    background: var(--google-bg);
+    background-image: none;
+}
+
+body.google-login-page .page-shell {
+    justify-content: center;
+    gap: 24px;
+    padding: 48px 40px 34px;
+}
+
+body.google-login-page .login-product-shell {
+    width: min(1080px, 100%);
+    min-height: 430px;
+    grid-template-columns: minmax(320px, 0.95fr) minmax(420px, 1.05fr);
+    border: 0;
+    border-radius: 30px;
+    background: var(--google-surface);
+    box-shadow: none;
+}
+
+body.google-login-page .login-visual-panel {
+    grid-template-rows: auto 1fr;
+    align-content: start;
+    gap: 32px;
+    padding: 46px 44px;
+    color: var(--google-text);
+    background: var(--google-surface);
+}
+
+body.google-login-page .login-visual-panel::after,
+body.google-login-page .identity-menu,
+body.google-login-page .login-visual-stack {
+    display: none;
+}
+
+body.google-login-page .login-brand-mark {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: transparent;
+    box-shadow: none;
+}
+
+body.google-login-page .login-brand small,
+body.google-login-page .login-kicker {
+    display: none;
+}
+
+body.google-login-page .login-brand strong {
+    color: var(--google-muted);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+body.google-login-page .login-visual-copy {
+    align-self: start;
+    max-width: 360px;
+}
+
+body.google-login-page .login-visual-copy h1 {
+    margin: 0;
+    color: var(--google-text);
+    font-size: 2.75rem;
+    line-height: 1.08;
+    font-weight: 400;
+    letter-spacing: 0;
+}
+
+body.google-login-page .login-visual-copy p {
+    display: block;
+    margin: 18px 0 0;
+    color: var(--google-text);
+    font-size: 1rem;
+    line-height: 1.55;
+}
+
+body.google-login-page .login-card-panel {
+    align-items: center;
+    justify-items: stretch;
+    padding: 46px 46px 40px;
+    background: var(--google-surface);
+}
+
+body.google-login-page .login-card {
+    width: 100%;
+    max-width: 520px;
+    gap: 18px;
+    color: var(--google-text);
+}
+
+body.google-login-page .login-card-logo,
+body.google-login-page .login-card-kicker {
+    display: none;
+}
+
+body.google-login-page .login-card-toolbar {
+    justify-content: flex-end;
+}
+
+body.google-login-page .theme-toggle,
+body.google-login-page .locale-toggle {
+    min-height: 36px;
+    border-color: var(--google-line);
+    background: transparent;
+    color: var(--google-blue);
+}
+
+body.google-login-page .login-card-title {
+    display: none;
+}
+
+body.google-login-page .notice {
+    border-radius: 12px;
+}
+
+body.google-login-page .switcher {
+    width: 100%;
+    display: flex;
+    gap: 6px;
+    padding: 0 0 6px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+body.google-login-page .switcher button {
+    min-height: 34px;
+    padding: 0 10px;
+    border-radius: 999px;
+    color: var(--google-blue);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+body.google-login-page .switcher .is-active {
+    color: #062e6f;
+    background: var(--google-blue);
+    box-shadow: none;
+}
+
+body.google-login-page .auth-form {
+    width: 100%;
+    gap: 18px;
+}
+
+body.google-login-page .field-affix {
+    display: none;
+}
+
+body.google-login-page .field-group {
+    gap: 8px;
+}
+
+body.google-login-page .field-group label {
+    color: var(--google-blue);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+body.google-login-page .field-group input {
+    min-height: 56px;
+    padding: 15px 16px;
+    border: 1px solid var(--google-line);
+    border-radius: 4px;
+    background: var(--google-surface);
+    color: var(--google-text);
+    font-size: 1rem;
+}
+
+body.google-login-page .field-with-affix > input,
+body.google-login-page .captcha-image-row input,
+body.google-login-page .field-inline input {
+    padding-left: 16px;
+}
+
+body.google-login-page .field-group input:focus {
+    border-color: var(--google-blue);
+    box-shadow: 0 0 0 1px var(--google-blue);
+}
+
+body.google-login-page .field-group input::placeholder {
+    color: #9aa0a6;
+}
+
+body.google-login-page .checkbox-row,
+body.google-login-page .form-meta-note,
+body.google-login-page .login-card-foot {
+    color: var(--google-muted);
+}
+
+body.google-login-page .action-row-stacked {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 18px;
+}
+
+body.google-login-page .action-row-stacked > .button,
+body.google-login-page .action-row-stacked > button.button {
+    width: auto;
+    min-width: 96px;
+    margin-left: 0;
+}
+
+body.google-login-page .button {
+    min-height: 40px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+}
+
+body.google-login-page .button.primary {
+    color: #062e6f;
+    background: var(--google-blue);
+    box-shadow: none;
+}
+
+body.google-login-page .button.primary:hover {
+    color: #062e6f;
+    background: #c2d7ff;
+    box-shadow: none;
+}
+
+body.google-login-page .button.secondary {
+    border-color: transparent;
+    background: transparent;
+    color: var(--google-blue);
+}
+
+body.google-login-page .button.secondary:hover {
+    border-color: transparent;
+    background: rgba(168, 199, 250, 0.1);
+    color: var(--google-blue);
+}
+
+body.google-login-page .login-provider-section {
+    display: grid;
+    gap: 12px;
+}
+
+body.google-login-page .provider-link {
+    border-color: var(--google-line);
+    background: transparent;
+}
+
+body.google-login-page .login-page-footer {
+    width: min(1080px, 100%);
+    color: var(--google-muted);
+}
+
+body.google-login-page .page-footer-brand strong,
+body.google-login-page .page-footer-brand span,
+body.google-login-page .page-footer-nav span {
+    color: var(--google-muted);
+}
+
+body.google-account-page .page-shell {
+    min-height: 100dvh;
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: 14px;
+    padding: 22px 28px 16px;
+}
+
+body.google-account-page .login-product-shell {
+    width: 100%;
+    min-height: calc(100dvh - 74px);
+    grid-template-columns: 260px minmax(0, 1fr);
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+body.google-account-page .login-visual-panel {
+    grid-template-rows: auto auto 1fr;
+    gap: 22px;
+    min-height: 0;
+    padding: 0 18px 0 0;
+    color: var(--google-text);
+    background: transparent;
+}
+
+body.google-account-page .login-visual-panel::after,
+body.google-account-page .login-visual-copy,
+body.google-account-page .login-visual-stack {
+    display: none;
+}
+
+body.google-account-page .login-brand {
+    min-height: 48px;
+    padding: 0 8px;
+}
+
+body.google-account-page .login-brand-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: transparent;
+    box-shadow: none;
+}
+
+body.google-account-page .login-brand strong {
+    color: var(--google-text);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+body.google-account-page .login-brand small {
+    color: var(--google-muted);
+    font-size: 0.78rem;
+}
+
+body.google-account-page .identity-menu {
+    display: grid;
+    gap: 8px;
+    align-content: start;
+}
+
+body.google-account-page .identity-menu-item {
+    min-height: 48px;
+    grid-template-columns: 36px minmax(0, 1fr);
+    padding: 6px 12px;
+    border: 0;
+    border-radius: 999px;
+    color: var(--google-text);
+}
+
+body.google-account-page .identity-menu-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.google-account-page .identity-menu-item.is-active {
+    background: #034a77;
+    color: #d3e3fd;
+}
+
+body.google-account-page .identity-menu-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #8ab4f8;
+    color: #041e49;
+    font-size: 0.74rem;
+    font-weight: 800;
+}
+
+body.google-account-page .identity-menu-item:nth-child(2) .identity-menu-icon {
+    background: #81c995;
+}
+
+body.google-account-page .identity-menu-item:nth-child(3) .identity-menu-icon {
+    background: #78d9ec;
+}
+
+body.google-account-page .identity-menu-item:nth-child(4) .identity-menu-icon {
+    background: #fdd663;
+}
+
+body.google-account-page .identity-menu-item:nth-child(5) .identity-menu-icon {
+    background: #f6aea9;
+}
+
+body.google-account-page .identity-menu-item strong {
+    color: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+body.google-account-page .identity-menu-item small {
+    display: none;
+}
+
+body.google-account-page .login-card-panel {
+    align-items: start;
+    justify-items: center;
+    padding: 0;
+    background: transparent;
+}
+
+body.google-account-page .login-card {
+    width: min(780px, 100%);
+    gap: 18px;
+    margin: 72px auto 0;
+    color: var(--google-text);
+}
+
+body.google-account-page .login-card-toolbar {
+    position: fixed;
+    top: 22px;
+    right: 28px;
+    z-index: 5;
+    min-height: 42px;
+}
+
+body.google-account-page .login-card-logo {
+    display: none;
+}
+
+body.google-account-page .theme-toggle,
+body.google-account-page .locale-toggle {
+    min-height: 36px;
+    border-color: transparent;
+    background: transparent;
+    color: var(--google-muted);
+}
+
+body.google-account-page .theme-toggle:hover,
+body.google-account-page .locale-toggle:hover {
+    border-color: transparent;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--google-text);
+    box-shadow: none;
+    transform: none;
+}
+
+.account-profile-hero {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    text-align: center;
+}
+
+.account-profile-avatar {
+    width: 92px;
+    height: 92px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--google-surface-2);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.account-profile-avatar img {
+    width: 56px;
+    height: 56px;
+    display: block;
+}
+
+body.google-account-page .login-card-title {
+    display: grid;
+    gap: 16px;
+    justify-items: center;
+}
+
+body.google-account-page .login-card-title h1 {
+    margin: 0;
+    color: var(--google-text);
+    font-size: 2rem;
+    line-height: 1.2;
+    font-weight: 400;
+}
+
+body.google-account-page .login-card-title p {
+    margin: 0;
+    color: var(--google-muted);
+}
+
+.account-search-pill {
+    width: min(560px, 100%);
+    min-height: 48px;
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    align-items: center;
+    padding: 0 18px;
+    border-radius: 999px;
+    background: #303134;
+    color: var(--google-muted);
+}
+
+.account-search-pill span {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--google-muted);
+    font-weight: 800;
+}
+
+.account-search-pill strong {
+    font-size: 0.92rem;
+    font-weight: 500;
+}
+
+.account-chip-row {
+    width: min(560px, 100%);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.account-chip-row span {
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 14px;
+    border: 1px solid var(--google-line);
+    border-radius: 999px;
+    color: var(--google-text);
+    background: transparent;
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+body.google-account-page .account-security-panel,
+body.google-account-page .meta-block {
+    width: 100%;
+    border-color: #3c4043;
+    background: #202124;
+    color: var(--google-muted);
+    box-shadow: none;
+}
+
+body.google-account-page .account-security-head strong,
+body.google-account-page .security-toggle-row strong,
+body.google-account-page .meta-block strong {
+    color: var(--google-text);
+}
+
+body.google-account-page .security-toggle-row,
+body.google-account-page .factor-empty,
+body.google-account-page .factor-item {
+    border-color: #3c4043;
+    background: #1f1f1f;
+}
+
+body.google-account-page .factor-copy strong,
+body.google-account-page .factor-copy span,
+body.google-account-page .security-toggle-row small,
+body.google-account-page .account-security-head span,
+body.google-account-page .totp-setup-head span,
+body.google-account-page .recovery-code-panel span {
+    color: var(--google-muted);
+}
+
+body.google-account-page .account-security-badge {
+    background: rgba(129, 201, 149, 0.18);
+    color: #81c995;
+}
+
+body.google-account-page .account-security-badge.is-muted {
+    background: #303134;
+    color: var(--google-muted);
+}
+
+body.google-account-page .account-security-badge.is-warning {
+    background: rgba(253, 214, 99, 0.16);
+    color: #fdd663;
+}
+
+body.google-account-page .button.primary {
+    color: #062e6f;
+    background: var(--google-blue);
+    box-shadow: none;
+}
+
+body.google-account-page .button.secondary {
+    border-color: #3c4043;
+    background: transparent;
+    color: var(--google-blue);
+}
+
+body.google-account-page .button.secondary:hover {
+    border-color: var(--google-blue);
+    background: rgba(168, 199, 250, 0.08);
+    color: var(--google-blue);
+}
+
+body.google-account-page .action-row-between {
+    padding-top: 0;
+}
+
+body.google-account-page .page-footer {
+    width: 100%;
+    padding: 0 6px;
+    color: var(--google-muted);
+}
+
+body.google-account-page .page-footer-brand strong,
+body.google-account-page .page-footer-brand span,
+body.google-account-page .page-footer-nav span {
+    color: var(--google-muted);
+}
+
+@media (max-width: 900px) {
+    body.google-login-page .page-shell {
+        padding: 16px;
+    }
+
+    body.google-login-page .login-product-shell {
+        grid-template-columns: 1fr;
+        border-radius: 24px;
+    }
+
+    body.google-login-page .login-visual-panel {
+        padding: 34px 30px 10px;
+    }
+
+    body.google-login-page .login-card-panel {
+        padding: 20px 30px 34px;
+    }
+
+    body.google-login-page .login-card-title {
+        display: grid;
+    }
+
+    body.google-login-page .login-card-title h1 {
+        color: var(--google-text);
+        font-size: 1.6rem;
+        font-weight: 400;
+    }
+
+    body.google-account-page .page-shell {
+        padding: 16px;
+    }
+
+    body.google-account-page .login-product-shell {
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+
+    body.google-account-page .login-visual-panel {
+        padding: 0;
+    }
+
+    body.google-account-page .login-brand {
+        padding: 0;
+    }
+
+    body.google-account-page .identity-menu {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    body.google-account-page .identity-menu-item {
+        min-width: 112px;
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: 6px;
+        padding: 8px;
+        text-align: center;
+    }
+
+    body.google-account-page .login-card {
+        margin: 28px auto 0;
+    }
+
+    body.google-account-page .login-card-toolbar {
+        position: static;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 520px) {
+    body.google-login-page .page-shell,
+    body.google-account-page .page-shell {
+        padding: 0;
+    }
+
+    body.google-login-page .login-product-shell {
+        min-height: 100dvh;
+        border-radius: 0;
+    }
+
+    body.google-login-page .login-visual-panel {
+        padding: 26px 22px 8px;
+    }
+
+    body.google-login-page .login-card-panel {
+        padding: 16px 22px 28px;
+    }
+
+    body.google-login-page .action-row-stacked {
+        justify-content: stretch;
+    }
+
+    body.google-login-page .action-row-stacked > .button,
+    body.google-login-page .action-row-stacked > button.button {
+        flex: 1 1 auto;
+    }
+
+    body.google-account-page .login-card {
+        margin-top: 18px;
+    }
+
+    .account-profile-avatar {
+        width: 78px;
+        height: 78px;
+    }
+
+    body.google-account-page .login-card-title h1 {
+        font-size: 1.55rem;
+    }
+
+    .account-chip-row {
+        justify-content: flex-start;
+    }
+
+body.google-account-page .page-footer {
+        display: none;
+    }
+}
+
+/* Google light theme and account layout corrections */
+body.google-login-page,
+body.google-account-page {
+    --google-bg: #ffffff;
+    --google-surface: #ffffff;
+    --google-surface-2: #f8fafd;
+    --google-line: #dadce0;
+    --google-strong-line: #747775;
+    --google-text: #1f1f1f;
+    --google-muted: #5f6368;
+    --google-blue: #0b57d0;
+    --google-blue-solid: #0b57d0;
+    --google-blue-active: #d3e3fd;
+    --authing-bg: var(--google-bg);
+    --authing-card: var(--google-surface);
+    --authing-soft: var(--google-surface-2);
+    --authing-border: var(--google-line);
+    --authing-blue: var(--google-blue);
+    --authing-blue-hover: #0842a0;
+    --authing-ink: var(--google-text);
+    --authing-muted: var(--google-muted);
+    color: var(--google-text);
+    background: var(--google-bg);
+    background-image: none;
+}
+
+body.google-login-page {
+    --google-bg: #f0f4f9;
+}
+
+body.google-login-page[data-theme="dark"],
+body.google-account-page[data-theme="dark"] {
+    --google-bg: #1f1f1f;
+    --google-surface: #0f1011;
+    --google-surface-2: #282a2d;
+    --google-line: #3c4043;
+    --google-strong-line: #5f6368;
+    --google-text: #e8eaed;
+    --google-muted: #bdc1c6;
+    --google-blue: #a8c7fa;
+    --google-blue-solid: #a8c7fa;
+    --google-blue-active: #034a77;
+    --authing-bg: var(--google-bg);
+    --authing-card: var(--google-surface);
+    --authing-soft: #202124;
+    --authing-border: var(--google-line);
+    --authing-blue: var(--google-blue);
+    --authing-blue-hover: #c2d7ff;
+    --authing-ink: var(--google-text);
+    --authing-muted: var(--google-muted);
+    background: var(--google-bg);
+    background-image: none;
+    background-size: auto;
+}
+
+body.google-login-page .page-shell,
+body.google-account-page .page-shell {
+    background: var(--google-bg);
+    background-image: none;
+}
+
+body.google-login-page .login-product-shell,
+body.google-login-page .login-visual-panel,
+body.google-login-page .login-card-panel {
+    background: var(--google-surface);
+}
+
+body.google-login-page .login-brand strong,
+body.google-login-page .login-visual-copy h1,
+body.google-login-page .login-visual-copy p,
+body.google-login-page .login-card,
+body.google-login-page .checkbox-row {
+    color: var(--google-text);
+}
+
+body.google-login-page .theme-toggle,
+body.google-login-page .locale-toggle {
+    border-color: transparent;
+    background: transparent;
+    color: var(--google-muted);
+}
+
+body.google-login-page .theme-toggle:hover,
+body.google-login-page .locale-toggle:hover {
+    background: rgba(11, 87, 208, 0.08);
+    color: var(--google-text);
+    box-shadow: none;
+    transform: none;
+}
+
+body.google-login-page[data-theme="dark"] .theme-toggle:hover,
+body.google-login-page[data-theme="dark"] .locale-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.google-login-page .switcher button {
+    color: var(--google-blue);
+}
+
+body.google-login-page .switcher .is-active {
+    background: var(--google-blue-active);
+    color: #041e49;
+}
+
+body.google-login-page[data-theme="dark"] .switcher .is-active {
+    background: var(--google-blue);
+    color: #062e6f;
+}
+
+body.google-login-page .field-group label {
+    color: var(--google-blue);
+}
+
+body.google-login-page .field-group input {
+    border-color: var(--google-strong-line);
+    background: #ffffff;
+    color: var(--google-text);
+}
+
+body.google-login-page[data-theme="dark"] .field-group input {
+    background: var(--google-surface);
+    color: var(--google-text);
+}
+
+body.google-login-page .button.primary,
+body.google-account-page .button.primary {
+    background: var(--google-blue);
+    color: #ffffff;
+}
+
+body.google-login-page .button.primary:hover,
+body.google-account-page .button.primary:hover {
+    background: #0842a0;
+    color: #ffffff;
+}
+
+body.google-login-page[data-theme="dark"] .button.primary,
+body.google-account-page[data-theme="dark"] .button.primary {
+    background: var(--google-blue);
+    color: #062e6f;
+}
+
+body.google-login-page[data-theme="dark"] .button.primary:hover,
+body.google-account-page[data-theme="dark"] .button.primary:hover {
+    background: #c2d7ff;
+    color: #062e6f;
+}
+
+body.google-login-page .button.secondary,
+body.google-account-page .button.secondary {
+    border-color: transparent;
+    background: transparent;
+    color: var(--google-blue);
+}
+
+body.google-login-page .button.secondary:hover,
+body.google-account-page .button.secondary:hover {
+    border-color: transparent;
+    background: rgba(11, 87, 208, 0.08);
+    color: var(--google-blue);
+}
+
+body.google-login-page[data-theme="dark"] .button.secondary:hover,
+body.google-account-page[data-theme="dark"] .button.secondary:hover {
+    background: rgba(168, 199, 250, 0.12);
+}
+
+body.google-login-page .provider-link {
+    border-color: var(--google-line);
+    background: var(--google-surface);
+}
+
+body.google-login-page .login-page-footer,
+body.google-login-page .page-footer-brand strong,
+body.google-login-page .page-footer-brand span,
+body.google-login-page .page-footer-nav span,
+body.google-account-page .page-footer,
+body.google-account-page .page-footer-brand strong,
+body.google-account-page .page-footer-brand span,
+body.google-account-page .page-footer-nav span {
+    color: var(--google-muted);
+}
+
+body.google-account-page .login-product-shell {
+    grid-template-columns: 280px minmax(0, 1fr);
+    min-height: calc(100dvh - 78px);
+    align-items: stretch;
+}
+
+body.google-account-page .login-visual-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-height: calc(100dvh - 78px);
+    padding: 0 24px 0 0;
+    overflow: visible;
+    background: transparent;
+}
+
+body.google-account-page .login-brand {
+    flex: 0 0 auto;
+}
+
+body.google-account-page .identity-menu {
+    margin-top: 28px;
+    align-content: start;
+}
+
+body.google-account-page .account-side-actions {
+    order: 3;
+    width: 100%;
+    display: grid;
+    gap: 10px;
+    margin-top: 0;
+    padding: 28px 8px 0;
+}
+
+body.google-account-page .account-side-actions form {
+    margin: 0;
+}
+
+body.google-account-page .account-side-link,
+body.google-account-page .account-side-button {
+    width: 100%;
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--google-line);
+    border-radius: 999px;
+    background: var(--google-surface);
+    color: var(--google-blue);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.86rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+body.google-account-page .account-side-link:hover,
+body.google-account-page .account-side-button:hover {
+    background: rgba(11, 87, 208, 0.08);
+}
+
+body.google-account-page .account-side-button-primary {
+    border-color: var(--google-blue);
+    background: var(--google-blue);
+    color: #ffffff;
+}
+
+body.google-account-page .account-side-button-primary:hover {
+    background: #0b57d0;
+}
+
+body.google-account-page[data-theme="dark"] .account-side-link,
+body.google-account-page[data-theme="dark"] .account-side-button {
+    background: transparent;
+    color: var(--google-blue);
+}
+
+body.google-account-page[data-theme="dark"] .account-side-link:hover,
+body.google-account-page[data-theme="dark"] .account-side-button:hover {
+    background: rgba(168, 199, 250, 0.12);
+}
+
+body.google-account-page[data-theme="dark"] .account-side-button-primary {
+    background: var(--google-blue);
+    color: #062e6f;
+}
+
+body.google-account-page .identity-menu-item {
+    color: #3c4043;
+}
+
+body.google-account-page .identity-menu-item:hover {
+    background: #f1f3f4;
+}
+
+body.google-account-page .identity-menu-item.is-active {
+    background: var(--google-blue-active);
+    color: #041e49;
+}
+
+body.google-account-page[data-theme="dark"] .identity-menu-item {
+    color: var(--google-text);
+}
+
+body.google-account-page[data-theme="dark"] .identity-menu-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.google-account-page[data-theme="dark"] .identity-menu-item.is-active {
+    background: var(--google-blue-active);
+    color: #d3e3fd;
+}
+
+body.google-account-page .login-card {
+    width: min(760px, 100%);
+    margin: 54px auto 0;
+    color: var(--google-text);
+}
+
+body.google-account-page .theme-toggle,
+body.google-account-page .locale-toggle {
+    color: var(--google-muted);
+}
+
+body.google-account-page .theme-toggle:hover,
+body.google-account-page .locale-toggle:hover {
+    background: #f1f3f4;
+    color: var(--google-text);
+}
+
+body.google-account-page[data-theme="dark"] .theme-toggle:hover,
+body.google-account-page[data-theme="dark"] .locale-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.google-account-page .account-profile-avatar {
+    border-color: var(--google-line);
+    background: #f1f3f4;
+}
+
+body.google-account-page[data-theme="dark"] .account-profile-avatar {
+    background: var(--google-surface-2);
+}
+
+body.google-account-page .account-search-pill {
+    background: #edf2fa;
+    color: var(--google-muted);
+}
+
+body.google-account-page[data-theme="dark"] .account-search-pill {
+    background: #303134;
+}
+
+body.google-account-page .account-chip-row span {
+    border-color: var(--google-line);
+    background: var(--google-surface);
+    color: #3c4043;
+}
+
+body.google-account-page[data-theme="dark"] .account-chip-row span {
+    background: transparent;
+    color: var(--google-text);
+}
+
+body.google-account-page .account-security-panel,
+body.google-account-page .meta-block {
+    border-color: var(--google-line);
+    background: var(--google-surface);
+    color: var(--google-muted);
+}
+
+body.google-account-page .security-toggle-row,
+body.google-account-page .factor-empty,
+body.google-account-page .factor-item {
+    border-color: var(--google-line);
+    background: var(--google-surface);
+}
+
+body.google-account-page .factor-empty,
+body.google-account-page .factor-copy span,
+body.google-account-page .security-toggle-row small,
+body.google-account-page .account-security-head span,
+body.google-account-page .totp-setup-head span,
+body.google-account-page .recovery-code-panel span {
+    color: var(--google-muted);
+}
+
+body.google-account-page .account-security-head strong,
+body.google-account-page .security-toggle-row strong,
+body.google-account-page .factor-copy strong,
+body.google-account-page .meta-block strong,
+body.google-account-page .totp-setup-head strong,
+body.google-account-page .recovery-code-panel strong {
+    color: var(--google-text);
+}
+
+body.google-account-page .account-security-badge.is-muted {
+    background: #f1f3f4;
+    color: var(--google-muted);
+}
+
+body.google-account-page[data-theme="dark"] .account-security-badge.is-muted {
+    background: #303134;
+}
+
+body.google-account-page .totp-setup-panel {
+    border-color: #d3e3fd;
+    background: #f8fafd;
+}
+
+body.google-account-page[data-theme="dark"] .totp-setup-panel {
+    border-color: var(--google-line);
+    background: #202124;
+}
+
+body.google-account-page .copy-field code,
+body.google-account-page .copy-field button,
+body.google-account-page .recovery-code-grid code {
+    border-color: var(--google-line);
+    background: var(--google-surface);
+    color: var(--google-text);
+}
+
+body.google-account-page .copy-field button {
+    color: var(--google-blue);
+}
+
+@media (max-width: 900px) {
+    body.google-account-page .login-product-shell {
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+
+    body.google-account-page .login-visual-panel {
+        min-height: auto;
+        padding: 0;
+    }
+
+    body.google-account-page .identity-menu {
+        margin-top: 16px;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    body.google-account-page .account-side-actions {
+        margin-top: 14px;
+        padding: 0;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.google-account-page .login-card {
+        width: 100%;
+        margin: 28px auto 0;
+    }
+
+    body.google-account-page .login-card-toolbar {
+        position: static;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 520px) {
+    body.google-login-page .page-shell,
+    body.google-account-page .page-shell {
+        padding: 0;
+    }
+
+    body.google-login-page .login-product-shell {
+        min-height: 100dvh;
+        border-radius: 0;
+    }
+
+    body.google-account-page .login-card {
+        margin-top: 18px;
+    }
+}
+
+/* unDraw-based identity visuals */
+.identity-page .login-visual-panel {
+    overflow: hidden;
+    grid-template-rows: auto auto minmax(240px, 1fr) auto;
+}
+
+.identity-page .login-visual-panel::after {
+    display: block;
+    width: min(100%, 330px);
+    min-height: clamp(220px, 28vw, 310px);
+    align-self: center;
+    justify-self: center;
+    opacity: 0.98;
+    filter: drop-shadow(0 18px 28px rgba(2, 6, 23, 0.2));
+}
+
+.identity-page .login-visual-copy {
+    max-width: 280px;
+}
+
+.identity-page .login-visual-copy p {
+    display: block;
+}
+
+.identity-page .identity-menu {
+    margin-top: 2px;
+}
+
+body.google-login-page .login-product-shell {
+    grid-template-columns: minmax(330px, 0.95fr) minmax(420px, 1.05fr);
+}
+
+body.google-login-page .login-visual-panel {
+    grid-template-rows: auto auto minmax(205px, 1fr);
+    gap: 26px;
+}
+
+body.google-login-page .login-visual-panel::after {
+    display: block;
+    grid-row: 3;
+    width: min(100%, 340px);
+    min-height: 230px;
+    align-self: end;
+    justify-self: start;
+    opacity: 0.92;
+    filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.24));
+}
+
+body.google-login-page .login-visual-copy {
+    max-width: 380px;
+}
+
+body.google-login-page .login-visual-copy p {
+    color: var(--google-muted);
+}
+
+body.google-login-page .switcher,
+body.google-login-page[data-theme="dark"] .switcher {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+body.google-login-page .switcher button,
+body.google-login-page[data-theme="dark"] .switcher button {
+    flex: 0 0 auto;
+    min-height: 34px;
+    padding: 0 13px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--google-blue);
+    box-shadow: none;
+}
+
+body.google-login-page .switcher button:hover {
+    background: rgba(11, 87, 208, 0.08);
+}
+
+body.google-login-page[data-theme="dark"] .switcher button:hover {
+    background: rgba(168, 199, 250, 0.12);
+}
+
+body.google-login-page .switcher .is-active {
+    background: var(--google-blue-active);
+    color: #041e49;
+}
+
+body.google-login-page[data-theme="dark"] .switcher .is-active {
+    background: var(--google-blue);
+    color: #062e6f;
+}
+
+body.google-account-page .login-visual-panel::after {
+    display: block;
+    order: 2;
+    flex: 0 1 auto;
+    width: min(100%, 200px);
+    height: clamp(112px, 20vh, 180px);
+    min-height: 0;
+    margin: auto auto 18px;
+    align-self: center;
+    opacity: 0.78;
+    filter: drop-shadow(0 12px 18px rgba(15, 23, 42, 0.1));
+}
+
+body.google-account-page[data-theme="dark"] .login-visual-panel::after {
+    opacity: 0.7;
+    filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.28));
+}
+
+@media (max-width: 900px) {
+    body.google-login-page .login-product-shell {
+        grid-template-columns: 1fr;
+    }
+
+    body.google-login-page .login-visual-panel {
+        grid-template-rows: auto auto;
+    }
+
+    body.google-login-page .login-visual-panel::after,
+    body.google-account-page .login-visual-panel::after {
+        display: none;
+    }
+}
+
+/* Account center sections */
+body.google-account-page .login-card {
+    width: min(900px, 100%);
+}
+
+body.google-account-page button.identity-menu-item {
+    width: 100%;
+    border: 0;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.account-center,
+.account-section {
+    width: 100%;
+    display: grid;
+    gap: 16px;
+}
+
+.account-section[hidden] {
+    display: none;
+}
+
+.account-summary-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.account-summary-card {
+    min-height: 92px;
+    display: grid;
+    gap: 8px;
+    align-content: start;
+    padding: 16px;
+    border: 1px solid var(--google-line);
+    border-radius: 14px;
+    background: var(--google-surface);
+    color: var(--google-text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.account-summary-card:hover {
+    border-color: var(--google-blue);
+    background: var(--google-surface-2);
+}
+
+.account-summary-card strong,
+.account-section-head strong,
+.contact-verify-card strong {
+    color: var(--google-text);
+    font-size: 0.95rem;
+    line-height: 1.35;
+}
+
+.account-summary-card span,
+.account-section-head span,
+.contact-verify-card span,
+.contact-verify-card small {
+    color: var(--google-muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.account-section-head,
+.contact-verify-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--google-line);
+    border-radius: 14px;
+    background: var(--google-surface);
+}
+
+.account-section-head > div,
+.contact-verify-card > div {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.account-profile-form {
+    display: grid;
+    gap: 16px;
+}
+
+.profile-card {
+    display: grid;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid var(--google-line);
+    border-radius: 14px;
+    background: var(--google-surface);
+}
+
+.profile-card-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.profile-card-head > div {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.profile-card-head strong {
+    color: var(--google-text);
+    font-size: 0.95rem;
+    line-height: 1.35;
+}
+
+.profile-card-head span {
+    color: var(--google-muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.profile-card-head .button,
+.profile-form-actions .button {
+    width: auto;
+    min-width: 96px;
+}
+
+.profile-field-grid {
+    display: grid;
+    gap: 14px;
+}
+
+.profile-form-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.account-profile-form textarea {
+    width: 100%;
+    min-height: 78px;
+    resize: vertical;
+    padding: 12px 14px;
+    border: 1px solid var(--google-strong-line);
+    border-radius: 4px;
+    background: var(--google-surface);
+    color: var(--google-text);
+    font: inherit;
+}
+
+.account-profile-form textarea:focus {
+    outline: none;
+    border-color: var(--google-blue);
+    box-shadow: 0 0 0 1px var(--google-blue);
+}
+
+.contact-verify-main {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.contact-verify-icon {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--google-blue-active);
+    color: #041e49;
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.contact-value-field {
+    grid-column: 1 / -1;
+}
+
+.contact-verify-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.contact-verify-actions > .button {
+    flex: 0 0 auto;
+}
+
+.contact-code-row {
+    flex: 1 1 320px;
+    display: grid;
+    grid-template-columns: minmax(170px, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.contact-code-row[hidden] {
+    display: none;
+}
+
+.contact-code-row input {
+    min-height: 36px;
+    padding: 8px 11px;
+    border: 1px solid var(--google-strong-line);
+    border-radius: 6px;
+    background: var(--google-surface);
+    color: var(--google-text);
+}
+
+.contact-verify-card small {
+    grid-column: 1 / -1;
+    min-height: 18px;
+}
+
+.contact-verify-card small.is-success {
+    color: #188038;
+}
+
+.contact-verify-card small.is-error {
+    color: #d93025;
+}
+
+body.google-account-page[data-theme="dark"] .contact-verify-card small.is-success {
+    color: #81c995;
+}
+
+body.google-account-page[data-theme="dark"] .contact-verify-card small.is-error {
+    color: #f28b82;
+}
+
+body.google-account-page .account-chip-row button {
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 14px;
+    border: 1px solid var(--google-line);
+    border-radius: 999px;
+    background: var(--google-surface);
+    color: #3c4043;
+    cursor: pointer;
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+body.google-account-page .account-chip-row button:hover,
+body.google-account-page .account-chip-row button.is-active {
+    border-color: var(--google-blue);
+    background: var(--google-blue-active);
+    color: #041e49;
+}
+
+body.google-account-page[data-theme="dark"] .account-chip-row button {
+    background: transparent;
+    color: var(--google-text);
+}
+
+.totp-setup-grid {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+}
+
+.totp-qr-card {
+    min-height: 220px;
+    display: grid;
+    place-items: center;
+    padding: 12px;
+    border: 1px solid var(--google-line);
+    border-radius: 12px;
+    background: #ffffff;
+    color: var(--google-muted);
+    text-align: center;
+}
+
+.totp-qr-card img {
+    width: 196px;
+    height: 196px;
+    display: block;
+}
+
+.totp-manual-fields {
+    min-width: 0;
+    display: grid;
+    gap: 10px;
+}
+
+.totp-open-link {
+    justify-self: start;
+}
+
+@media (max-width: 720px) {
+    .account-summary-grid,
+    .totp-setup-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-card-head,
+    .contact-code-row {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-card-head {
+        display: grid;
+    }
+
+    .profile-card-head .button,
+    .profile-form-actions .button {
+        width: 100%;
+    }
+
+    .contact-verify-actions {
+        align-items: stretch;
+    }
+
+    .contact-code-row {
+        flex-basis: 100%;
+    }
+
+    .contact-verify-actions .button,
+    .contact-verify-actions button {
+        width: 100%;
+    }
+}
+
+/* Unified Google-style hosted auth flows */
+body.auth-flow-page .login-product-shell {
+    width: min(1080px, 100%);
+    min-height: 430px;
+}
+
+body.auth-flow-page .login-product-shell.is-wide {
+    width: min(1180px, 100%);
+    grid-template-columns: minmax(330px, 0.82fr) minmax(540px, 1.18fr);
+}
+
+body.auth-flow-page .login-card.is-wide {
+    width: min(680px, 100%);
+    max-width: 680px;
+}
+
+body.auth-flow-page .login-visual-panel .confirm-stage,
+body.auth-flow-page .login-visual-stack,
+body.auth-flow-page .identity-menu {
+    display: none;
+}
+
+body.auth-flow-page .login-visual-copy h1 {
+    max-width: 390px;
+}
+
+body.auth-flow-page .login-card-panel {
+    align-items: center;
+}
+
+body.auth-flow-page .auth-form {
+    gap: 20px;
+}
+
+body.auth-flow-page [data-tab-group] {
+    display: grid;
+    gap: 22px;
+}
+
+body.auth-flow-page [data-tab-group] .switcher {
+    margin-top: 4px;
+}
+
+body.auth-flow-page [data-tab-panel] {
+    margin-top: 0;
+}
+
+body.auth-flow-page .action-row-between {
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding-top: 24px;
+}
+
+body.auth-flow-page .action-row-between .button {
+    width: auto;
+    min-width: 112px;
+}
+
+body.auth-flow-page .auth-divider {
+    margin: 8px 0 2px;
+    color: var(--google-muted);
+}
+
+body.auth-flow-page .auth-divider::before,
+body.auth-flow-page .auth-divider::after {
+    background: var(--google-line);
+}
+
+body.auth-flow-page .notice,
+body.auth-flow-page .meta-block,
+body.auth-flow-page .info-card,
+body.auth-flow-page .scope-item {
+    border-radius: 12px;
+}
+
+body.auth-flow-page .meta-block,
+body.auth-flow-page .info-card {
+    border: 1px solid var(--google-line);
+    background: #f8fafd;
+    color: var(--google-muted);
+}
+
+body.auth-flow-page[data-theme="dark"] .meta-block,
+body.auth-flow-page[data-theme="dark"] .info-card {
+    background: var(--google-surface-2);
+}
+
+body.auth-flow-page .info-grid {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+}
+
+body.auth-flow-page .info-card strong,
+body.auth-flow-page .meta-block strong,
+body.auth-flow-page .scope-copy strong {
+    color: var(--google-text);
+}
+
+body.auth-flow-page .info-card p,
+body.auth-flow-page .meta-block,
+body.auth-flow-page .scope-copy p,
+body.auth-flow-page .footer-copy {
+    color: var(--google-muted);
+}
+
+body.auth-flow-page .scope-list {
+    width: 100%;
+    gap: 10px;
+}
+
+body.auth-flow-page .scope-item {
+    border: 1px solid var(--google-line);
+    background: var(--google-surface);
+    color: var(--google-text);
+    box-shadow: none;
+}
+
+body.auth-flow-page .scope-item:has(input:checked) {
+    border-color: #d3e3fd;
+    background: #f8fafd;
+}
+
+body.auth-flow-page[data-theme="dark"] .scope-item:has(input:checked) {
+    border-color: var(--google-blue);
+    background: rgba(168, 199, 250, 0.1);
+}
+
+body.auth-flow-page .scope-item:hover {
+    border-color: var(--google-blue);
+    box-shadow: none;
+}
+
+body.auth-flow-page .footer-copy {
+    width: 100%;
+    justify-self: stretch;
+    margin: 0;
+    font-size: 0.86rem;
+}
+
+body.auth-flow-page .page-footer {
+    width: min(1080px, 100%);
+}
+
+body.auth-flow-page .login-product-shell.is-wide + .page-footer,
+body.auth-flow-page .page-shell > .page-footer {
+    width: min(1180px, 100%);
+}
+
+body.auth-flow-page .activation-code-field input {
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+    body.auth-flow-page .login-product-shell.is-wide {
+        width: min(100%, 100%);
+        grid-template-columns: 1fr;
+    }
+
+    body.auth-flow-page .login-card,
+    body.auth-flow-page .login-card.is-wide {
+        width: 100%;
+        max-width: none;
+    }
+
+    body.auth-flow-page .action-row-between {
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 560px) {
+    body.auth-flow-page .action-row-between {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    body.auth-flow-page .action-row-between .button {
+        width: 100%;
     }
 }

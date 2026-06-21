@@ -15,6 +15,7 @@
  */
 package com.armorauth.authentication;
 
+import com.armorauth.data.entity.UserInfo;
 import com.armorauth.data.repository.AuthFactorRepository;
 import com.armorauth.data.repository.UserInfoRepository;
 import jakarta.servlet.ServletException;
@@ -35,7 +36,7 @@ import java.util.Set;
  * MFA 感知的认证成功处理器
  * <p>
  * 综合判断是否需要 MFA：
- * 1. 用户主动绑定了 MFA 因子
+ * 1. 用户主动启用了 MFA 且绑定了 MFA 因子
  * 2. 应用级别要求 MFA（OAuth2Client.mfaRequired）
  * 3. 用户角色要求 MFA（SUPER_ADMIN / TENANT_ADMIN）
  *
@@ -90,27 +91,27 @@ public class MfaAuthenticationSuccessHandler implements AuthenticationSuccessHan
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
         String username = authentication.getName();
-        Optional<String> userId = resolveUserId(username);
+        Optional<UserInfo> user = resolveUser(username);
+        String userId = user.map(UserInfo::getId).orElse(username);
 
         // 检查用户是否配置了已验证且启用的 MFA 因子
-        boolean hasUserMfa = userId
-                .map(id -> authFactorRepository.findByUserIdAndEnabledTrue(id).stream()
-                        .anyMatch(f -> Boolean.TRUE.equals(f.getVerified())
-                                && RUNTIME_MFA_FACTOR_TYPES.contains(f.getFactorType())))
-                .orElse(false);
+        boolean hasReadyUserMfa = authFactorRepository.findByUserIdAndEnabledTrue(userId).stream()
+                .anyMatch(f -> Boolean.TRUE.equals(f.getVerified())
+                        && RUNTIME_MFA_FACTOR_TYPES.contains(f.getFactorType()));
+        boolean userRequiresMfa = hasReadyUserMfa && user
+                .map(userInfo -> Boolean.TRUE.equals(userInfo.getMfaEnabled()))
+                .orElse(userInfoRepository == null && hasReadyUserMfa);
 
         // 检查策略级 MFA 要求（应用级别或角色级别）
         boolean policyRequiresMfa = false;
         if (mfaPolicyService != null) {
             String clientId = resolveClientId(request, response);
-            policyRequiresMfa = userId
-                    .map(id -> mfaPolicyService.requiresMfa(id, clientId))
-                    .orElse(false);
+            policyRequiresMfa = mfaPolicyService.requiresMfa(userId, clientId);
         }
 
-        if (hasUserMfa || policyRequiresMfa) {
+        if (userRequiresMfa || policyRequiresMfa) {
             // 如果策略要求 MFA 但用户没有绑定因子，需要先引导绑定
-            if (policyRequiresMfa && !hasUserMfa) {
+            if (policyRequiresMfa && !hasReadyUserMfa) {
                 // 用户没有 MFA 因子但策略要求 MFA，跳转到 MFA 绑定引导页
                 request.getSession(true).setAttribute(PENDING_MFA_AUTHENTICATION, authentication);
                 request.getSession(true).setAttribute(PENDING_MFA_PRINCIPAL, username);
@@ -127,13 +128,11 @@ public class MfaAuthenticationSuccessHandler implements AuthenticationSuccessHan
         }
     }
 
-    private Optional<String> resolveUserId(String username) {
+    private Optional<UserInfo> resolveUser(String username) {
         if (userInfoRepository == null) {
-            return Optional.of(username);
+            return Optional.empty();
         }
-        return userInfoRepository.findByUsername(username)
-                .map(user -> Optional.of(user.getId()))
-                .orElseGet(() -> Optional.of(username));
+        return userInfoRepository.findByUsername(username);
     }
 
     private String resolveClientId(HttpServletRequest request, HttpServletResponse response) {

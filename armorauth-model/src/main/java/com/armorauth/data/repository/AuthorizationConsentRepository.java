@@ -20,6 +20,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * @author fulin
  * @since 2022-08-31
@@ -32,6 +34,8 @@ public interface AuthorizationConsentRepository extends JpaRepository<Authorizat
     AuthorizationConsent findByTenantIdAndPrincipalNameAndRegisteredClientId(String tenantId,
                                                                              String principalName,
                                                                              String registeredClientId);
+
+    List<AuthorizationConsent> findByPrincipalName(String principalName);
 
     void deleteByPrincipalNameAndRegisteredClientId(String principalName, String registeredClientId);
 

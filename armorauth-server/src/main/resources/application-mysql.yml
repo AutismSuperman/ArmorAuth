@@ -88,3 +88,10 @@ spring:
     hibernate:
       ddl-auto: none
 
+armorauth:
+  captcha:
+    sms:
+      expose-code: true
+  account:
+    verification:
+      expose-code: true

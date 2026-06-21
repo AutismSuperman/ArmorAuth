@@ -16,6 +16,8 @@
 package com.armorauth.admin.service;
 
 import com.armorauth.admin.dto.AccountDTO;
+import com.armorauth.authentication.EmailOtpService;
+import com.armorauth.authentication.SmsOtpService;
 import com.armorauth.common.audit.AuditContext;
 import com.armorauth.common.exception.ResourceNotFoundException;
 import com.armorauth.common.exception.ValidationException;
@@ -27,10 +29,21 @@ import com.armorauth.data.repository.AuthFactorRepository;
 import com.armorauth.data.repository.PasswordHistoryRepository;
 import com.armorauth.data.repository.UserInfoRepository;
 import com.armorauth.mfa.TotpService;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.Instant;
@@ -50,6 +63,7 @@ public class AccountService {
     private static final String FACTOR_TYPE_WEBAUTHN = "WEBAUTHN";
     private static final long PASSKEY_TIMEOUT_MILLIS = 60_000L;
     private static final SecureRandom RANDOM = new SecureRandom();
+    private static final List<String> RUNTIME_MFA_FACTOR_TYPES = List.of(FACTOR_TYPE_TOTP, FACTOR_TYPE_WEBAUTHN);
 
     private final UserInfoRepository userRepository;
     private final AuthFactorRepository authFactorRepository;
@@ -60,6 +74,9 @@ public class AccountService {
     private final AuditEventService auditEventService;
     private final SecretCryptoService secretCryptoService;
     private final PasskeyRegistrationVerifier passkeyRegistrationVerifier;
+    private final SmsOtpService smsOtpService;
+    private final EmailOtpService emailOtpService;
+    private final boolean exposeVerificationCode;
 
     public AccountService(UserInfoRepository userRepository,
                           AuthFactorRepository authFactorRepository,
@@ -69,7 +86,11 @@ public class AccountService {
                           TotpService totpService,
                           AuditEventService auditEventService,
                           SecretCryptoService secretCryptoService,
-                          PasskeyRegistrationVerifier passkeyRegistrationVerifier) {
+                          PasskeyRegistrationVerifier passkeyRegistrationVerifier,
+                          SmsOtpService smsOtpService,
+                          EmailOtpService emailOtpService,
+                          @Value("${armorauth.account.verification.expose-code:${armorauth.captcha.sms.expose-code:false}}")
+                          boolean exposeVerificationCode) {
         this.userRepository = userRepository;
         this.authFactorRepository = authFactorRepository;
         this.passwordHistoryRepository = passwordHistoryRepository;
@@ -79,6 +100,9 @@ public class AccountService {
         this.auditEventService = auditEventService;
         this.secretCryptoService = secretCryptoService;
         this.passkeyRegistrationVerifier = passkeyRegistrationVerifier;
+        this.smsOtpService = smsOtpService;
+        this.emailOtpService = emailOtpService;
+        this.exposeVerificationCode = exposeVerificationCode;
     }
 
     @Transactional(readOnly = true)
@@ -97,10 +121,18 @@ public class AccountService {
             user.setDisplayName(request.displayName());
         }
         if (request.email() != null) {
-            user.setEmail(request.email());
+            String email = trimToNull(request.email());
+            if (!equalsNullable(email, user.getEmail())) {
+                user.setEmailVerified(false);
+            }
+            user.setEmail(email);
         }
         if (request.phone() != null) {
-            user.setPhone(request.phone());
+            String phone = trimToNull(request.phone());
+            if (!equalsNullable(phone, user.getPhone())) {
+                user.setPhoneVerified(false);
+            }
+            user.setPhone(phone);
         }
         if (request.avatar() != null) {
             user.setAvatar(request.avatar());
@@ -114,6 +146,66 @@ public class AccountService {
         auditEventService.record("ACCOUNT_PROFILE_UPDATED",
                 AuditContext.getCurrentPrincipal(), "user", user.getId(),
                 "用户更新个人资料", AuditContext.getClientIp());
+
+        return toProfileResponse(user);
+    }
+
+    @Transactional
+    public AccountDTO.ContactVerificationCodeResponse sendContactVerificationCode(String username, String channel) {
+        UserInfo user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("用户", username));
+        ContactTarget target = contactTarget(user, channel);
+        if (!StringUtils.hasText(target.value())) {
+            throw new ValidationException(target.displayName() + "不能为空");
+        }
+        String code = switch (target.channel()) {
+            case "email" -> emailOtpService.generateOtp(target.value());
+            case "phone" -> smsOtpService.generateOtp(target.value());
+            default -> throw new ValidationException("不支持的验证类型");
+        };
+
+        auditEventService.record("ACCOUNT_CONTACT_VERIFICATION_SENT",
+                AuditContext.getCurrentPrincipal(), "user", user.getId(),
+                "用户发送" + target.displayName() + "验证码", AuditContext.getClientIp());
+
+        String message = target.displayName() + "验证码已发送。";
+        return new AccountDTO.ContactVerificationCodeResponse(
+                target.channel(),
+                maskContact(target.channel(), target.value()),
+                exposeVerificationCode ? message + " Mock 验证码：" + code + "。" : message,
+                exposeVerificationCode ? code : null
+        );
+    }
+
+    @Transactional
+    public AccountDTO.ProfileResponse verifyContact(String username, String channel, AccountDTO.VerifyContactRequest request) {
+        UserInfo user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("用户", username));
+        ContactTarget target = contactTarget(user, channel);
+        if (!StringUtils.hasText(target.value())) {
+            throw new ValidationException(target.displayName() + "不能为空");
+        }
+        String code = request != null ? request.code() : null;
+        boolean verified = switch (target.channel()) {
+            case "email" -> emailOtpService.verifyOtp(target.value(), code);
+            case "phone" -> smsOtpService.verifyOtp(target.value(), code);
+            default -> throw new ValidationException("不支持的验证类型");
+        };
+        if (!verified) {
+            throw new ValidationException("验证码不正确或已过期");
+        }
+
+        if ("email".equals(target.channel())) {
+            user.setEmailVerified(true);
+        } else {
+            user.setPhoneVerified(true);
+        }
+        user.setUpdateTime(Instant.now());
+        user = userRepository.save(user);
+
+        auditEventService.record("ACCOUNT_CONTACT_VERIFIED",
+                AuditContext.getCurrentPrincipal(), "user", user.getId(),
+                "用户完成" + target.displayName() + "验证", AuditContext.getClientIp());
 
         return toProfileResponse(user);
     }
@@ -166,6 +258,38 @@ public class AccountService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public AccountDTO.SecurityResponse getSecurity(String username) {
+        UserInfo user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("用户", username));
+        return toSecurityResponse(user, authFactorRepository.findByUserId(user.getId()));
+    }
+
+    @Transactional
+    public AccountDTO.SecurityResponse updateMfaPreference(
+            String username,
+            AccountDTO.UpdateMfaPreferenceRequest request
+    ) {
+        UserInfo user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("用户", username));
+        boolean enabled = request != null && Boolean.TRUE.equals(request.enabled());
+        List<AuthFactor> factors = authFactorRepository.findByUserId(user.getId());
+
+        if (enabled && !hasReadyRuntimeFactor(factors)) {
+            throw new ValidationException("请先添加并验证一种 MFA 方法");
+        }
+
+        user.setMfaEnabled(enabled);
+        user.setUpdateTime(Instant.now());
+        user = userRepository.save(user);
+
+        auditEventService.record(enabled ? "ACCOUNT_MFA_ENABLED" : "ACCOUNT_MFA_DISABLED",
+                AuditContext.getCurrentPrincipal(), "user", user.getId(),
+                enabled ? "用户启用登录 MFA" : "用户关闭登录 MFA", AuditContext.getClientIp());
+
+        return toSecurityResponse(user, factors);
+    }
+
     @Transactional
     public AccountDTO.TotpSetupResponse setupTotp(String username) {
         UserInfo user = userRepository.findByUsername(username)
@@ -200,7 +324,7 @@ public class AccountService {
                 AuditContext.getCurrentPrincipal(), "auth_factor", factor.getId(),
                 "用户初始化 TOTP 绑定", AuditContext.getClientIp());
 
-        return new AccountDTO.TotpSetupResponse(factor.getId(), secret, uri, recoveryCodes);
+        return new AccountDTO.TotpSetupResponse(factor.getId(), secret, uri, toQrCodeDataUri(uri), recoveryCodes);
     }
 
     @Transactional
@@ -368,6 +492,17 @@ public class AccountService {
 
         authFactorRepository.delete(factor);
 
+        if (isReadyRuntimeFactor(factor)) {
+            boolean hasOtherReadyFactor = authFactorRepository.findByUserId(user.getId()).stream()
+                    .filter(existing -> !factorId.equals(existing.getId()))
+                    .anyMatch(this::isReadyRuntimeFactor);
+            if (!hasOtherReadyFactor && Boolean.TRUE.equals(user.getMfaEnabled())) {
+                user.setMfaEnabled(false);
+                user.setUpdateTime(Instant.now());
+                userRepository.save(user);
+            }
+        }
+
         auditEventService.record("MFA_FACTOR_DELETED",
                 AuditContext.getCurrentPrincipal(), "auth_factor", factorId,
                 "用户删除 MFA 因子: " + factor.getFactorType(), AuditContext.getClientIp());
@@ -381,10 +516,25 @@ public class AccountService {
                 user.getEmail(),
                 user.getPhone(),
                 user.getAvatar(),
+                Boolean.TRUE.equals(user.getMfaEnabled()),
                 user.getEmailVerified(),
                 user.getPhoneVerified(),
                 user.getLastLoginTime(),
                 user.getProfile()
+        );
+    }
+
+    private AccountDTO.SecurityResponse toSecurityResponse(UserInfo user, List<AuthFactor> factors) {
+        boolean hasVerifiedFactor = factors.stream()
+                .anyMatch(factor -> Boolean.TRUE.equals(factor.getVerified()));
+        boolean hasRuntimeFactor = hasReadyRuntimeFactor(factors);
+        return new AccountDTO.SecurityResponse(
+                Boolean.TRUE.equals(user.getMfaEnabled()),
+                hasVerifiedFactor,
+                hasRuntimeFactor,
+                Boolean.TRUE.equals(user.getMfaEnabled()) && hasRuntimeFactor,
+                factors.size(),
+                factors.stream().map(this::toFactorResponse).toList()
         );
     }
 
@@ -399,6 +549,16 @@ public class AccountService {
                 factor.getLastUsedAt(),
                 runtimeSupport(factor)
         );
+    }
+
+    private boolean hasReadyRuntimeFactor(List<AuthFactor> factors) {
+        return factors.stream().anyMatch(this::isReadyRuntimeFactor);
+    }
+
+    private boolean isReadyRuntimeFactor(AuthFactor factor) {
+        return Boolean.TRUE.equals(factor.getEnabled())
+                && Boolean.TRUE.equals(factor.getVerified())
+                && RUNTIME_MFA_FACTOR_TYPES.contains(factor.getFactorType());
     }
 
     private String runtimeSupport(AuthFactor factor) {
@@ -432,5 +592,62 @@ public class AccountService {
         }
         String[] parts = secret.split("\\R", -1);
         return parts.length > 1 && !parts[1].isBlank() ? parts[1] : "127.0.0.1";
+    }
+
+    private ContactTarget contactTarget(UserInfo user, String channel) {
+        String normalized = channel == null ? "" : channel.trim().toLowerCase();
+        return switch (normalized) {
+            case "email" -> new ContactTarget("email", "邮箱", user.getEmail());
+            case "phone" -> new ContactTarget("phone", "手机号", user.getPhone());
+            default -> throw new ValidationException("不支持的验证类型");
+        };
+    }
+
+    private String trimToNull(String value) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+        return value.trim();
+    }
+
+    private boolean equalsNullable(String left, String right) {
+        if (left == null) {
+            return right == null;
+        }
+        return left.equals(right);
+    }
+
+    private String maskContact(String channel, String value) {
+        if (!StringUtils.hasText(value)) {
+            return "-";
+        }
+        if ("email".equals(channel)) {
+            int at = value.indexOf('@');
+            if (at <= 1) {
+                return "***" + (at >= 0 ? value.substring(at) : "");
+            }
+            return value.substring(0, Math.min(2, at)) + "***" + value.substring(at);
+        }
+        if (value.length() < 7) {
+            return "***";
+        }
+        return value.substring(0, 3) + "****" + value.substring(value.length() - 4);
+    }
+
+    private String toQrCodeDataUri(String value) {
+        try {
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            BitMatrix matrix = qrCodeWriter.encode(value, BarcodeFormat.QR_CODE, 220, 220);
+            BufferedImage image = MatrixToImageWriter.toBufferedImage(matrix);
+            try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+                ImageIO.write(image, "PNG", output);
+                return "data:image/png;base64," + Base64.getEncoder().encodeToString(output.toByteArray());
+            }
+        } catch (IOException | WriterException ex) {
+            return null;
+        }
+    }
+
+    private record ContactTarget(String channel, String displayName, String value) {
     }
 }

@@ -38,8 +38,9 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 
 /**
  * Admin API安全配置
- * 使用securityMatchers将/api/admin/**请求路由到独立的FilterChain，
- * 配置HTTP Basic认证和角色权限
+ * 使用securityMatchers将/api/admin/**和/scim/v2/**请求路由到独立的FilterChain，
+ * 配置HTTP Basic认证和角色权限。
+ * 账号自助接口/api/account/**由默认登录态FilterChain处理。
  *
  * @author fulin
  * @since 2026-05-23

@@ -72,4 +72,8 @@ public interface AuthorizationRepository  extends JpaRepository<Authorization, S
             " and a.accessTokenIssuedAt < :to")
     List<Authorization> findIssuedAccessTokens(@Param("from") Instant from, @Param("to") Instant to);
 
+    long countByPrincipalName(String principalName);
+
+    List<Authorization> findTop20ByPrincipalNameOrderByAccessTokenIssuedAtDesc(String principalName);
+
 }

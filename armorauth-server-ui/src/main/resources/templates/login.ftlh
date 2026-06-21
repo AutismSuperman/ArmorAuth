@@ -6,10 +6,10 @@
     <title>欢迎登录 - ArmorAuth</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
-    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026052408">
+    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026062112">
     <script src="/assets/provider-icons.js?v=2026052501"></script>
 </head>
-<body class="authing-login-page identity-page" data-page-title-key="page.login.title">
+<body class="authing-login-page identity-page google-login-page" data-page-title-key="page.login.title">
 <div class="page-shell">
     <main class="login-product-shell">
         <section class="login-visual-panel" data-visual="login">
@@ -22,9 +22,9 @@
             </div>
 
             <div class="login-visual-copy">
-                <span class="login-kicker">用户池 / 默认租户</span>
-                <h1>进入统一身份工作台</h1>
-                <p>集中处理账号认证、应用授权、MFA 与联合身份登录。</p>
+                <span class="login-kicker">默认用户池</span>
+                <h1>登录</h1>
+                <p>使用你的 ArmorAuth 账号继续访问应用。</p>
             </div>
 
             <div class="identity-menu" aria-label="身份能力">
@@ -102,7 +102,7 @@
                 <div class="login-card-title">
                     <span class="login-card-kicker">Sign in</span>
                     <h1>登录 ArmorAuth</h1>
-                    <p>选择一种认证方式继续访问应用。</p>
+                    <p>输入账号凭据后继续。</p>
                 </div>
 
                 <#if errorMessage??>
@@ -142,9 +142,9 @@
 
                     <form id="password-login" class="auth-form" action="/login" method="post" <#if activeLoginTab != 'password'>hidden</#if> data-tab-panel>
                         <div class="field-group field-with-affix">
-                            <label for="username">用户名</label>
+                            <label for="username">邮箱或用户名</label>
                             <span class="field-affix">ID</span>
-                            <input id="username" name="username" type="text" autocomplete="username" placeholder="请输入用户名">
+                            <input id="username" name="username" type="text" autocomplete="username" placeholder="邮箱或用户名">
                         </div>
                         <div class="field-group field-with-affix">
                             <label for="password">密码</label>
@@ -257,7 +257,7 @@
                     </#if>
                 </div>
             </#if>
-                <p class="login-card-foot">登录即表示你正在使用 ArmorAuth 统一身份平台。</p>
+                <p class="login-card-foot">不是自己的电脑？请使用访客模式无痕登录。</p>
             </div>
         </section>
     </main>
@@ -273,7 +273,7 @@
         </div>
     </footer>
 </div>
-<script src="/assets/armorauth-ui.js?v=2026052404"></script>
+<script src="/assets/armorauth-ui.js?v=2026062113"></script>
 <script>
 (() => {
     const passkeyButton = document.querySelector('[data-passkey-login]');

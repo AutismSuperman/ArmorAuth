@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotBlank;
 
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -36,6 +37,7 @@ public class AccountDTO {
             String email,
             String phone,
             String avatar,
+            Boolean mfaEnabled,
             Boolean emailVerified,
             Boolean phoneVerified,
             Instant lastLoginTime,
@@ -61,6 +63,21 @@ public class AccountDTO {
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record ContactVerificationCodeResponse(
+            String channel,
+            String target,
+            String message,
+            String debugCode
+    ) {
+    }
+
+    public record VerifyContactRequest(
+            @NotBlank(message = "验证码不能为空")
+            String code
+    ) {
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public record FactorResponse(
             String id,
             String factorType,
@@ -74,11 +91,96 @@ public class AccountDTO {
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record SecurityResponse(
+            Boolean mfaEnabled,
+            Boolean hasVerifiedFactor,
+            Boolean hasRuntimeFactor,
+            Boolean mfaRequiredAtLogin,
+            Integer factorCount,
+            List<FactorResponse> factors
+    ) {
+    }
+
+    public record UpdateMfaPreferenceRequest(
+            Boolean enabled
+    ) {
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public record TotpSetupResponse(
             String factorId,
             String secret,
             String uri,
+            String qrCodeDataUri,
             List<String> recoveryCodes
+    ) {
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record AccountSessionResponse(
+            String sessionId,
+            Instant lastRequest,
+            Boolean active,
+            Boolean current
+    ) {
+        public AccountSessionResponse(String sessionId, Date lastRequest, Boolean active, Boolean current) {
+            this(sessionId, lastRequest != null ? lastRequest.toInstant() : null, active, current);
+        }
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record ApplicationAccessResponse(
+            List<AuthorizedApplicationResponse> authorizedApplications,
+            List<FederatedAccountResponse> federatedAccounts
+    ) {
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record AuthorizedApplicationResponse(
+            String registeredClientId,
+            String tenantId,
+            String clientId,
+            String clientName,
+            List<String> scopes,
+            String authorizationGrantTypes,
+            Boolean enabled,
+            Instant lastAuthorizedAt
+    ) {
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record FederatedAccountResponse(
+            String id,
+            String registrationId,
+            String providerUsername,
+            Instant createTime,
+            Instant lastLoginTime
+    ) {
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record PrivacyResponse(
+            PrivacySummaryResponse summary,
+            List<AuditEventResponse> recentEvents
+    ) {
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record PrivacySummaryResponse(
+            Integer authorizedApplicationCount,
+            Integer federatedAccountCount,
+            Integer factorCount,
+            Long authorizationRecordCount
+    ) {
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record AuditEventResponse(
+            String id,
+            String eventType,
+            String detail,
+            String ipAddress,
+            Instant createdAt
     ) {
     }
 

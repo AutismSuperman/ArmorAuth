@@ -31,4 +31,6 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, String> 
     Page<AuditEvent> findByEventType(String eventType, Pageable pageable);
 
     Page<AuditEvent> findByPrincipalName(String principalName, Pageable pageable);
+
+    Page<AuditEvent> findByPrincipalNameOrderByCreatedAtDesc(String principalName, Pageable pageable);
 }

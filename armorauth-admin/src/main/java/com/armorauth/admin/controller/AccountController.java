@@ -70,11 +70,50 @@ public class AccountController {
     }
 
     /**
+     * 发送邮箱或手机号验证码
+     */
+    @PostMapping("/me/{channel}:send-verification-code")
+    public ApiResponse<AccountDTO.ContactVerificationCodeResponse> sendContactVerificationCode(
+            Authentication authentication,
+            @PathVariable(name = "channel") String channel) {
+        return ApiResponse.ok(accountService.sendContactVerificationCode(authentication.getName(), channel));
+    }
+
+    /**
+     * 验证邮箱或手机号
+     */
+    @PostMapping("/me/{channel}:verify")
+    public ApiResponse<AccountDTO.ProfileResponse> verifyContact(
+            Authentication authentication,
+            @PathVariable(name = "channel") String channel,
+            @Valid @RequestBody AccountDTO.VerifyContactRequest request) {
+        return ApiResponse.ok(accountService.verifyContact(authentication.getName(), channel, request));
+    }
+
+    /**
      * 获取当前用户的 MFA 因子列表
      */
     @GetMapping("/factors")
     public ApiResponse<List<AccountDTO.FactorResponse>> listFactors(Authentication authentication) {
         return ApiResponse.ok(accountService.listFactors(authentication.getName()));
+    }
+
+    /**
+     * 获取当前用户的账号安全状态
+     */
+    @GetMapping("/security")
+    public ApiResponse<AccountDTO.SecurityResponse> security(Authentication authentication) {
+        return ApiResponse.ok(accountService.getSecurity(authentication.getName()));
+    }
+
+    /**
+     * 更新当前用户是否主动启用登录 MFA
+     */
+    @PatchMapping("/security/mfa")
+    public ApiResponse<AccountDTO.SecurityResponse> updateMfaPreference(
+            Authentication authentication,
+            @RequestBody AccountDTO.UpdateMfaPreferenceRequest request) {
+        return ApiResponse.ok(accountService.updateMfaPreference(authentication.getName(), request));
     }
 
     /**

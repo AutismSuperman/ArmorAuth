@@ -188,16 +188,7 @@ public class OAuth2FrontendController {
         model.addAttribute("selectedLoginTab", resolveSelectedLoginTab(tab));
 
         if (error != null) {
-            String errorMessage = "用户名、密码或验证码不正确。";
-            HttpSession session = request.getSession(false);
-            if (session != null) {
-                Object authenticationException = session.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
-                if (authenticationException instanceof Exception exception && StringUtils.hasText(exception.getMessage())) {
-                    errorMessage = exception.getMessage();
-                }
-                session.removeAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
-            }
-            model.addAttribute("errorMessage", errorMessage);
+            model.addAttribute("errorMessage", resolveLoginErrorMessage(request));
         }
 
         return "login";
@@ -214,14 +205,16 @@ public class OAuth2FrontendController {
             if (exposeSmsOtp) {
                 return ResponseEntity.ok(Map.of(
                         "message", "验证码已发送，Mock 验证码：" + otp + "。",
-                        "captcha", otp
+                        "captcha", otp,
+                        "debugCode", otp
                 ));
             }
             return ResponseEntity.ok(Map.of("message", "验证码已发送，请查看短信。"));
         }
         return ResponseEntity.ok(Map.of(
                 "message", "验证码已发送，当前演示环境固定验证码为 1234。",
-                "captcha", "1234"
+                "captcha", "1234",
+                "debugCode", "1234"
         ));
     }
 
@@ -306,19 +299,7 @@ public class OAuth2FrontendController {
         }
         model.addAttribute("principal", principal);
         if (error != null) {
-            String errorMessage = "验证码不正确，请重试。";
-            HttpSession session = request.getSession(false);
-            if (session != null) {
-                Object authenticationException = session.getAttribute(
-                        org.springframework.security.web.WebAttributes.AUTHENTICATION_EXCEPTION);
-                if (authenticationException instanceof Exception exception
-                        && StringUtils.hasText(exception.getMessage())) {
-                    errorMessage = exception.getMessage();
-                }
-                session.removeAttribute(
-                        org.springframework.security.web.WebAttributes.AUTHENTICATION_EXCEPTION);
-            }
-            model.addAttribute("errorMessage", errorMessage);
+            model.addAttribute("errorMessage", resolveMfaErrorMessage(request));
         }
         return "mfa";
     }
@@ -489,6 +470,67 @@ public class OAuth2FrontendController {
 
     private void saveAuthenticationException(HttpServletRequest request, Exception exception) {
         request.getSession(true).setAttribute(WebAttributes.AUTHENTICATION_EXCEPTION, exception);
+    }
+
+    private String resolveLoginErrorMessage(HttpServletRequest request) {
+        String message = popAuthenticationExceptionMessage(request);
+        if (!StringUtils.hasText(message)) {
+            return "账号或密码不正确，请检查后重新登录。";
+        }
+        String normalizedMessage = message.trim();
+        if (containsHan(normalizedMessage)) {
+            return normalizedMessage;
+        }
+        String lowerMessage = normalizedMessage.toLowerCase(Locale.ROOT);
+        return switch (lowerMessage) {
+            case "user is disabled" -> "账号已被禁用，请联系管理员。";
+            case "user account is locked" -> "账号已被锁定，请稍后再试或联系管理员。";
+            case "user account has expired" -> "账号已过期，请联系管理员。";
+            case "user credentials have expired" -> "密码已过期，请联系管理员。";
+            default -> "账号或密码不正确，请检查后重新登录。";
+        };
+    }
+
+    private String resolveMfaErrorMessage(HttpServletRequest request) {
+        String message = popAuthenticationExceptionMessage(request);
+        if (!StringUtils.hasText(message)) {
+            return "验证码不正确，请检查后重试。";
+        }
+        String normalizedMessage = message.trim();
+        if (containsHan(normalizedMessage)) {
+            return normalizedMessage;
+        }
+        String lowerMessage = normalizedMessage.toLowerCase(Locale.ROOT);
+        return switch (lowerMessage) {
+            case "mfa factor not found" -> "当前二次验证方式不可用，请返回登录页重新登录。";
+            case "no mfa factors configured" -> "当前账号尚未配置二次验证方式，请返回登录页重新登录。";
+            default -> "验证码不正确，请检查后重试。";
+        };
+    }
+
+    private String popAuthenticationExceptionMessage(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+        try {
+            Object authenticationException = session.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
+            if (authenticationException instanceof Exception exception) {
+                return exception.getMessage();
+            }
+            return null;
+        } finally {
+            session.removeAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
+        }
+    }
+
+    private boolean containsHan(String value) {
+        for (int index = 0; index < value.length(); index++) {
+            if (Character.UnicodeScript.of(value.charAt(index)) == Character.UnicodeScript.HAN) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String resolveSelectedLoginTab(String tab) {

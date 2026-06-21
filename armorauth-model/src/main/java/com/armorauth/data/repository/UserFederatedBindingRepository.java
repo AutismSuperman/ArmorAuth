@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -33,6 +34,8 @@ public interface UserFederatedBindingRepository extends JpaRepository<UserFedera
     Optional<UserFederatedBinding> findByRegistrationIdAndProviderUserId(String registrationId, String providerUserId);
 
     Page<UserFederatedBinding> findByUserId(String userId, Pageable pageable);
+
+    List<UserFederatedBinding> findTop20ByUserIdOrderByLastLoginTimeDesc(String userId);
 
     Page<UserFederatedBinding> findByRegistrationId(String registrationId, Pageable pageable);
 

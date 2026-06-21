@@ -6,7 +6,7 @@
 
 账户自助 API 基础路径：`/api/account/v1`
 
-管理 API 使用 HTTP Basic 认证，默认本地管理员为 `admin / admin123`。生产环境必须替换默认管理员密码，并按角色控制访问。本文只记录当前代码中已经实现的 API 表面；OAuth 2.0 / OIDC 标准端点由 Spring Authorization Server 提供。
+管理 API 使用 HTTP Basic 认证，默认本地管理员为 `admin / admin123`。账户自助 API 使用登录后的同源 session。生产环境必须替换默认管理员密码，并按角色控制访问。本文只记录当前代码中已经实现的 API 表面；OAuth 2.0 / OIDC 标准端点由 Spring Authorization Server 提供。
 
 统一响应：
 
@@ -635,6 +635,8 @@ JWK 响应字段：`id`、`kid`、`keyType`、`algorithm`、`status`、`createdA
 | GET | `/api/account/v1/me` | 获取当前用户资料 |
 | PUT | `/api/account/v1/me` | 更新当前用户资料 |
 | POST | `/api/account/v1/password:change` | 修改当前用户密码 |
+| GET | `/api/account/v1/security` | 获取当前用户账号安全状态 |
+| PATCH | `/api/account/v1/security/mfa` | 更新当前用户登录 MFA 偏好 |
 | GET | `/api/account/v1/factors` | 获取当前用户 MFA 因子 |
 | POST | `/api/account/v1/factors/totp` | 初始化 TOTP 因子 |
 | POST | `/api/account/v1/factors/passkey:begin-registration` | 初始化 Passkey/WebAuthn 注册 |

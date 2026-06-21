@@ -38,6 +38,10 @@
             "captcha.sending": "发送中...",
             "captcha.sendFailed": "验证码发送失败，请稍后重试。",
             "captcha.sent": "验证码已发送。",
+            "captcha.sentWithMock": "验证码已发送。Mock 验证码：{code}",
+            "contact.sentWithMock": "{target}验证码已发送。Mock 验证码：{code}",
+            "contact.email": "邮箱",
+            "contact.phone": "手机号",
             "passkey.loginFailed": "Passkey 登录失败",
             "passkey.verifyFailed": "Passkey 验证失败",
             "passkey.requestFailed": "请求失败",
@@ -50,6 +54,7 @@
             "身份云控制台": "身份云控制台",
             "用户池 / 默认租户": "用户池 / 默认租户",
             "进入统一身份工作台": "进入统一身份工作台",
+            "使用你的 ArmorAuth 账号继续访问应用。": "使用你的 ArmorAuth 账号继续访问应用。",
             "集中处理账号认证、应用授权、MFA 与联合身份登录。": "集中处理账号认证、应用授权、MFA 与联合身份登录。",
             "认证体验": "认证体验",
             "Password / Captcha / Passkey": "Password / Captcha / Passkey",
@@ -69,17 +74,25 @@
             "登录 ArmorAuth": "登录 ArmorAuth",
             "选择一种认证方式继续访问应用。": "选择一种认证方式继续访问应用。",
             "您已成功退出当前会话。": "您已成功退出当前会话。",
+            "账号或密码不正确，请检查后重新登录。": "账号或密码不正确，请检查后重新登录。",
+            "账号已被禁用，请联系管理员。": "账号已被禁用，请联系管理员。",
+            "账号已被锁定，请稍后再试或联系管理员。": "账号已被锁定，请稍后再试或联系管理员。",
+            "账号已过期，请联系管理员。": "账号已过期，请联系管理员。",
+            "密码已过期，请联系管理员。": "密码已过期，请联系管理员。",
             "登录模式": "登录模式",
             "账号密码": "账号密码",
             "图形验证码": "图形验证码",
             "短信验证码": "短信验证码",
             "用户名": "用户名",
+            "邮箱或用户名": "邮箱或用户名",
+            "输入账号凭据后继续。": "输入账号凭据后继续。",
             "请输入用户名": "请输入用户名",
             "密码": "密码",
             "请输入密码": "请输入密码",
             "记住我": "记住我",
             "安全会话": "安全会话",
             "登录": "登录",
+            "下一步": "下一步",
             "使用 Passkey 登录": "使用 Passkey 登录",
             "获取验证码": "获取验证码",
             "手机号": "手机号",
@@ -93,6 +106,7 @@
             "更多登录方式": "更多登录方式",
             "收起登录方式": "收起登录方式",
             "登录即表示你正在使用 ArmorAuth 统一身份平台。": "登录即表示你正在使用 ArmorAuth 统一身份平台。",
+            "不是自己的电脑？请使用访客模式无痕登录。": "不是自己的电脑？请使用访客模式无痕登录。",
             "简体中文": "简体中文",
             "安全登录": "安全登录",
             "隐私保护": "隐私保护",
@@ -100,6 +114,9 @@
             "MFA Challenge": "MFA Challenge",
             "完成二次验证": "完成二次验证",
             "当前会话需要额外验证，确认后继续进入授权流程。": "当前会话需要额外验证，确认后继续进入授权流程。",
+            "验证码不正确，请检查后重试。": "验证码不正确，请检查后重试。",
+            "当前二次验证方式不可用，请返回登录页重新登录。": "当前二次验证方式不可用，请返回登录页重新登录。",
+            "当前账号尚未配置二次验证方式，请返回登录页重新登录。": "当前账号尚未配置二次验证方式，请返回登录页重新登录。",
             "二次验证状态": "二次验证状态",
             "账号已验证": "账号已验证",
             "等待 MFA": "等待 MFA",
@@ -114,9 +131,71 @@
             "使用 Passkey 验证": "使用 Passkey 验证",
             "如果无法使用身份验证器，请使用恢复码登录。": "如果无法使用身份验证器，请使用恢复码登录。",
             "控制台": "控制台",
+            "ArmorAuth 账号": "ArmorAuth 账号",
+            "个人账号中心": "个人账号中心",
+            "欢迎回来": "欢迎回来",
+            "查看账号安全、授权应用和登录会话。": "查看账号安全、授权应用和登录会话。",
+            "账号概览": "账号概览",
+            "个人信息": "个人信息",
+            "资料与联系方式": "资料与联系方式",
+            "安全性与登录": "安全性与登录",
+            "MFA / Passkey / 会话": "MFA / Passkey / 会话",
+            "关联的应用": "关联的应用",
+            "OAuth2 / OIDC 授权": "OAuth2 / OIDC 授权",
+            "数据和隐私设置": "数据和隐私设置",
+            "活动与审计": "活动与审计",
+            "管理你的账号、安全设置和授权应用。": "管理你的账号、安全设置和授权应用。",
+            "搜索 ArmorAuth 账号": "搜索 ArmorAuth 账号",
+            "账号快捷入口": "账号快捷入口",
+            "我的 MFA": "我的 MFA",
+            "设备": "设备",
+            "授权应用": "授权应用",
+            "登录活动": "登录活动",
             "退出登录": "退出登录",
             "首页": "首页",
             "你的账号服务已就绪。": "你的账号服务已就绪。",
+            "账号安全": "账号安全",
+            "正在检查 MFA 状态...": "正在检查 MFA 状态...",
+            "检查中": "检查中",
+            "登录二次验证": "登录二次验证",
+            "开启后，登录时需要验证 Authenticator 或恢复码。": "开启后，登录时需要验证 Authenticator 或恢复码。",
+            "切换登录二次验证": "切换登录二次验证",
+            "正在加载验证方法...": "正在加载验证方法...",
+            "添加 Authenticator": "添加 Authenticator",
+            "刷新": "刷新",
+            "Authenticator 设置": "Authenticator 设置",
+            "将 Secret 或 otpauth URI 添加到身份验证器应用，然后输入 6 位验证码完成绑定。": "将 Secret 或 otpauth URI 添加到身份验证器应用，然后输入 6 位验证码完成绑定。",
+            "Secret": "Secret",
+            "otpauth URI": "otpauth URI",
+            "复制": "复制",
+            "验证并启用": "验证并启用",
+            "取消": "取消",
+            "恢复码": "恢复码",
+            "请保存这些恢复码，身份验证器不可用时可用于登录。": "请保存这些恢复码，身份验证器不可用时可用于登录。",
+            "MFA 已启用": "MFA 已启用",
+            "MFA 未启用": "MFA 未启用",
+            "已有可用验证方法": "已有可用验证方法",
+            "尚未配置可用验证方法": "尚未配置可用验证方法",
+            "无 MFA 方法": "无 MFA 方法",
+            "未验证": "未验证",
+            "可用于登录": "可用于登录",
+            "等待运行时接入": "等待运行时接入",
+            "最近使用": "最近使用",
+            "从未使用": "从未使用",
+            "删除": "删除",
+            "删除该 MFA 方法？": "删除该 MFA 方法？",
+            "已复制": "已复制",
+            "账号安全状态加载失败": "账号安全状态加载失败",
+            "请先添加并验证一种 MFA 方法": "请先添加并验证一种 MFA 方法",
+            "MFA 设置更新失败": "MFA 设置更新失败",
+            "已启用登录 MFA": "已启用登录 MFA",
+            "已关闭登录 MFA": "已关闭登录 MFA",
+            "初始化 Authenticator 失败": "初始化 Authenticator 失败",
+            "请输入验证码": "请输入验证码",
+            "Authenticator 已验证，登录 MFA 已启用": "Authenticator 已验证，登录 MFA 已启用",
+            "验证码验证失败": "验证码验证失败",
+            "MFA 方法已删除": "MFA 方法已删除",
+            "删除 MFA 方法失败": "删除 MFA 方法失败",
             "快捷入口": "快捷入口",
             "1. 发起新的授权请求": "1. 发起新的授权请求",
             "2. 处理设备激活": "2. 处理设备激活",
@@ -235,6 +314,10 @@
             "captcha.sending": "Sending...",
             "captcha.sendFailed": "Failed to send the code. Please try again later.",
             "captcha.sent": "Code sent.",
+            "captcha.sentWithMock": "Code sent. Mock code: {code}",
+            "contact.sentWithMock": "{target} code sent. Mock code: {code}",
+            "contact.email": "Email",
+            "contact.phone": "Phone number",
             "passkey.loginFailed": "Passkey login failed",
             "passkey.verifyFailed": "Passkey verification failed",
             "passkey.requestFailed": "Request failed",
@@ -247,6 +330,7 @@
             "身份云控制台": "Identity Cloud Console",
             "用户池 / 默认租户": "User Pool / Default Tenant",
             "进入统一身份工作台": "Enter the Unified Identity Workspace",
+            "使用你的 ArmorAuth 账号继续访问应用。": "Use your ArmorAuth account to continue.",
             "集中处理账号认证、应用授权、MFA 与联合身份登录。": "Handle account authentication, app authorization, MFA, and federated sign-in in one place.",
             "认证体验": "Authentication",
             "Password / Captcha / Passkey": "Password / Captcha / Passkey",
@@ -266,17 +350,25 @@
             "登录 ArmorAuth": "Sign in to ArmorAuth",
             "选择一种认证方式继续访问应用。": "Choose an authentication method to continue.",
             "您已成功退出当前会话。": "You have successfully signed out of the current session.",
+            "账号或密码不正确，请检查后重新登录。": "The email, username, or password is incorrect. Please try again.",
+            "账号已被禁用，请联系管理员。": "This account is disabled. Contact an administrator.",
+            "账号已被锁定，请稍后再试或联系管理员。": "This account is locked. Try again later or contact an administrator.",
+            "账号已过期，请联系管理员。": "This account has expired. Contact an administrator.",
+            "密码已过期，请联系管理员。": "This password has expired. Contact an administrator.",
             "登录模式": "Sign-in method",
             "账号密码": "Password",
             "图形验证码": "Image Code",
             "短信验证码": "SMS Code",
             "用户名": "Username",
+            "邮箱或用户名": "Email or username",
+            "输入账号凭据后继续。": "Enter your account credentials to continue.",
             "请输入用户名": "Enter username",
             "密码": "Password",
             "请输入密码": "Enter password",
             "记住我": "Remember me",
             "安全会话": "Secure session",
             "登录": "Sign in",
+            "下一步": "Next",
             "使用 Passkey 登录": "Sign in with Passkey",
             "获取验证码": "Get code",
             "手机号": "Phone number",
@@ -290,6 +382,7 @@
             "更多登录方式": "More sign-in methods",
             "收起登录方式": "Collapse sign-in methods",
             "登录即表示你正在使用 ArmorAuth 统一身份平台。": "By signing in, you are using the ArmorAuth unified identity platform.",
+            "不是自己的电脑？请使用访客模式无痕登录。": "Not your computer? Use guest mode for private sign-in.",
             "简体中文": "English",
             "安全登录": "Secure sign-in",
             "隐私保护": "Privacy protection",
@@ -297,6 +390,9 @@
             "MFA Challenge": "MFA Challenge",
             "完成二次验证": "Complete multi-factor verification",
             "当前会话需要额外验证，确认后继续进入授权流程。": "This session requires an additional verification before continuing.",
+            "验证码不正确，请检查后重试。": "The verification code is incorrect. Please check and try again.",
+            "当前二次验证方式不可用，请返回登录页重新登录。": "This verification method is unavailable. Return to the sign-in page and try again.",
+            "当前账号尚未配置二次验证方式，请返回登录页重新登录。": "This account has no verification method configured. Return to the sign-in page and try again.",
             "二次验证状态": "MFA status",
             "账号已验证": "Account verified",
             "等待 MFA": "Awaiting MFA",
@@ -311,9 +407,71 @@
             "使用 Passkey 验证": "Verify with Passkey",
             "如果无法使用身份验证器，请使用恢复码登录。": "Use a recovery code if your authenticator is unavailable.",
             "控制台": "Console",
+            "ArmorAuth 账号": "ArmorAuth Account",
+            "个人账号中心": "Personal account center",
+            "欢迎回来": "Welcome back",
+            "查看账号安全、授权应用和登录会话。": "Review account security, authorized apps, and sign-in sessions.",
+            "账号概览": "Account overview",
+            "个人信息": "Personal info",
+            "资料与联系方式": "Profile and contact details",
+            "安全性与登录": "Security and sign-in",
+            "MFA / Passkey / 会话": "MFA / Passkey / Sessions",
+            "关联的应用": "Connected apps",
+            "OAuth2 / OIDC 授权": "OAuth2 / OIDC grants",
+            "数据和隐私设置": "Data and privacy",
+            "活动与审计": "Activity and audit",
+            "管理你的账号、安全设置和授权应用。": "Manage your account, security settings, and authorized apps.",
+            "搜索 ArmorAuth 账号": "Search ArmorAuth Account",
+            "账号快捷入口": "Account shortcuts",
+            "我的 MFA": "My MFA",
+            "设备": "Devices",
+            "授权应用": "Authorized apps",
+            "登录活动": "Sign-in activity",
             "退出登录": "Sign out",
             "首页": "Home",
             "你的账号服务已就绪。": "Your account services are ready.",
+            "账号安全": "Account security",
+            "正在检查 MFA 状态...": "Checking MFA status...",
+            "检查中": "Checking",
+            "登录二次验证": "Login MFA",
+            "开启后，登录时需要验证 Authenticator 或恢复码。": "When enabled, sign-in requires an authenticator or recovery code.",
+            "切换登录二次验证": "Toggle login MFA",
+            "正在加载验证方法...": "Loading verification methods...",
+            "添加 Authenticator": "Add Authenticator",
+            "刷新": "Refresh",
+            "Authenticator 设置": "Authenticator setup",
+            "将 Secret 或 otpauth URI 添加到身份验证器应用，然后输入 6 位验证码完成绑定。": "Add the Secret or otpauth URI to your authenticator app, then enter the 6-digit code.",
+            "Secret": "Secret",
+            "otpauth URI": "otpauth URI",
+            "复制": "Copy",
+            "验证并启用": "Verify and enable",
+            "取消": "Cancel",
+            "恢复码": "Recovery codes",
+            "请保存这些恢复码，身份验证器不可用时可用于登录。": "Save these recovery codes. They can be used when your authenticator is unavailable.",
+            "MFA 已启用": "MFA enabled",
+            "MFA 未启用": "MFA disabled",
+            "已有可用验证方法": "A verification method is ready",
+            "尚未配置可用验证方法": "No usable verification method yet",
+            "无 MFA 方法": "No MFA methods",
+            "未验证": "Unverified",
+            "可用于登录": "Ready for sign-in",
+            "等待运行时接入": "Runtime pending",
+            "最近使用": "Last used",
+            "从未使用": "Never used",
+            "删除": "Delete",
+            "删除该 MFA 方法？": "Delete this MFA method?",
+            "已复制": "Copied",
+            "账号安全状态加载失败": "Failed to load account security status",
+            "请先添加并验证一种 MFA 方法": "Add and verify an MFA method first",
+            "MFA 设置更新失败": "Failed to update MFA settings",
+            "已启用登录 MFA": "Login MFA enabled",
+            "已关闭登录 MFA": "Login MFA disabled",
+            "初始化 Authenticator 失败": "Failed to initialize Authenticator",
+            "请输入验证码": "Enter the verification code",
+            "Authenticator 已验证，登录 MFA 已启用": "Authenticator verified and login MFA enabled",
+            "验证码验证失败": "Failed to verify the code",
+            "MFA 方法已删除": "MFA method deleted",
+            "删除 MFA 方法失败": "Failed to delete MFA method",
             "快捷入口": "Quick Actions",
             "1. 发起新的授权请求": "1. Start a new authorization request",
             "2. 处理设备激活": "2. Handle device activation",
@@ -685,6 +843,637 @@
         });
     });
 
+    /* ===== 登录后账号安全自助 ===== */
+    const accountSecurityPanel = document.querySelector("[data-account-security]");
+    if (accountSecurityPanel) {
+        const statusBadge = accountSecurityPanel.querySelector("[data-mfa-status]");
+        const summary = accountSecurityPanel.querySelector("[data-mfa-summary]");
+        const toggle = accountSecurityPanel.querySelector("[data-mfa-toggle]");
+        const factorList = accountSecurityPanel.querySelector("[data-factor-list]");
+        const refreshButton = accountSecurityPanel.querySelector("[data-factor-refresh]");
+        const setupButton = accountSecurityPanel.querySelector("[data-totp-setup]");
+        const setupPanel = accountSecurityPanel.querySelector("[data-totp-panel]");
+        const secretField = accountSecurityPanel.querySelector("[data-totp-secret]");
+        const uriField = accountSecurityPanel.querySelector("[data-totp-uri]");
+        const codeInput = accountSecurityPanel.querySelector("[data-totp-code]");
+        const verifyButton = accountSecurityPanel.querySelector("[data-totp-verify]");
+        const cancelButton = accountSecurityPanel.querySelector("[data-totp-cancel]");
+        const recoveryPanel = accountSecurityPanel.querySelector("[data-recovery-panel]");
+        const recoveryCodes = accountSecurityPanel.querySelector("[data-recovery-codes]");
+        const copyButtons = accountSecurityPanel.querySelectorAll("[data-copy-field]");
+        const totpQr = accountSecurityPanel.querySelector("[data-totp-qr]");
+        const totpQrEmpty = accountSecurityPanel.querySelector("[data-totp-qr-empty]");
+        const totpOpen = accountSecurityPanel.querySelector("[data-totp-open]");
+        const accountCenter = document.querySelector("[data-account-center]");
+        const accountSections = document.querySelectorAll("[data-account-section]");
+        const sectionButtons = document.querySelectorAll("[data-account-section-target]");
+        const profileForm = document.querySelector("[data-profile-form]");
+        const profileRefreshButton = document.querySelector("[data-profile-refresh]");
+        const profileStatus = document.querySelector("[data-profile-status]");
+        const overviewProfile = document.querySelector("[data-overview-profile]");
+        const overviewSecurity = document.querySelector("[data-overview-security]");
+        const profileFields = {
+            displayName: document.querySelector("[data-profile-field='displayName']"),
+            email: document.querySelector("[data-profile-field='email']"),
+            phone: document.querySelector("[data-profile-field='phone']"),
+            profile: document.querySelector("[data-profile-field='profile']")
+        };
+
+        let accountSecurity = {
+            mfaEnabled: false,
+            hasRuntimeFactor: false,
+            mfaRequiredAtLogin: false,
+            factors: []
+        };
+        let accountProfile = null;
+        let profileLoaded = false;
+        const contactCodeRequested = {
+            email: false,
+            phone: false
+        };
+        let pendingTotpSetup = null;
+        let securityBusy = false;
+
+        const accountRequest = async (path, options) => {
+            const requestOptions = options || {};
+            const headers = {
+                "Accept": "application/json",
+                ...(requestOptions.headers || {})
+            };
+            const response = await window.fetch("/api/account/v1" + path, {
+                credentials: "same-origin",
+                ...requestOptions,
+                headers
+            });
+            const text = await response.text();
+            let body = null;
+            if (text) {
+                try {
+                    body = JSON.parse(text);
+                } catch (error) {
+                    throw new Error(response.statusText || t("账号安全状态加载失败"));
+                }
+            }
+            if (!response.ok || (body && typeof body.code === "number" && body.code >= 400)) {
+                throw new Error(body?.message || response.statusText || t("账号安全状态加载失败"));
+            }
+            return body?.data;
+        };
+
+        const accountJsonRequest = (path, method, payload) => accountRequest(path, {
+            method,
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: payload === undefined ? undefined : JSON.stringify(payload)
+        });
+
+        const normalizeSecurity = (payload) => ({
+            mfaEnabled: Boolean(payload?.mfaEnabled),
+            hasRuntimeFactor: Boolean(payload?.hasRuntimeFactor),
+            mfaRequiredAtLogin: Boolean(payload?.mfaRequiredAtLogin),
+            factors: Array.isArray(payload?.factors) ? payload.factors : []
+        });
+
+        const setButtonBusy = (button, busy) => {
+            if (!button) {
+                return;
+            }
+            button.disabled = busy;
+            button.classList.toggle("is-loading", busy);
+        };
+
+        const contactLabel = (channel) => t(channel === "email" ? "contact.email" : "contact.phone");
+
+        const updateContactView = (channel, value, verified) => {
+            const status = document.querySelector("[data-contact-status='" + channel + "']");
+            const summary = document.querySelector("[data-contact-summary='" + channel + "']");
+            const sendButton = document.querySelector("[data-send-contact-code='" + channel + "']");
+            const verifyButton = document.querySelector("[data-verify-contact='" + channel + "']");
+            const codeInput = document.querySelector("[data-contact-code='" + channel + "']");
+            const codeRow = document.querySelector("[data-contact-code-row='" + channel + "']");
+            const currentValue = value?.trim() || "";
+            const savedValue = ((channel === "email" ? accountProfile?.email : accountProfile?.phone) || "").trim();
+            const hasValue = Boolean(currentValue);
+            const isSavedValue = hasValue && currentValue === savedValue;
+            const isVerified = isSavedValue && verified;
+            const canRequestCode = hasValue && isSavedValue && !isVerified;
+            const showCodeRow = canRequestCode && Boolean(contactCodeRequested[channel]);
+            if (status) {
+                status.className = "account-security-badge";
+                status.textContent = isVerified ? t("已验证") : t("未验证");
+                if (!isVerified) {
+                    status.classList.add("is-muted");
+                }
+            }
+            if (summary) {
+                if (!hasValue) {
+                    summary.textContent = t("填写并保存后可验证。");
+                } else if (!isSavedValue) {
+                    summary.textContent = t("先保存新的联系方式，再发送验证码。");
+                } else if (isVerified) {
+                    summary.textContent = t("已验证，可用于账号安全通知。");
+                } else if (showCodeRow) {
+                    summary.textContent = t("验证码已发送，请输入验证码完成验证。");
+                } else {
+                    summary.textContent = t("点击发送验证码完成验证。");
+                }
+            }
+            if (sendButton) {
+                sendButton.disabled = !canRequestCode;
+            }
+            if (verifyButton) {
+                verifyButton.disabled = !showCodeRow;
+            }
+            if (codeInput) {
+                codeInput.disabled = !showCodeRow;
+                if (!showCodeRow) {
+                    codeInput.value = "";
+                }
+            }
+            if (codeRow) {
+                codeRow.hidden = !showCodeRow;
+            }
+        };
+
+        const renderProfile = (profile) => {
+            accountProfile = profile || {};
+            const displayName = accountProfile.displayName || accountProfile.username || "";
+            if (profileFields.displayName) {
+                profileFields.displayName.value = accountProfile.displayName || "";
+            }
+            if (profileFields.email) {
+                profileFields.email.value = accountProfile.email || "";
+            }
+            if (profileFields.phone) {
+                profileFields.phone.value = accountProfile.phone || "";
+            }
+            if (profileFields.profile) {
+                profileFields.profile.value = accountProfile.profile || "";
+            }
+            document.querySelectorAll("[data-i18n-template='home.welcome']").forEach((element) => {
+                element.dataset.i18nValueName = displayName || accountProfile.username || "";
+                element.textContent = t("home.welcome", {name: element.dataset.i18nValueName});
+            });
+            if (profileStatus) {
+                const contactsVerified = Boolean(accountProfile.emailVerified) && Boolean(accountProfile.phoneVerified);
+                profileStatus.className = "account-security-badge";
+                profileStatus.textContent = contactsVerified ? t("联系方式已验证") : t("联系方式待验证");
+                if (!contactsVerified) {
+                    profileStatus.classList.add("is-warning");
+                }
+            }
+            if (overviewProfile) {
+                const verifiedCount = [accountProfile.emailVerified, accountProfile.phoneVerified].filter(Boolean).length;
+                overviewProfile.textContent = "邮箱/手机号已验证 " + verifiedCount + "/2";
+            }
+            contactCodeRequested.email = false;
+            contactCodeRequested.phone = false;
+            updateContactView("email", accountProfile.email, Boolean(accountProfile.emailVerified));
+            updateContactView("phone", accountProfile.phone, Boolean(accountProfile.phoneVerified));
+        };
+
+        const loadProfile = async () => {
+            setButtonBusy(profileRefreshButton, true);
+            try {
+                const profile = await accountRequest("/me");
+                profileLoaded = true;
+                renderProfile(profile);
+            } catch (error) {
+                window.showToast?.(error.message || t("个人信息加载失败"), "error");
+            } finally {
+                setButtonBusy(profileRefreshButton, false);
+            }
+        };
+
+        const saveProfile = async () => {
+            setButtonBusy(profileForm?.querySelector("button[type='submit']"), true);
+            try {
+                const payload = {
+                    displayName: profileFields.displayName?.value.trim() || null,
+                    email: profileFields.email?.value.trim() || null,
+                    phone: profileFields.phone?.value.trim() || null,
+                    profile: profileFields.profile?.value.trim() || null
+                };
+                const profile = await accountJsonRequest("/me", "PUT", payload);
+                profileLoaded = true;
+                renderProfile(profile);
+                window.showToast?.(t("个人信息已保存"), "success");
+            } catch (error) {
+                window.showToast?.(error.message || t("个人信息保存失败"), "error");
+            } finally {
+                setButtonBusy(profileForm?.querySelector("button[type='submit']"), false);
+            }
+        };
+
+        const setContactMessage = (channel, message, type) => {
+            const messageNode = document.querySelector("[data-contact-message='" + channel + "']");
+            if (!messageNode) {
+                return;
+            }
+            messageNode.textContent = message || "";
+            messageNode.className = type ? "is-" + type : "";
+        };
+
+        const sendContactCode = async (channel, button) => {
+            setButtonBusy(button, true);
+            setContactMessage(channel, "", "");
+            try {
+                const result = await accountJsonRequest("/me/" + encodeURIComponent(channel) + ":send-verification-code", "POST");
+                contactCodeRequested[channel] = true;
+                updateContactView(channel, profileFields[channel]?.value || "", Boolean(accountProfile?.[channel + "Verified"]));
+                const debugCode = result?.debugCode || result?.captcha || "";
+                setContactMessage(channel, debugCode
+                        ? t("contact.sentWithMock", {target: contactLabel(channel), code: debugCode})
+                        : (result?.message || t("验证码已发送")), "success");
+                const codeInput = document.querySelector("[data-contact-code='" + channel + "']");
+                if (debugCode && codeInput) {
+                    codeInput.value = debugCode;
+                }
+                codeInput?.focus();
+            } catch (error) {
+                setContactMessage(channel, error.message || t("验证码发送失败"), "error");
+            } finally {
+                setButtonBusy(button, false);
+            }
+        };
+
+        const verifyContact = async (channel, button) => {
+            const codeInput = document.querySelector("[data-contact-code='" + channel + "']");
+            const code = codeInput?.value.trim() || "";
+            if (!code) {
+                setContactMessage(channel, t("请输入验证码"), "error");
+                codeInput?.focus();
+                return;
+            }
+            setButtonBusy(button, true);
+            try {
+                const profile = await accountJsonRequest("/me/" + encodeURIComponent(channel) + ":verify", "POST", {code});
+                renderProfile(profile);
+                setContactMessage(channel, t("验证已完成"), "success");
+                window.showToast?.(t("联系方式验证成功"), "success");
+            } catch (error) {
+                setContactMessage(channel, error.message || t("验证码验证失败"), "error");
+            } finally {
+                setButtonBusy(button, false);
+            }
+        };
+
+        const factorTypeLabel = (type) => {
+            if (type === "TOTP") {
+                return "Authenticator app";
+            }
+            if (type === "WEBAUTHN") {
+                return "Passkey";
+            }
+            if (type === "SMS_OTP") {
+                return "Text message";
+            }
+            if (type === "EMAIL_OTP") {
+                return "Email code";
+            }
+            return type || "MFA";
+        };
+
+        const runtimeLabel = (factor) => {
+            if (factor?.verified && factor?.enabled && factor?.runtimeSupport === "ready") {
+                return t("可用于登录");
+            }
+            if (factor?.verified && factor?.enabled && factor?.runtimeSupport === "passkey_assertion_ready") {
+                return t("可用于登录");
+            }
+            if (factor?.verified) {
+                return t("等待运行时接入");
+            }
+            return t("未验证");
+        };
+
+        const isFactorReady = (factor) => {
+            return Boolean(factor?.verified && factor?.enabled
+                    && (factor?.runtimeSupport === "ready" || factor?.runtimeSupport === "passkey_assertion_ready"));
+        };
+
+        const formatAccountDate = (value) => {
+            if (!value) {
+                return t("从未使用");
+            }
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return value;
+            }
+            return date.toLocaleString(currentLocale === "en" ? "en-US" : "zh-CN");
+        };
+
+        const renderFactorList = () => {
+            if (!factorList) {
+                return;
+            }
+            factorList.replaceChildren();
+            const factors = accountSecurity.factors || [];
+            if (factors.length === 0) {
+                const empty = document.createElement("div");
+                empty.className = "factor-empty";
+                empty.textContent = t("无 MFA 方法");
+                factorList.appendChild(empty);
+                return;
+            }
+
+            factors.forEach((factor) => {
+                const item = document.createElement("div");
+                item.className = "factor-item";
+
+                const copy = document.createElement("div");
+                copy.className = "factor-copy";
+
+                const title = document.createElement("strong");
+                title.textContent = factorTypeLabel(factor.factorType) + (factor.name ? " · " + factor.name : "");
+
+                const meta = document.createElement("span");
+                meta.textContent = t("最近使用") + ": " + formatAccountDate(factor.lastUsedAt);
+
+                const status = document.createElement("span");
+                status.className = "factor-status";
+                if (isFactorReady(factor)) {
+                    status.classList.add("is-ready");
+                }
+                status.textContent = runtimeLabel(factor);
+
+                copy.append(title, meta, status);
+
+                const deleteButton = document.createElement("button");
+                deleteButton.type = "button";
+                deleteButton.className = "factor-delete";
+                deleteButton.textContent = t("删除");
+                deleteButton.addEventListener("click", () => deleteFactor(factor.id));
+
+                item.append(copy, deleteButton);
+                factorList.appendChild(item);
+            });
+        };
+
+        const renderSecurity = () => {
+            const mfaActive = Boolean(accountSecurity.mfaRequiredAtLogin);
+            if (statusBadge) {
+                statusBadge.className = "account-security-badge";
+                if (mfaActive) {
+                    statusBadge.textContent = t("MFA 已启用");
+                } else {
+                    statusBadge.textContent = t("MFA 未启用");
+                    statusBadge.classList.add(accountSecurity.hasRuntimeFactor ? "is-warning" : "is-muted");
+                }
+            }
+            if (summary) {
+                summary.textContent = accountSecurity.hasRuntimeFactor
+                        ? t("已有可用验证方法")
+                        : t("尚未配置可用验证方法");
+            }
+            if (overviewSecurity) {
+                overviewSecurity.textContent = mfaActive
+                        ? t("登录 MFA 已启用")
+                        : (accountSecurity.hasRuntimeFactor ? t("已有 MFA 方法，未要求登录验证") : t("尚未配置 MFA 方法"));
+            }
+            if (toggle) {
+                toggle.setAttribute("aria-pressed", mfaActive ? "true" : "false");
+                toggle.disabled = securityBusy || (!accountSecurity.hasRuntimeFactor && !mfaActive);
+            }
+            renderFactorList();
+        };
+
+        const loadSecurity = async () => {
+            securityBusy = true;
+            setButtonBusy(refreshButton, true);
+            renderSecurity();
+            try {
+                accountSecurity = normalizeSecurity(await accountRequest("/security"));
+                renderSecurity();
+            } catch (error) {
+                window.showToast?.(error.message || t("账号安全状态加载失败"), "error");
+                if (factorList) {
+                    const empty = document.createElement("div");
+                    empty.className = "factor-empty";
+                    empty.textContent = t("账号安全状态加载失败");
+                    factorList.replaceChildren(empty);
+                }
+            } finally {
+                securityBusy = false;
+                setButtonBusy(refreshButton, false);
+                renderSecurity();
+            }
+        };
+
+        const updateMfaPreference = async (enabled) => {
+            if (enabled && !accountSecurity.hasRuntimeFactor) {
+                window.showToast?.(t("请先添加并验证一种 MFA 方法"), "warning");
+                return;
+            }
+            securityBusy = true;
+            setButtonBusy(toggle, true);
+            try {
+                accountSecurity = normalizeSecurity(await accountJsonRequest("/security/mfa", "PATCH", {enabled}));
+                window.showToast?.(enabled ? t("已启用登录 MFA") : t("已关闭登录 MFA"), "success");
+            } catch (error) {
+                window.showToast?.(error.message || t("MFA 设置更新失败"), "error");
+            } finally {
+                securityBusy = false;
+                setButtonBusy(toggle, false);
+                renderSecurity();
+            }
+        };
+
+        const showTotpSetup = (setup) => {
+            pendingTotpSetup = setup;
+            if (secretField) {
+                secretField.textContent = setup?.secret || "-";
+            }
+            if (uriField) {
+                uriField.textContent = setup?.uri || "-";
+            }
+            if (totpQr) {
+                totpQr.hidden = !setup?.qrCodeDataUri;
+                if (setup?.qrCodeDataUri) {
+                    totpQr.src = setup.qrCodeDataUri;
+                }
+            }
+            if (totpQrEmpty) {
+                totpQrEmpty.hidden = Boolean(setup?.qrCodeDataUri);
+            }
+            if (totpOpen) {
+                totpOpen.hidden = !setup?.uri;
+                if (setup?.uri) {
+                    totpOpen.href = setup.uri;
+                }
+            }
+            if (codeInput) {
+                codeInput.value = "";
+            }
+            if (recoveryCodes && recoveryPanel) {
+                recoveryCodes.replaceChildren();
+                const codes = Array.isArray(setup?.recoveryCodes) ? setup.recoveryCodes : [];
+                recoveryPanel.hidden = codes.length === 0;
+                codes.forEach((value) => {
+                    const code = document.createElement("code");
+                    code.textContent = value;
+                    recoveryCodes.appendChild(code);
+                });
+            }
+            if (setupPanel) {
+                setupPanel.hidden = false;
+            }
+            codeInput?.focus();
+        };
+
+        const hideTotpSetup = () => {
+            pendingTotpSetup = null;
+            if (setupPanel) {
+                setupPanel.hidden = true;
+            }
+            if (codeInput) {
+                codeInput.value = "";
+            }
+            if (totpQr) {
+                totpQr.hidden = true;
+                totpQr.removeAttribute("src");
+            }
+            if (totpQrEmpty) {
+                totpQrEmpty.hidden = false;
+            }
+            if (totpOpen) {
+                totpOpen.hidden = true;
+                totpOpen.href = "#";
+            }
+        };
+
+        const startTotpSetup = async () => {
+            setButtonBusy(setupButton, true);
+            try {
+                const setup = await accountJsonRequest("/factors/totp", "POST");
+                showTotpSetup(setup || {});
+            } catch (error) {
+                window.showToast?.(error.message || t("初始化 Authenticator 失败"), "error");
+            } finally {
+                setButtonBusy(setupButton, false);
+            }
+        };
+
+        const verifyTotpSetup = async () => {
+            const code = codeInput?.value.trim() || "";
+            if (!pendingTotpSetup?.factorId || !code) {
+                window.showToast?.(t("请输入验证码"), "warning");
+                codeInput?.focus();
+                return;
+            }
+            setButtonBusy(verifyButton, true);
+            try {
+                await accountJsonRequest("/factors/" + encodeURIComponent(pendingTotpSetup.factorId) + ":verify", "POST", {code});
+                accountSecurity = normalizeSecurity(await accountJsonRequest("/security/mfa", "PATCH", {enabled: true}));
+                window.showToast?.(t("Authenticator 已验证，登录 MFA 已启用"), "success");
+                hideTotpSetup();
+                renderSecurity();
+            } catch (error) {
+                window.showToast?.(error.message || t("验证码验证失败"), "error");
+            } finally {
+                setButtonBusy(verifyButton, false);
+            }
+        };
+
+        const deleteFactor = async (factorId) => {
+            if (!factorId || !window.confirm(t("删除该 MFA 方法？"))) {
+                return;
+            }
+            try {
+                await accountRequest("/factors/" + encodeURIComponent(factorId), {method: "DELETE"});
+                window.showToast?.(t("MFA 方法已删除"), "success");
+                await loadSecurity();
+            } catch (error) {
+                window.showToast?.(error.message || t("删除 MFA 方法失败"), "error");
+            }
+        };
+
+        const copyField = async (fieldName) => {
+            const value = fieldName === "uri" ? uriField?.textContent : secretField?.textContent;
+            if (!value || value === "-") {
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(value);
+                window.showToast?.(t("已复制"), "success", 1800);
+            } catch {
+                window.showToast?.(value, "info", 5000);
+            }
+        };
+
+        const activateAccountSection = (sectionName) => {
+            const target = sectionName || "home";
+            accountSections.forEach((section) => {
+                const active = section.dataset.accountSection === target;
+                section.hidden = !active;
+                section.classList.toggle("is-active", active);
+            });
+            sectionButtons.forEach((button) => {
+                button.classList.toggle("is-active", button.dataset.accountSectionTarget === target);
+            });
+            if (target === "profile" && !profileLoaded) {
+                loadProfile();
+            }
+            if (target === "security") {
+                loadSecurity();
+            }
+        };
+
+        profileForm?.addEventListener("submit", (event) => {
+            event.preventDefault();
+            saveProfile();
+        });
+        profileRefreshButton?.addEventListener("click", loadProfile);
+        ["email", "phone"].forEach((channel) => {
+            profileFields[channel]?.addEventListener("input", () => {
+                contactCodeRequested[channel] = false;
+                const savedValue = ((channel === "email" ? accountProfile?.email : accountProfile?.phone) || "").trim();
+                const currentValue = profileFields[channel]?.value.trim() || "";
+                const verified = currentValue === savedValue && Boolean(accountProfile?.[channel + "Verified"]);
+                updateContactView(channel, currentValue, verified);
+                setContactMessage(channel, "", "");
+            });
+        });
+        document.querySelectorAll("[data-send-contact-code]").forEach((button) => {
+            button.addEventListener("click", () => sendContactCode(button.dataset.sendContactCode, button));
+        });
+        document.querySelectorAll("[data-verify-contact]").forEach((button) => {
+            button.addEventListener("click", () => verifyContact(button.dataset.verifyContact, button));
+        });
+        document.querySelectorAll("[data-contact-code]").forEach((input) => {
+            input.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    const channel = input.dataset.contactCode;
+                    const button = document.querySelector("[data-verify-contact='" + channel + "']");
+                    verifyContact(channel, button);
+                }
+            });
+        });
+        sectionButtons.forEach((button) => {
+            button.addEventListener("click", () => activateAccountSection(button.dataset.accountSectionTarget));
+        });
+
+        toggle?.addEventListener("click", () => updateMfaPreference(toggle.getAttribute("aria-pressed") !== "true"));
+        refreshButton?.addEventListener("click", loadSecurity);
+        setupButton?.addEventListener("click", startTotpSetup);
+        verifyButton?.addEventListener("click", verifyTotpSetup);
+        cancelButton?.addEventListener("click", hideTotpSetup);
+        codeInput?.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                verifyTotpSetup();
+            }
+        });
+        copyButtons.forEach((button) => {
+            button.addEventListener("click", () => copyField(button.dataset.copyField));
+        });
+
+        loadSecurity();
+        loadProfile();
+    }
+
     /* ===== 验证码相关 ===== */
     const setCaptchaFeedback = (container, message, type) => {
         if (!container) {
@@ -741,6 +1530,7 @@
     document.querySelectorAll("[data-captcha-send]").forEach((button) => {
         const form = button.closest("form");
         const accountInput = form?.querySelector("input[name='account']");
+        const captchaInput = form?.querySelector("input[name='captcha']");
         const feedback = form?.querySelector("[data-captcha-feedback]");
         let countdownTimer = null;
         let remainingSeconds = 0;
@@ -799,7 +1589,14 @@
                 if (!response.ok) {
                     throw new Error(result.message || t("captcha.sendFailed"));
                 }
-                setCaptchaFeedback(feedback, result.message || t("captcha.sent"), "success");
+                const debugCode = result?.debugCode || result?.captcha || "";
+                setCaptchaFeedback(feedback, debugCode
+                        ? t("captcha.sentWithMock", {code: debugCode})
+                        : (result.message || t("captcha.sent")), "success");
+                if (debugCode && captchaInput) {
+                    captchaInput.value = debugCode;
+                    captchaInput.focus();
+                }
                 startCountdown();
             } catch (error) {
                 setCaptchaFeedback(feedback, error.message || t("captcha.sendFailed"), "error");

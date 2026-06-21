@@ -74,6 +74,9 @@ public class UserInfo implements Serializable {
     @Column(name = "phone_verified")
     private Boolean phoneVerified;
 
+    @Column(name = "mfa_enabled", nullable = false)
+    private Boolean mfaEnabled = false;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Column(name = "locked_until")
     private Instant lockedUntil;
