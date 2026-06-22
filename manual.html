@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="ArmorAuth 功能操作手册：租户、应用、用户、MFA、身份源、审计、Webhook 和安全运营流程。"
+      content="ArmorAuth 功能操作手册：租户、应用、OAuth2/OIDC 协议接入、用户、MFA、身份源、SCIM、Webhook、JWK 和安全运营流程。"
     />
     <title>ArmorAuth 功能操作手册</title>
     <link rel="icon" href="./assets/logo-mark.svg" type="image/svg+xml" />
@@ -66,10 +66,14 @@
             <a class="active" href="#overview">介绍</a>
             <a href="#tenant">租户与组织</a>
             <a href="#application">应用接入</a>
+            <a href="#oauth2">OAuth2/OIDC</a>
             <a href="#user">用户与联系方式</a>
+            <a href="#authorization">角色与权限</a>
             <a href="#security">MFA 与安全</a>
             <a href="#federation">身份源</a>
+            <a href="#scim">SCIM 同步</a>
             <a href="#operation">审计与 Webhook</a>
+            <a href="#advanced">高级协议状态</a>
           </div>
           <div class="nav-group">
             <strong>继续阅读</strong>
@@ -88,18 +92,38 @@
           <div class="eyebrow">Operator guide</div>
           <h1>功能操作手册</h1>
           <p class="lead">
-            面向管理员和平台工程团队，按日常运营路径说明租户建模、应用接入、用户资料、安全策略、身份源和审计事件。
+            面向管理员和平台工程团队，按真实运营顺序说明 ArmorAuth 的租户建模、OAuth2/OIDC 应用接入、
+            用户治理、账号安全、身份源同步和审计运维。
           </p>
+        </section>
+
+        <section class="doc-section" id="first-token">
+          <h2>从空环境到第一枚 Token</h2>
+          <p>本地或测试环境建议先跑通一条最短链路，再逐步打开多租户、MFA、身份源和 Webhook。</p>
+          <ol class="flow-list">
+            <li><strong>确认 issuer：</strong>固定服务访问地址，生产环境必须启用 HTTPS，避免后续 Client 和资源服务器重复迁移。</li>
+            <li><strong>创建租户：</strong>确定租户编码、域名或路径策略，确认是否需要组织层级。</li>
+            <li><strong>创建应用：</strong>按应用类型选择授权类型、Client 认证方式、Scope、回调地址和退出回调地址。</li>
+            <li><strong>复制端点：</strong>从应用端点详情或 Discovery 获取 authorize、token、JWKS、userinfo 等地址。</li>
+            <li><strong>验证 Token：</strong>用授权码、客户端凭据或设备码换取 Token，再由业务 API 验签和校验 Scope。</li>
+          </ol>
+          <figure class="article-image">
+            <a class="image-link" href="./assets/screenshots/admin-home.png">
+              <img src="./assets/screenshots/admin-home.png" alt="ArmorAuth admin dashboard screenshot" />
+            </a>
+            <figcaption><strong>管理控制台：</strong>应用、租户、用户、安全策略和审计能力从后台统一进入。点击图片可放大查看。</figcaption>
+          </figure>
         </section>
 
         <section class="doc-section" id="tenant">
           <h2>租户与组织</h2>
-          <p>租户用于归集应用、用户、组织和租户感知路径。组织只在授权、报表或业务边界需要层级关系时使用。</p>
+          <p>租户用于归集应用、用户、组织和租户感知路径。组织用于承载部门、业务单元或客户侧层级，不需要授权边界时可以不创建。</p>
           <h3>操作建议</h3>
           <ul class="check-list">
             <li>先创建稳定的租户编码，避免后续 issuer 或 <code>/t/{tenantCode}</code> 路径变化。</li>
             <li>只在组织会影响授权、报表或运营边界时创建层级组织。</li>
             <li>把组织成员角色和全局角色分开维护，避免高权限账号扩散。</li>
+            <li>租户停用前先检查应用、身份源、Webhook 和用户同步任务是否仍在运行。</li>
           </ul>
           <figure class="article-image">
             <a class="image-link" href="./assets/screenshots/admin-tenants.png">
@@ -111,29 +135,109 @@
 
         <section class="doc-section" id="application">
           <h2>应用接入</h2>
-          <p>应用就是 OAuth2/OIDC Client。创建时先确定所属租户，再配置授权类型、认证方式、Scope、回调地址和安全策略。</p>
-          <h3>配置顺序</h3>
-          <ul class="check-list">
-            <li>浏览器和移动端优先使用 Authorization Code + PKCE。</li>
-            <li>服务间调用使用 Client Credentials，并限制最小 Scope。</li>
-            <li>敏感应用开启应用级 MFA，并在端点详情里复制 discovery、token、JWKS 等 URL。</li>
-          </ul>
+          <p>应用代表 OAuth2/OIDC Client。创建时先选择所属租户，再确定授权类型、认证方式、Scope、回调地址和安全策略。</p>
+          <div class="config-table-wrap">
+            <table class="config-table">
+              <thead>
+                <tr>
+                  <th>应用类型</th>
+                  <th>推荐授权类型</th>
+                  <th>认证方式</th>
+                  <th>配置重点</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>服务端 Web / BFF</td>
+                  <td><code>authorization_code</code> + <code>refresh_token</code></td>
+                  <td><code>client_secret_basic</code> 或 <code>private_key_jwt</code></td>
+                  <td>固定 redirect URI、post logout URI、最小 Scope、应用级 MFA。</td>
+                </tr>
+                <tr>
+                  <td>SPA / 移动端</td>
+                  <td><code>authorization_code</code> + PKCE</td>
+                  <td>公共客户端，不保存 secret</td>
+                  <td>必须发送 PKCE，限制回调地址，避免隐式授权流程。</td>
+                </tr>
+                <tr>
+                  <td>服务间调用</td>
+                  <td><code>client_credentials</code></td>
+                  <td>Client Secret 或私钥 JWT</td>
+                  <td>只开放服务所需 Scope，凭据通过密钥系统托管。</td>
+                </tr>
+                <tr>
+                  <td>设备输入</td>
+                  <td>Device Authorization Grant</td>
+                  <td>按设备端能力选择</td>
+                  <td>设备端请求 device code，用户在激活页输入 user code。</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <figure class="article-image">
             <a class="image-link" href="./assets/screenshots/admin-applications.png">
               <img src="./assets/screenshots/admin-applications.png" alt="Application management screenshot" />
             </a>
-            <figcaption><strong>应用列表：</strong>Client ID、租户、认证方式、授权类型、DPoP、MFA。点击图片可放大查看。</figcaption>
+            <figcaption><strong>应用列表：</strong>Client ID、租户、认证方式、授权类型、DPoP 标记、MFA 标记和端点详情。点击图片可放大查看。</figcaption>
           </figure>
+        </section>
+
+        <section class="doc-section" id="oauth2">
+          <h2>OAuth2/OIDC 协议接入</h2>
+          <p>
+            ArmorAuth 对外提供标准 OAuth2/OIDC 端点。业务系统应优先读取 Discovery 文档，避免把环境、租户或路径策略写死在代码里。
+          </p>
+          <h3>协议端点一览</h3>
+          <div class="config-table-wrap">
+            <table class="config-table">
+              <thead>
+                <tr>
+                  <th>端点</th>
+                  <th>用途</th>
+                  <th>接入方</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><code>/.well-known/openid-configuration</code></td><td>发现 issuer、授权端点、Token 端点、JWKS、userinfo 等元数据。</td><td>所有 OIDC Client、资源服务器。</td></tr>
+                <tr><td><code>/oauth2/authorize</code></td><td>发起授权码流程，展示登录页和授权确认页。</td><td>Web、BFF、SPA、移动端。</td></tr>
+                <tr><td><code>/oauth2/token</code></td><td>交换授权码、刷新令牌、客户端凭据或 device code。</td><td>后端服务、客户端 SDK。</td></tr>
+                <tr><td><code>/oauth2/jwks</code></td><td>发布 JWT 验签公钥。</td><td>Resource Server、网关。</td></tr>
+                <tr><td><code>/oauth2/introspect</code></td><td>校验不透明 Token 或需要实时状态校验的 Token。</td><td>高敏资源服务。</td></tr>
+                <tr><td><code>/oauth2/revoke</code></td><td>撤销 refresh token 或访问令牌。</td><td>客户端、账号安全流程。</td></tr>
+                <tr><td><code>/userinfo</code></td><td>读取 OIDC 用户信息。</td><td>OIDC Client。</td></tr>
+                <tr><td><code>/oauth2/device_authorization</code></td><td>设备端申请 device code 和 user code。</td><td>CLI、电视端、无键盘设备。</td></tr>
+                <tr><td><code>/oauth2/device_verification</code>, <code>/activate</code></td><td>用户输入 user code 完成设备授权。</td><td>最终用户。</td></tr>
+                <tr><td><code>/consent</code></td><td>用户确认 Client 请求的 Scope。</td><td>授权码流程。</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <h3>公共客户端与 PKCE</h3>
+          <p>
+            SPA 和移动端不能安全保存 Client Secret。创建公共客户端后，调用方仍必须在授权请求中发送 PKCE 参数，
+            仅配置 <code>client-authentication-method: none</code> 不等于已经完成 PKCE。
+          </p>
+          <pre class="code-panel"><code>GET /oauth2/authorize?
+  response_type=code&
+  client_id=react-spa-pkce&
+  redirect_uri=http://localhost:5173/callback&
+  scope=openid profile email&
+  code_challenge={base64url_sha256_verifier}&
+  code_challenge_method=S256</code></pre>
+          <h3>Token 验签与退出</h3>
+          <ul class="check-list">
+            <li>资源服务器优先使用 <code>issuer-uri</code>，由 Spring Security 自动读取 Discovery 和 JWKS。</li>
+            <li>JWK 轮换时旧 key 要保留到依赖方刷新缓存和旧 Token 过期，避免在线业务短暂验签失败。</li>
+            <li>OIDC 登出 URL 以 Discovery 或应用端点详情为准；应用只配置 post logout redirect URI，不要硬编码未知路径。</li>
+          </ul>
         </section>
 
         <section class="doc-section" id="user">
           <h2>用户与联系方式</h2>
-          <p>
-            本地用户可以手动创建，也可以通过 SCIM 或联合登录进入系统。邮箱和手机号建议先验证，再用于登录、找回或 MFA。
-          </p>
+          <p>本地用户可以手动创建，也可以通过 SCIM、LDAP/AD 或联合登录进入系统。邮箱和手机号建议完成验证后再参与登录、找回或 MFA。</p>
           <h3>联系方式验证</h3>
           <ul class="check-list">
             <li>维护用户名、显示名称、手机号和邮箱等基础身份信息。</li>
+            <li>验证码在本地开发环境可以展示 mock code，生产环境应接入真实短信或邮件通道。</li>
             <li>验证邮箱/手机号后再让它们参与账号恢复或一次性验证码登录。</li>
             <li>需要保留审计历史时，优先禁用用户而不是删除用户。</li>
           </ul>
@@ -143,6 +247,35 @@
             </a>
             <figcaption><strong>OAuth 用户：</strong>联系方式验证状态、角色和租户归属。点击图片可放大查看。</figcaption>
           </figure>
+        </section>
+
+        <section class="doc-section" id="authorization">
+          <h2>角色、权限与 Scope</h2>
+          <p>
+            ArmorAuth 同时维护用户角色、组织角色、权限动作和 OAuth2 Scope。Scope 用于约束 Client 可访问的 API 范围，
+            角色和权限用于业务系统做更细粒度的授权判断。
+          </p>
+          <div class="feature-grid">
+            <article class="feature-card">
+              <span class="card-kicker">ROLE</span>
+              <h3>角色</h3>
+              <p>全局角色适合平台权限，组织角色适合部门、项目或客户侧层级授权。</p>
+            </article>
+            <article class="feature-card">
+              <span class="card-kicker">PERM</span>
+              <h3>权限动作</h3>
+              <p>按资源和动作建模，如 <code>application:read</code>、<code>tenant:write</code>。</p>
+            </article>
+            <article class="feature-card">
+              <span class="card-kicker">SCOPE</span>
+              <h3>OAuth2 Scope</h3>
+              <p>Client 申请 Token 时的协议级访问范围，应与资源服务器的 API 边界对齐。</p>
+            </article>
+          </div>
+          <div class="notice">
+            如果业务系统需要额外授权逻辑，建议通过 Spring Security 方法级授权或 starter 扩展点读取 Token claims，
+            不要在业务服务内复制管理台的角色维护逻辑。
+          </div>
         </section>
 
         <section class="doc-section" id="security">
@@ -155,12 +288,13 @@
             <span class="pill">TOTP Authenticator</span>
             <span class="pill">Passkey / WebAuthn</span>
             <span class="pill">短信验证码</span>
-            <span class="pill">恢复码流程</span>
+            <span class="pill">联系方式验证</span>
             <span class="pill">会话查看</span>
           </div>
           <ul class="check-list">
             <li>管理员账号和高风险应用应优先开启 MFA。</li>
-            <li>强制 MFA 前需要准备恢复流程，避免用户因设备丢失无法登录。</li>
+            <li>强制 MFA 前需要准备恢复和客服流程，避免用户因设备丢失无法登录。</li>
+            <li>Passkey/WebAuthn 适合降低密码依赖，但需要确认浏览器和域名环境稳定。</li>
             <li>审计登录失败和 MFA 失败事件，识别异常登录行为。</li>
           </ul>
         </section>
@@ -168,8 +302,8 @@
         <section class="doc-section" id="federation">
           <h2>身份源与联合登录</h2>
           <p>
-            身份源支持 OAuth2/OIDC、SAML、LDAP/AD 以及内置社交和企业 Provider。启用身份源前，应先完成元数据、密钥、
-            属性映射和绑定策略配置。
+            身份源支持 OAuth2/OIDC、SAML、LDAP/AD 以及内置社交和企业 Provider。启用前应先完成元数据、密钥、
+            属性映射、登录页展示和账号绑定策略配置。
           </p>
           <ul class="check-list">
             <li>OAuth2/OIDC Provider 需要 issuer、authorization、token、userinfo、JWK 和 Scope。</li>
@@ -177,6 +311,25 @@
             <li>LDAP/AD 需要 bind 凭据、搜索 base、过滤器、组映射和 TLS 策略。</li>
             <li>外部账号绑定不应自动删除本地用户，解绑和重绑要保留审计轨迹。</li>
           </ul>
+        </section>
+
+        <section class="doc-section" id="scim">
+          <h2>SCIM 用户与组同步</h2>
+          <p>
+            SCIM 适合由企业 IdP 或 HR 系统统一推送用户和组。接入时要先确认租户、认证方式、用户属性映射和组到角色的映射策略。
+          </p>
+          <div class="config-table-wrap">
+            <table class="config-table">
+              <thead>
+                <tr><th>对象</th><th>同步内容</th><th>运营注意</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Users</td><td>用户名、显示名、邮箱、手机号、启停状态。</td><td>外部系统禁用用户时，ArmorAuth 应保留审计历史。</td></tr>
+                <tr><td>Groups</td><td>组名、成员关系、外部 ID。</td><td>组到角色的映射要显式配置，避免外部组名变更导致越权。</td></tr>
+                <tr><td>PatchOp</td><td>增量更新成员、联系方式和状态。</td><td>导入前先在测试租户验证属性映射和冲突处理。</td></tr>
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section class="doc-section" id="operation">
@@ -188,17 +341,47 @@
             <article class="feature-card">
               <span class="card-kicker">AUDIT</span>
               <h3>审计日志</h3>
-              <p>查看管理操作、登录失败、策略变更和身份源变更。</p>
+              <p>查看管理操作、登录失败、策略变更、身份源变更和 Webhook 投递结果。</p>
             </article>
             <article class="feature-card">
               <span class="card-kicker">HOOK</span>
               <h3>Webhook</h3>
-              <p>对外投递账号、应用和安全事件，接收方必须校验签名。</p>
+              <p>对外投递账号、应用和安全事件，接收方必须校验签名并实现重试幂等。</p>
             </article>
             <article class="feature-card">
               <span class="card-kicker">KEY</span>
               <h3>JWK 与 Secret</h3>
               <p>备份 JWK 表和加密 key，轮换时保留旧 key 到迁移完成。</p>
+            </article>
+          </div>
+          <h3>生产检查</h3>
+          <ul class="check-list">
+            <li>HTTPS、反向代理、Cookie 安全属性和稳定域名必须先于外部 Client 上线。</li>
+            <li>开发种子账号、mock 验证码、HTTP redirect 仅用于本地演示环境。</li>
+            <li>数据库、JWK、Secret 和审计日志要纳入备份恢复流程。</li>
+          </ul>
+        </section>
+
+        <section class="doc-section" id="advanced">
+          <h2>高级协议能力状态</h2>
+          <p>
+            高级能力应按应用和租户逐步启用。当前文档把基础 OAuth2/OIDC 接入和高级协议能力分开，避免把受控能力误当作默认能力。
+          </p>
+          <div class="status-grid">
+            <article class="status-card">
+              <span class="status-label configured">配置项</span>
+              <h3>Private Key JWT</h3>
+              <p>适合高安全服务端 Client，重点在 JWKS 注册、key id、签名算法和私钥托管。</p>
+            </article>
+            <article class="status-card">
+              <span class="status-label planned">待核验</span>
+              <h3>DCR / DPoP / PAR</h3>
+              <p>放在高级协议能力中跟踪，不写入基础接入路径；启用前需要代码、端到端测试和运维开关共同确认。</p>
+            </article>
+            <article class="status-card">
+              <span class="status-label configured">配置项</span>
+              <h3>租户感知 issuer</h3>
+              <p>适合多租户隔离场景；Client 和资源服务器必须使用对应租户的 issuer 与 discovery 地址。</p>
             </article>
           </div>
         </section>
@@ -207,12 +390,17 @@
       <aside class="toc" aria-label="On this page">
         <strong>On this page</strong>
         <a href="#overview">介绍</a>
+        <a href="#first-token">第一枚 Token</a>
         <a href="#tenant">租户与组织</a>
         <a href="#application">应用接入</a>
+        <a href="#oauth2">OAuth2/OIDC</a>
         <a href="#user">用户与联系方式</a>
+        <a href="#authorization">角色与权限</a>
         <a href="#security">MFA 与安全</a>
         <a href="#federation">身份源</a>
+        <a href="#scim">SCIM 同步</a>
         <a href="#operation">审计与 Webhook</a>
+        <a href="#advanced">高级协议状态</a>
       </aside>
     </div>
 

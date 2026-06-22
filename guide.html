@@ -66,6 +66,7 @@
             <a class="active" href="#intro">介绍</a>
             <a href="#features">特性</a>
             <a href="#architecture">能力边界</a>
+            <a href="#protocols">协议接入</a>
             <a href="#screenshots">页面截图</a>
             <a href="#quickstart">快速开始</a>
           </div>
@@ -103,12 +104,12 @@
         <section class="doc-section" id="features">
           <h2>特性</h2>
           <ul class="feature-list">
-            <li><strong>OAuth2/OIDC 授权服务器：</strong>覆盖授权码、设备码、刷新令牌、发现端点、JWKS、OIDC UserInfo 和 Logout。</li>
+            <li><strong>OAuth2/OIDC 授权服务器：</strong>覆盖授权码、设备码、刷新令牌、发现端点、JWKS、OIDC UserInfo、Token 校验和撤销。</li>
             <li><strong>托管身份页面：</strong>登录、授权确认、设备激活、联合身份确认、账号中心和 MFA 绑定流程由服务端统一托管。</li>
             <li><strong>租户与组织：</strong>支持租户路径、issuer、应用归属、组织层级、角色、权限和成员关系。</li>
-            <li><strong>账号安全：</strong>支持密码、图形验证码、短信验证码、TOTP、Passkey/WebAuthn、MFA 策略、恢复码和联系方式验证。</li>
+            <li><strong>账号安全：</strong>支持密码、图形验证码、短信验证码、TOTP、Passkey/WebAuthn、MFA 策略和联系方式验证。</li>
             <li><strong>联合身份：</strong>支持 OAuth2/OIDC、SAML、LDAP/AD 以及常见社交和企业 Provider 的统一接入。</li>
-            <li><strong>Spring Boot Starter：</strong>为业务服务提供 Resource Server、OIDC Login、当前用户上下文、Admin Client 和 Token Relay。</li>
+            <li><strong>Spring Boot Starter：</strong>说明业务服务接入 Resource Server、OIDC Login、当前用户上下文、Admin API 和 Token Relay 的边界。</li>
           </ul>
         </section>
 
@@ -132,8 +133,42 @@
             <article class="feature-card">
               <span class="card-kicker">BOOT</span>
               <h3>业务接入</h3>
-              <p>Spring Boot 服务可快速启用资源服务器、登录客户端、当前用户上下文和下游 Token 转发。</p>
+              <p>Spring Boot 服务可按场景接入资源服务器、登录客户端、当前用户上下文和下游 Token 转发。</p>
             </article>
+          </div>
+        </section>
+
+        <section class="doc-section" id="protocols">
+          <h2>OAuth2/OIDC 接入路径</h2>
+          <p>
+            ArmorAuth 的接入入口以标准协议为主。平台先在管理台创建 Client，再由业务系统按场景选择授权方式和 Token 校验方式。
+          </p>
+          <div class="feature-grid">
+            <article class="feature-card">
+              <span class="card-kicker">PKCE</span>
+              <h3>浏览器与移动端</h3>
+              <p>使用 Authorization Code + PKCE，公共客户端不保存 secret，也不使用 implicit flow。</p>
+            </article>
+            <article class="feature-card">
+              <span class="card-kicker">M2M</span>
+              <h3>服务间调用</h3>
+              <p>使用 Client Credentials，Scope 按 API 最小权限授权，凭据托管在密钥系统中。</p>
+            </article>
+            <article class="feature-card">
+              <span class="card-kicker">JWK</span>
+              <h3>资源服务器</h3>
+              <p>通过 Discovery 或 JWKS 验签 JWT，并在业务侧校验 Scope、角色和权限声明。</p>
+            </article>
+          </div>
+          <div class="doc-links doc-links-compact">
+            <a class="doc-card" href="./manual.html#oauth2">
+              <h3>协议端点</h3>
+              <p>查看 authorize、token、JWKS、userinfo、introspection、revocation 和 device flow。</p>
+            </a>
+            <a class="doc-card" href="./starter.html#oauth2-playbook">
+              <h3>Spring Boot 接入</h3>
+              <p>查看 Resource Server、OIDC Login、Admin API 和 Token Relay 的接入边界。</p>
+            </a>
           </div>
         </section>
 
@@ -180,7 +215,7 @@ npm run dev</code></pre>
           <div class="doc-links">
             <a class="doc-card" href="./manual.html">
               <h3>功能操作手册</h3>
-              <p>租户、应用、用户、MFA、身份源、审计和 Webhook 的操作路径。</p>
+              <p>租户、应用、OAuth2/OIDC、用户、MFA、身份源、SCIM、审计和 Webhook 的操作路径。</p>
             </a>
             <a class="doc-card" href="./starter.html">
               <h3>Spring Boot Starter</h3>
@@ -199,6 +234,7 @@ npm run dev</code></pre>
         <a href="#intro">简介</a>
         <a href="#features">特性</a>
         <a href="#architecture">能力边界</a>
+        <a href="#protocols">协议接入</a>
         <a href="#screenshots">页面截图</a>
         <a href="#quickstart">快速开始</a>
       </aside>

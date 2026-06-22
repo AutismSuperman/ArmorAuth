@@ -133,7 +133,10 @@
 
   const sectionLinks = Array.from(document.querySelectorAll('.sidebar a[href^="#"], .toc a[href^="#"]'));
   const sectionIds = Array.from(new Set(sectionLinks.map((link) => decodeURIComponent(link.hash.slice(1))).filter(Boolean)));
-  const sections = sectionIds.map((id) => document.getElementById(id)).filter(Boolean);
+  const sections = sectionIds
+    .map((id) => document.getElementById(id))
+    .filter(Boolean)
+    .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
 
   const setActive = (id) => {
     sectionLinks.forEach((link) => {
@@ -144,9 +147,10 @@
   if (sections.length > 0) {
     const pickActiveSection = () => {
       const offset = Math.max(120, window.innerHeight * 0.24);
+      const position = window.scrollY + offset;
       let current = sections[0].id;
-      for (const section of sections) {
-        if (section.getBoundingClientRect().top <= offset) {
+      for (const section of sections.slice().sort((a, b) => a.offsetTop - b.offsetTop)) {
+        if (section.offsetTop <= position) {
           current = section.id;
         }
       }

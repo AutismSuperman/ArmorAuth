@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="ArmorAuth Spring Boot Starter 使用指南：Resource Server、OIDC Login、当前用户上下文、Admin RestClient 和 Token Relay。"
+      content="ArmorAuth Spring Boot Starter 使用指南：Resource Server、OIDC Login、OAuth2 Client、当前用户上下文、Admin API 和 Token Relay 接入边界。"
     />
     <title>ArmorAuth Spring Boot Starter 使用指南</title>
     <link rel="icon" href="./assets/logo-mark.svg" type="image/svg+xml" />
@@ -64,16 +64,19 @@
           <div class="nav-group">
             <strong>使用</strong>
             <a class="active" href="#overview">介绍</a>
+            <a href="#boundary">能力边界</a>
             <a href="#dependency">添加依赖</a>
+            <a href="#oauth2-playbook">OAuth2 接入方式</a>
             <a href="#resource-server">Resource Server</a>
             <a href="#oidc-login">OIDC Login</a>
             <a href="#current-user">当前用户上下文</a>
-            <a href="#admin-client">Admin Client</a>
+            <a href="#admin-client">Admin API Client</a>
             <a href="#token-relay">Token Relay</a>
             <a href="#extension">扩展点</a>
           </div>
           <div class="nav-group">
             <strong>继续阅读</strong>
+            <a href="./manual.html#oauth2">OAuth2/OIDC 协议接入</a>
             <a href="./manual.html">功能操作手册</a>
             <a href="./guide.html">项目指引</a>
             <a href="./">首页</a>
@@ -89,14 +92,40 @@
           <div class="eyebrow">Spring Boot integration</div>
           <h1>Starter 使用指南</h1>
           <p class="lead">
-            为接入 ArmorAuth 的 Spring Boot 服务提供开箱即用的安全集成：校验访问令牌、接入 OIDC 登录、
-            读取当前用户上下文，并按需转发 Token 或调用管理 API。
+            <code>armorauth-spring-boot-starter</code> 面向接入方 Spring Boot 服务，帮助业务服务校验访问令牌、
+            接入 OIDC 登录，并按标准 OAuth2/OIDC 与 ArmorAuth 交互。
           </p>
+        </section>
+
+        <section class="doc-section" id="boundary">
+          <h2>能力边界</h2>
+          <p>Starter 是业务应用的接入包，不是授权服务器运行时。租户、用户、Client、MFA、JWK 和身份源仍由 ArmorAuth 服务端和管理台维护。</p>
+          <div class="feature-grid">
+            <article class="feature-card">
+              <span class="card-kicker">API</span>
+              <h3>Resource Server</h3>
+              <p>业务 API 使用 Spring Security 校验 JWT，按 Scope、角色或权限控制访问。</p>
+            </article>
+            <article class="feature-card">
+              <span class="card-kicker">WEB</span>
+              <h3>OIDC Login</h3>
+              <p>传统 Web 或 BFF 通过 Authorization Code 登录，用户身份由 ArmorAuth 托管。</p>
+            </article>
+            <article class="feature-card">
+              <span class="card-kicker">EXT</span>
+              <h3>业务扩展</h3>
+              <p>当前用户解析、Admin API 调用和 Token Relay 应按业务边界显式接入和测试。</p>
+            </article>
+          </div>
+          <div class="notice">
+            当前版本优先提供轻量接入体验。复杂安全链、多 Client 共存、Admin Client 封装和 Token Relay 白名单建议由业务项目显式配置，
+            后续再沉淀为可复用扩展点。
+          </div>
         </section>
 
         <section class="doc-section" id="dependency">
           <h2>添加依赖</h2>
-          <p>Starter 只放在业务服务中使用，不带入授权服务器运行时。按业务场景开启 Resource Server、OIDC Login 或 Admin Client 即可。</p>
+          <p>只在需要接入 ArmorAuth 的业务服务中添加 Starter。授权服务器自身不需要通过 Starter 启动。</p>
           <pre class="code-panel"><code>&lt;dependency&gt;
   &lt;groupId&gt;com.armorauth&lt;/groupId&gt;
   &lt;artifactId&gt;armorauth-spring-boot-starter&lt;/artifactId&gt;
@@ -104,81 +133,117 @@
 &lt;/dependency&gt;</code></pre>
         </section>
 
+        <section class="doc-section" id="oauth2-playbook">
+          <h2>OAuth2 接入方式</h2>
+          <p>先在管理台创建应用，再把端点和 Client 配置写入业务服务。不同类型的业务系统不要共用同一个 Client。</p>
+          <div class="config-table-wrap">
+            <table class="config-table">
+              <thead>
+                <tr><th>场景</th><th>协议选择</th><th>Spring Boot 接入点</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>REST API</td>
+                  <td>JWT Bearer Token，资源服务器验签。</td>
+                  <td><code>spring.security.oauth2.resourceserver.jwt.issuer-uri</code></td>
+                </tr>
+                <tr>
+                  <td>Web / BFF</td>
+                  <td>Authorization Code + Client Secret。</td>
+                  <td><code>spring.security.oauth2.client.registration</code></td>
+                </tr>
+                <tr>
+                  <td>SPA / 移动端</td>
+                  <td>Authorization Code + PKCE，公共客户端。</td>
+                  <td>前端或移动端 SDK 发起 PKCE，后端只做 API 资源服务器。</td>
+                </tr>
+                <tr>
+                  <td>服务间调用</td>
+                  <td>Client Credentials，最小 Scope。</td>
+                  <td>用 Spring OAuth2 Client 获取 Token，再调用下游 API。</td>
+                </tr>
+                <tr>
+                  <td>设备登录</td>
+                  <td>Device Authorization Grant。</td>
+                  <td>设备端请求 device code，用户在 ArmorAuth 激活页确认。</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <section class="doc-section" id="resource-server">
           <h2>Resource Server</h2>
           <p>
-            适合 API 服务。默认保护 <code>/api/**</code>，放行 <code>/api/public/**</code>，并把 ArmorAuth 的角色、Scope、权限和组织角色映射为
-            Spring Security authorities。
+            API 服务推荐只配置资源服务器。资源服务器通过 issuer 或 JWKS 验证访问令牌，再用 Scope、角色或权限做业务授权。
           </p>
           <div class="starter-grid">
             <article class="starter-card">
-              <h3>适用场景</h3>
+              <h3>配置要点</h3>
               <ul class="check-list">
-                <li>业务 API 只需要校验 JWT，不需要托管登录页面。</li>
-                <li>通过 <code>issuer-uri</code> 或 <code>jwk-set-uri</code> 指向 ArmorAuth。</li>
-                <li>需要特殊放行路径时配置 <code>permit-all</code>。</li>
+                <li>优先使用 <code>issuer-uri</code>，让 Spring Security 自动读取 Discovery。</li>
+                <li>公共接口单独放行，业务接口默认要求认证。</li>
+                <li>角色、权限、组织等 claims 的解释规则要在业务服务内明确测试。</li>
               </ul>
             </article>
-            <pre class="code-panel"><code>armorauth:
-  resource-server:
-    enabled: true
-    security-matcher: /api/**
-    permit-all:
-      - /api/public/**
-    principal-claim: preferred_username
-
-spring:
+            <pre class="code-panel"><code>spring:
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:9000</code></pre>
+          issuer-uri: http://localhost:9000
+
+armorauth:
+  resource-server:
+    enabled: true</code></pre>
+          </div>
+          <div class="notice">
+            如果业务服务同时承担 Web 登录和 API 资源服务器职责，建议显式声明多个有序 <code>SecurityFilterChain</code>，
+            避免登录页面、API 和静态资源的 matcher 相互覆盖。
           </div>
         </section>
 
         <section class="doc-section" id="oidc-login">
           <h2>OIDC Login</h2>
-          <p>适合传统 Web 服务或 BFF。Starter 会创建登录过滤链，启用 <code>oauth2Login</code>，并支持配置登录成功页和退出页。</p>
-          <pre class="code-panel"><code>armorauth:
-  oidc-client:
-    enabled: true
-    default-success-url: /dashboard
-    logout-success-url: /
-
-spring:
+          <p>传统 Web 服务或 BFF 可以作为 OAuth2 Client，通过 ArmorAuth 托管登录页完成认证，再在服务端维护会话。</p>
+          <pre class="code-panel"><code>spring:
   security:
     oauth2:
       client:
         registration:
           armorauth:
-            client-id: sample-client
-            client-secret: sample-secret
+            client-id: dashboard
+            client-secret: ${ARMORAUTH_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_basic
             scope: openid,profile,email
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
         provider:
           armorauth:
             issuer-uri: http://localhost:9000</code></pre>
+          <h3>登录后身份</h3>
+          <ul class="check-list">
+            <li>业务页面读取 <code>OidcUser</code> 或 <code>OAuth2AuthenticationToken</code>。</li>
+            <li>如果需要调用下游 API，优先使用 OAuth2 Authorized Client 管理访问令牌。</li>
+            <li>退出流程以 Discovery 或管理台端点详情为准，post logout redirect URI 必须在应用中登记。</li>
+          </ul>
         </section>
 
         <section class="doc-section" id="current-user">
           <h2>当前用户上下文</h2>
-          <p><code>ArmorAuthCurrentUserResolver</code> 从 JWT 或 OIDC user attributes 中读取用户、租户、组织、角色、Scope 和权限声明。</p>
-          <pre class="code-panel"><code>@RestController
-class ProfileController {
-  private final ArmorAuthCurrentUserResolver currentUserResolver;
-
-  ProfileController(ArmorAuthCurrentUserResolver currentUserResolver) {
-    this.currentUserResolver = currentUserResolver;
-  }
-
-  @GetMapping("/api/me")
-  ArmorAuthCurrentUser me() {
-    return currentUserResolver.currentUser();
-  }
-}</code></pre>
+          <p>
+            业务服务通常需要把 JWT 或 OIDC 用户信息转换成自己的当前用户模型。推荐把 claim 映射集中封装，避免控制器重复解析 Token。
+          </p>
+          <pre class="code-panel"><code>record CurrentUser(
+    String subject,
+    String username,
+    String tenantId,
+    List&lt;String&gt; roles,
+    List&lt;String&gt; scopes
+) {}</code></pre>
           <div class="config-table-wrap">
             <table class="config-table">
-              <thead><tr><th>字段</th><th>来源 Claim</th><th>用途</th></tr></thead>
+              <thead><tr><th>字段</th><th>常见 Claim</th><th>用途</th></tr></thead>
               <tbody>
                 <tr><td>subject / username</td><td><code>sub</code>, <code>preferred_username</code></td><td>当前登录用户</td></tr>
                 <tr><td>tenantId</td><td><code>tenant_id</code></td><td>租户感知业务隔离</td></tr>
@@ -191,47 +256,63 @@ class ProfileController {
         </section>
 
         <section class="doc-section" id="admin-client">
-          <h2>Admin RestClient</h2>
-          <p>Starter 可以创建轻量 Admin API Client，适合内部自动化、应用开通、用户同步或后台运维工具。</p>
-          <pre class="code-panel"><code>armorauth:
-  admin-client:
-    enabled: true
-    base-url: http://localhost:9000
-    bearer-token: ${ARMORAUTH_ADMIN_TOKEN}</code></pre>
-          <pre class="code-panel"><code>@Service
-class ApplicationProvisioningService {
-  private final ArmorAuthAdminRestClient adminClient;
-
-  Map&lt;String, Object&gt; applications() {
-    return adminClient.listApplications(0, 20);
-  }
-}</code></pre>
+          <h2>Admin API Client</h2>
+          <p>
+            内部自动化、批量开通和运维工具可以调用 ArmorAuth 管理 API。生产环境建议用独立服务账号、最小 Scope、超时、重试和错误映射。
+          </p>
+          <pre class="code-panel"><code>RestClient adminClient = RestClient.builder()
+    .baseUrl("http://localhost:9000")
+    .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
+    .build();</code></pre>
+          <ul class="check-list">
+            <li>不要把超级管理员密码写入业务服务配置。</li>
+            <li>Client Credentials 或服务账号 Token 应只授予需要的管理 Scope。</li>
+            <li>批量任务要记录请求 ID、调用人、租户和失败原因，便于审计。</li>
+          </ul>
         </section>
 
         <section class="doc-section" id="token-relay">
           <h2>Token Relay</h2>
-          <p><code>ArmorAuthTokenRelayInterceptor</code> 以独立 Bean 暴露，建议只挂到可信下游服务的 <code>RestClient</code>，避免用户 Token 被转发到非受信目标。</p>
-          <pre class="code-panel"><code>@Bean
-RestClient downstreamClient(RestClient.Builder builder,
-                            ArmorAuthTokenRelayInterceptor tokenRelay) {
-  return builder
-      .baseUrl("http://orders-service")
-      .requestInterceptor(tokenRelay)
-      .build();
-}</code></pre>
+          <p>
+            Token Relay 适合 BFF 或网关把当前用户访问令牌转发给受信下游。它不等同于 OAuth2 Client 自动换取 Token，
+            也不应把用户 Token 发给第三方或未登记服务。
+          </p>
+          <pre class="code-panel"><code>RestClient downstream = RestClient.builder()
+    .baseUrl("http://orders-service")
+    .requestInterceptor((request, body, execution) -> {
+      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+      if (authentication instanceof JwtAuthenticationToken jwt) {
+        request.getHeaders().setBearerAuth(jwt.getToken().getTokenValue());
+      }
+      return execution.execute(request, body);
+    })
+    .build();</code></pre>
+          <div class="notice">
+            只对可信下游开启 Token Relay。跨系统调用更推荐用 Client Credentials 获取服务级 Token，并按 Scope 控制权限。
+          </div>
         </section>
 
         <section class="doc-section" id="extension">
           <h2>扩展点</h2>
-          <p>Starter 暴露多个可替换扩展点，业务项目可以在不 fork Starter 的前提下调整安全链、权限映射、Admin Client 和 Token Relay 行为。</p>
+          <p>业务项目的安全边界往往不同，以下能力建议作为应用内配置或后续 starter 扩展点沉淀。</p>
           <div class="pill-row">
-            <span class="pill">ArmorAuthResourceServerHttpSecurityCustomizer</span>
-            <span class="pill">ArmorAuthOidcClientHttpSecurityCustomizer</span>
-            <span class="pill">ArmorAuthJwtAuthenticationConverterCustomizer</span>
-            <span class="pill">ArmorAuthAdminRestClientCustomizer</span>
+            <span class="pill">JWT authorities converter</span>
+            <span class="pill">SecurityFilterChain customizer</span>
+            <span class="pill">OIDC success / failure handler</span>
+            <span class="pill">Admin RestClient customizer</span>
+            <span class="pill">Token relay allowlist</span>
+            <span class="pill">Micrometer observation</span>
           </div>
-          <div class="notice">
-            Starter 默认配置只负责接入体验，生产项目仍应按业务安全边界显式配置授权规则、下游白名单和凭据来源。
+          <div class="config-table-wrap">
+            <table class="config-table">
+              <thead><tr><th>扩展方向</th><th>建议</th></tr></thead>
+              <tbody>
+                <tr><td>JWT 权限映射</td><td>同时覆盖 <code>scope</code>、<code>scp</code>、<code>roles</code>、<code>permissions</code> 和组织角色。</td></tr>
+                <tr><td>安全链共存</td><td>Resource Server、OIDC Login、Actuator 和静态资源分别设置 matcher 与 order。</td></tr>
+                <tr><td>Admin Client</td><td>统一封装认证、超时、错误映射、审计字段和重试策略。</td></tr>
+                <tr><td>可观测性</td><td>记录 401/403、下游调用、token relay、身份源回调和管理 API 延迟。</td></tr>
+              </tbody>
+            </table>
           </div>
         </section>
       </main>
@@ -239,11 +320,13 @@ RestClient downstreamClient(RestClient.Builder builder,
       <aside class="toc" aria-label="On this page">
         <strong>On this page</strong>
         <a href="#overview">介绍</a>
+        <a href="#boundary">能力边界</a>
         <a href="#dependency">添加依赖</a>
+        <a href="#oauth2-playbook">OAuth2 接入方式</a>
         <a href="#resource-server">Resource Server</a>
         <a href="#oidc-login">OIDC Login</a>
         <a href="#current-user">当前用户上下文</a>
-        <a href="#admin-client">Admin RestClient</a>
+        <a href="#admin-client">Admin API Client</a>
         <a href="#token-relay">Token Relay</a>
         <a href="#extension">扩展点</a>
       </aside>
@@ -251,7 +334,7 @@ RestClient downstreamClient(RestClient.Builder builder,
 
     <footer class="site-footer">
       <span>ArmorAuth Spring Boot Starter 使用指南</span>
-      <a href="./manual.html">返回功能操作手册</a>
+      <a href="./manual.html#oauth2">继续阅读 OAuth2/OIDC 协议接入</a>
     </footer>
     <script src="./assets/site.js" defer></script>
   </body>

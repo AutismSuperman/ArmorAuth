@@ -726,16 +726,62 @@ h1 {
   background: var(--blue);
 }
 
+.flow-list {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: flow-step;
+}
+
+.flow-list li {
+  position: relative;
+  min-width: 0;
+  padding: 16px 18px 16px 54px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  color: var(--muted);
+  background: var(--panel);
+  line-height: 1.72;
+}
+
+.flow-list li::before {
+  counter-increment: flow-step;
+  content: counter(flow-step);
+  position: absolute;
+  left: 16px;
+  top: 17px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--blue);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.flow-list strong {
+  color: var(--heading);
+}
+
 .feature-grid,
 .screenshot-grid,
 .doc-links,
 .manual-grid,
-.starter-grid {
+.starter-grid,
+.status-grid {
   display: grid;
   gap: 16px;
 }
 
 .feature-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.status-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
@@ -748,6 +794,11 @@ h1 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.doc-links-compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 16px;
+}
+
 .screenshot-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -755,7 +806,8 @@ h1 {
 .feature-card,
 .doc-card,
 .manual-card,
-.starter-card {
+.starter-card,
+.status-card {
   min-width: 0;
   padding: 22px;
   border: 1px solid var(--line-soft);
@@ -785,10 +837,35 @@ h1 {
 .feature-card p,
 .doc-card p,
 .manual-card p,
-.starter-card p {
+.starter-card p,
+.status-card p {
   margin: 0;
   font-size: 14px;
   line-height: 1.72;
+}
+
+.status-card h3 {
+  margin-top: 10px;
+}
+
+.status-label {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.status-label.configured {
+  color: var(--green);
+  background: rgba(35, 185, 129, 0.12);
+}
+
+.status-label.planned {
+  color: var(--amber);
+  background: rgba(217, 161, 0, 0.14);
 }
 
 .browser-shot {
@@ -1039,6 +1116,7 @@ h1 {
   .screenshot-grid,
   .manual-grid,
   .starter-grid,
+  .status-grid,
   .doc-links,
   .image-grid,
   .home-hero,
@@ -1277,8 +1355,18 @@ h1 {
   .feature-card,
   .doc-card,
   .manual-card,
-  .starter-card {
+  .starter-card,
+  .status-card {
     padding: 18px;
+  }
+
+  .flow-list li {
+    padding: 14px 14px 14px 48px;
+  }
+
+  .flow-list li::before {
+    left: 14px;
+    top: 15px;
   }
 
   .code-panel {
